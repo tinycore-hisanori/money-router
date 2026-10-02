@@ -1,0 +1,79 @@
+import { config } from '../server/lib/config.js';
+import { structured } from '../server/lib/llm.js';
+import type { Opportunity, Source } from '../shared/types.js';
+
+interface Extracted {
+  opportunities: Omit<Opportunity, 'source_id' | 'legitimacy' | 'status' | 'last_checked' | 'observed' | 'id'>[];
+  rejected: { name: string; reason: string }[];
+}
+
+const CATEGORIES = ['game_portal', 'bug_bounty', 'user_testing', 'survey', 'microtask', 'stock_assets', 'freelance', 'affiliate', 'referral', 'other'];
+
+/** Page text -> structured opportunities. Only PayPal-payable ones are kept; the rest are reported as rejected. */
+export async function extractOpportunities(source: Source, pageText: string): Promise<{ opportunities: Opportunity[]; rejected_no_paypal: number }> {
+  const r = await structured<Extracted>({
+    model: config.models.extract,
+    maxTokens: 4096,
+    system: `You extract earning opportunities for independent creators from a platform's public page.
+Rules:
+- Only include an opportunity if PayPal is explicitly listed as a payout method. Put anything else in "rejected" with the reason.
+- Numbers must come from the page. If a value is not on the page, use your best conservative estimate and lower "confidence".
+- countries_allowed/blocked are ISO2 codes; leave empty when unknown or worldwide.
+- skills_required are snake_case tokens (html5_game_dev, web_dev, security, writing, design, audio, video, 3d, data, english).
+- reward_estimate_usd: for per_task = typical payment per task; for rev_share = realistic monthly income for a small creator; for hourly = hourly rate.
+- effort_hours_estimate: hours per unit of reward (per task, or per month of upkeep for rev_share).
+Hint for this source: ${source.parse_hint ?? 'none'}`,
+    user: `Source: ${source.name} (${source.url})\nCategory hint: ${source.category}\n\n---\n${pageText}`,
+    toolName: 'report_opportunities',
+    description: 'Report extracted opportunities and rejected ones.',
+    schema: {
+      type: 'object',
+      required: ['opportunities', 'rejected'],
+      properties: {
+        opportunities: {
+          type: 'array',
+          items: {
+            type: 'object',
+            required: ['name', 'provider', 'category', 'url', 'payout_methods', 'payout_currency', 'min_payout', 'payout_cycle', 'payout_days_estimate', 'reward_model', 'reward_estimate_usd', 'effort_hours_estimate', 'skills_required', 'countries_allowed', 'countries_blocked', 'requirements', 'confidence'],
+            properties: {
+              name: { type: 'string' },
+              provider: { type: 'string' },
+              category: { type: 'string', enum: CATEGORIES },
+              url: { type: 'string' },
+              payout_methods: { type: 'array', items: { type: 'string' } },
+              payout_currency: { type: 'string' },
+              min_payout: { type: 'number' },
+              payout_cycle: { type: 'string' },
+              payout_days_estimate: { type: 'integer' },
+              reward_model: { type: 'string', enum: ['per_task', 'rev_share', 'bounty', 'hourly', 'one_time'] },
+              reward_estimate_usd: { type: 'number' },
+              effort_hours_estimate: { type: 'number' },
+              skills_required: { type: 'array', items: { type: 'string' } },
+              countries_allowed: { type: 'array', items: { type: 'string' } },
+              countries_blocked: { type: 'array', items: { type: 'string' } },
+              requirements: { type: 'array', items: { type: 'string' } },
+              confidence: { type: 'number' },
+            },
+          },
+        },
+        rejected: { type: 'array', items: { type: 'object', required: ['name', 'reason'], properties: { name: { type: 'string' }, reason: { type: 'string' } } } },
+      },
+    },
+  });
+
+  const now = new Date().toISOString();
+  const opportunities: Opportunity[] = r.opportunities
+    .filter((o) => o.payout_methods.some((m) => /paypal/i.test(m)))
+    .map((o, i) => ({
+      ...o,
+      id: `${source.id}:${slug(o.name)}${i ? `-${i}` : ''}`,
+      source_id: source.id,
+      legitimacy: { score: source.trust_baseline, notes: 'not yet audited', scored_by: 'baseline', scored_at: now, mode: 'seed' },
+      status: 'active',
+      last_checked: now,
+      observed: { total_received_usd: 0, payments_count: 0, avg_days_to_payout: null, last_payment_at: null },
+    }));
+  return { opportunities, rejected_no_paypal: r.rejected.length + (r.opportunities.length - opportunities.length) };
+}
+
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);

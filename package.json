@@ -1,0 +1,31 @@
+{
+  "name": "money-router",
+  "version": "1.0.0-alpha.1",
+  "description": "AI-curated global earning opportunities, paid out via PayPal. Discover, route, and verify with real PayPal transactions.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "concurrently -n api,web \"tsx watch src/server/index.ts\" \"npm --prefix client run dev\"",
+    "build": "npm --prefix client run build && tsc -p tsconfig.json",
+    "start": "node dist/server/index.js",
+    "crawl": "tsx src/crawler/cli.ts",
+    "seed": "tsx scripts/make-seed.ts",
+    "seed:payments": "tsx scripts/seed-payments.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit && npm --prefix client run typecheck",
+    "postinstall": "npm --prefix client install"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
+    "@hono/node-server": "^1.13.0",
+    "dotenv": "^16.4.5",
+    "hono": "^4.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "concurrently": "^9.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

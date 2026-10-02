@@ -1,0 +1,654 @@
+[
+  {
+    "id": "crazygames:revenue-share",
+    "source_id": "crazygames",
+    "name": "CrazyGames Revenue Share",
+    "provider": "CrazyGames",
+    "category": "game_portal",
+    "url": "https://developer.crazygames.com/",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 100,
+    "payout_cycle": "NET30",
+    "payout_days_estimate": 45,
+    "reward_model": "rev_share",
+    "reward_estimate_usd": 150,
+    "effort_hours_estimate": 20,
+    "skills_required": [
+      "html5_game_dev"
+    ],
+    "countries_allowed": [],
+    "countries_blocked": [],
+    "requirements": [
+      "Exclusive or non-exclusive HTML5 game submission",
+      "Integrate CrazyGames SDK"
+    ],
+    "legitimacy": {
+      "score": 92,
+      "notes": "Established portal with public developer terms",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.8,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "gamepix:revenue-share",
+    "source_id": "gamepix",
+    "name": "GamePix Revenue Share",
+    "provider": "GamePix",
+    "category": "game_portal",
+    "url": "https://developers.gamepix.com/",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 100,
+    "payout_cycle": "NET60",
+    "payout_days_estimate": 70,
+    "reward_model": "rev_share",
+    "reward_estimate_usd": 40,
+    "effort_hours_estimate": 10,
+    "skills_required": [
+      "html5_game_dev"
+    ],
+    "countries_allowed": [],
+    "countries_blocked": [],
+    "requirements": [
+      "Submit HTML5 games via developer portal"
+    ],
+    "legitimacy": {
+      "score": 78,
+      "notes": "Legitimate but lower traffic; long payout cycle",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.5,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "itchio:sales",
+    "source_id": "itchio",
+    "name": "itch.io Game & Asset Sales",
+    "provider": "itch.io",
+    "category": "stock_assets",
+    "url": "https://itch.io/docs/creators/payments",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 0,
+    "payout_cycle": "on_request",
+    "payout_days_estimate": 14,
+    "reward_model": "rev_share",
+    "reward_estimate_usd": 60,
+    "effort_hours_estimate": 8,
+    "skills_required": [
+      "html5_game_dev"
+    ],
+    "countries_allowed": [],
+    "countries_blocked": [],
+    "requirements": [
+      "Upload games, templates or assets",
+      "Set your own revenue share (default 10% to itch)"
+    ],
+    "legitimacy": {
+      "score": 94,
+      "notes": "Creator-friendly marketplace, direct-to-PayPal payouts",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.9,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "hackerone:bounties",
+    "source_id": "hackerone",
+    "name": "HackerOne Bug Bounties",
+    "provider": "HackerOne",
+    "category": "bug_bounty",
+    "url": "https://hackerone.com/",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 0,
+    "payout_cycle": "per_bounty",
+    "payout_days_estimate": 21,
+    "reward_model": "bounty",
+    "reward_estimate_usd": 500,
+    "effort_hours_estimate": 25,
+    "skills_required": [
+      "security"
+    ],
+    "countries_allowed": [],
+    "countries_blocked": [],
+    "requirements": [
+      "Valid, in-scope vulnerability report accepted by the program"
+    ],
+    "legitimacy": {
+      "score": 96,
+      "notes": "Industry-standard platform, PayPal payout option",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.9,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "usertesting:tests",
+    "source_id": "usertesting",
+    "name": "UserTesting Paid Tests",
+    "provider": "UserTesting",
+    "category": "user_testing",
+    "url": "https://www.usertesting.com/get-paid-to-test",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 0,
+    "payout_cycle": "7_days",
+    "payout_days_estimate": 7,
+    "reward_model": "per_task",
+    "reward_estimate_usd": 10,
+    "effort_hours_estimate": 0.33,
+    "skills_required": [
+      "english"
+    ],
+    "countries_allowed": [
+      "US",
+      "GB",
+      "CA",
+      "AU",
+      "DE",
+      "FR",
+      "JP"
+    ],
+    "countries_blocked": [],
+    "requirements": [
+      "Pass a sample test",
+      "Microphone and screen recording"
+    ],
+    "legitimacy": {
+      "score": 90,
+      "notes": "Well-known; test availability varies a lot by country",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.5,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "playtestcloud:playtests",
+    "source_id": "playtestcloud",
+    "name": "PlaytestCloud Mobile Playtests",
+    "provider": "PlaytestCloud",
+    "category": "user_testing",
+    "url": "https://www.playtestcloud.com/playtesters",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 0,
+    "payout_cycle": "weekly",
+    "payout_days_estimate": 10,
+    "reward_model": "per_task",
+    "reward_estimate_usd": 9,
+    "effort_hours_estimate": 0.25,
+    "skills_required": [],
+    "countries_allowed": [],
+    "countries_blocked": [],
+    "requirements": [
+      "Android or iOS device",
+      "Record gameplay with voice"
+    ],
+    "legitimacy": {
+      "score": 84,
+      "notes": "Legit; invitations are sporadic",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.5,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "prolific:studies",
+    "source_id": "prolific",
+    "name": "Prolific Research Studies",
+    "provider": "Prolific",
+    "category": "survey",
+    "url": "https://www.prolific.com/participants",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 5,
+    "payout_cycle": "on_request",
+    "payout_days_estimate": 5,
+    "reward_model": "per_task",
+    "reward_estimate_usd": 8,
+    "effort_hours_estimate": 0.5,
+    "skills_required": [
+      "english"
+    ],
+    "countries_allowed": [
+      "US",
+      "GB",
+      "CA",
+      "AU",
+      "IE",
+      "DE",
+      "NL",
+      "FR",
+      "ES",
+      "IT",
+      "PL"
+    ],
+    "countries_blocked": [],
+    "requirements": [
+      "Waitlist / limited sign-ups in many countries"
+    ],
+    "legitimacy": {
+      "score": 92,
+      "notes": "Academic research platform, pays reliably",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.5,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "shutterstock:contributor",
+    "source_id": "shutterstock",
+    "name": "Shutterstock Contributor Earnings",
+    "provider": "Shutterstock",
+    "category": "stock_assets",
+    "url": "https://submit.shutterstock.com/",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 35,
+    "payout_cycle": "monthly",
+    "payout_days_estimate": 40,
+    "reward_model": "rev_share",
+    "reward_estimate_usd": 30,
+    "effort_hours_estimate": 10,
+    "skills_required": [
+      "design"
+    ],
+    "countries_allowed": [],
+    "countries_blocked": [],
+    "requirements": [
+      "Original photos, vectors, video or music"
+    ],
+    "legitimacy": {
+      "score": 90,
+      "notes": "Established; per-download rates are low",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.5,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "envato:codecanyon",
+    "source_id": "envato",
+    "name": "Envato (CodeCanyon) Author Sales",
+    "provider": "Envato",
+    "category": "stock_assets",
+    "url": "https://codecanyon.net/",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 50,
+    "payout_cycle": "monthly",
+    "payout_days_estimate": 35,
+    "reward_model": "rev_share",
+    "reward_estimate_usd": 120,
+    "effort_hours_estimate": 15,
+    "skills_required": [
+      "web_dev"
+    ],
+    "countries_allowed": [],
+    "countries_blocked": [],
+    "requirements": [
+      "Items pass review",
+      "HTML5 game templates and JS plugins sell well"
+    ],
+    "legitimacy": {
+      "score": 91,
+      "notes": "Large marketplace, PayPal payout supported",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.5,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "upwork:freelance",
+    "source_id": "upwork",
+    "name": "Upwork Freelance Contracts",
+    "provider": "Upwork",
+    "category": "freelance",
+    "url": "https://www.upwork.com/",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 0,
+    "payout_cycle": "weekly",
+    "payout_days_estimate": 10,
+    "reward_model": "hourly",
+    "reward_estimate_usd": 35,
+    "effort_hours_estimate": 1,
+    "skills_required": [
+      "web_dev",
+      "english"
+    ],
+    "countries_allowed": [],
+    "countries_blocked": [],
+    "requirements": [
+      "Profile approval",
+      "10% service fee"
+    ],
+    "legitimacy": {
+      "score": 93,
+      "notes": "Escrow-backed, PayPal withdrawal available",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.5,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "fiverr:gigs",
+    "source_id": "fiverr",
+    "name": "Fiverr Gigs",
+    "provider": "Fiverr",
+    "category": "freelance",
+    "url": "https://www.fiverr.com/",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 0,
+    "payout_cycle": "14_days_after_completion",
+    "payout_days_estimate": 16,
+    "reward_model": "per_task",
+    "reward_estimate_usd": 60,
+    "effort_hours_estimate": 3,
+    "skills_required": [
+      "web_dev"
+    ],
+    "countries_allowed": [],
+    "countries_blocked": [],
+    "requirements": [
+      "20% platform fee",
+      "Gig description and samples"
+    ],
+    "legitimacy": {
+      "score": 92,
+      "notes": "Established; competitive pricing",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.5,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "gumroad:products",
+    "source_id": "gumroad",
+    "name": "Gumroad Digital Products",
+    "provider": "Gumroad",
+    "category": "stock_assets",
+    "url": "https://gumroad.com/",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 10,
+    "payout_cycle": "weekly",
+    "payout_days_estimate": 10,
+    "reward_model": "rev_share",
+    "reward_estimate_usd": 50,
+    "effort_hours_estimate": 6,
+    "skills_required": [],
+    "countries_allowed": [],
+    "countries_blocked": [],
+    "requirements": [
+      "Sell tools, templates, source code or art",
+      "10% flat fee"
+    ],
+    "legitimacy": {
+      "score": 93,
+      "notes": "Simple creator storefront, PayPal payouts",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.5,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "kofi:tips",
+    "source_id": "kofi",
+    "name": "Ko-fi Tips & Shop",
+    "provider": "Ko-fi",
+    "category": "other",
+    "url": "https://ko-fi.com/",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 0,
+    "payout_cycle": "instant",
+    "payout_days_estimate": 1,
+    "reward_model": "rev_share",
+    "reward_estimate_usd": 15,
+    "effort_hours_estimate": 2,
+    "skills_required": [],
+    "countries_allowed": [],
+    "countries_blocked": [],
+    "requirements": [
+      "Audience to share the page with"
+    ],
+    "legitimacy": {
+      "score": 90,
+      "notes": "0% fee on tips, PayPal direct",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.5,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "paypal-referral:invite",
+    "source_id": "paypal-referral",
+    "name": "PayPal Refer a Friend",
+    "provider": "PayPal",
+    "category": "referral",
+    "url": "https://www.paypal.com/us/webapps/mpp/invite",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 0,
+    "payout_cycle": "on_qualification",
+    "payout_days_estimate": 14,
+    "reward_model": "one_time",
+    "reward_estimate_usd": 10,
+    "effort_hours_estimate": 0.1,
+    "skills_required": [],
+    "countries_allowed": [
+      "US"
+    ],
+    "countries_blocked": [],
+    "requirements": [
+      "Friend must make a qualifying purchase"
+    ],
+    "legitimacy": {
+      "score": 100,
+      "notes": "First-party PayPal promotion; US only",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.5,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "shady:crypto-tasks",
+    "source_id": "other",
+    "name": "EasyPayDaily Crypto Micro Tasks",
+    "provider": "EasyPayDaily",
+    "category": "microtask",
+    "url": "https://example.com/easypaydaily",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 500,
+    "payout_cycle": "unspecified",
+    "payout_days_estimate": 90,
+    "reward_model": "per_task",
+    "reward_estimate_usd": 50,
+    "effort_hours_estimate": 0.2,
+    "skills_required": [],
+    "countries_allowed": [],
+    "countries_blocked": [],
+    "requirements": [
+      "$29 activation fee",
+      "Guaranteed $500/day"
+    ],
+    "legitimacy": {
+      "score": 12,
+      "notes": "Upfront fee, guaranteed-income claims, unreachable payout threshold — scam pattern",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.9,
+    "status": "suspect",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  }
+]
