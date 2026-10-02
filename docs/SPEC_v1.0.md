@@ -104,6 +104,7 @@
 | payout_cycle | string | NET30 / weekly / on_request 等 |
 | payout_days_estimate | integer | 作業〜入金までの目安日数 |
 | reward_model | enum | per_task / rev_share / bounty / hourly / one_time |
+| certainty | enum | fixed（条件を満たせば定額）/ per_task（1件やれば1件分、ただし受注が前提）/ speculative（売れるか分からない） |
 | reward_estimate_usd | number | 1単位あたり or 月あたりの目安 |
 | effort_hours_estimate | number | 1単位あたりの作業時間目安 |
 | skills_required | string[] | 必要スキル（html5_game_dev, security, writing, design, ...） |
@@ -210,11 +211,12 @@ AUDIT_SCHEDULE=mon:claude-fable-5-1:full,thu:claude-opus-5-5:full
 ```
 expected_hourly = reward_estimate_usd / effort_hours_estimate
 score = expected_hourly
+        × certainty_weight (fixed 1.0 / per_task 0.9 / speculative 0.4)   // 「作れば売れるかも」は強く割引
         × legitimacy_score/100
         × time_discount(payout_days_estimate)      // 入金が遠いほど減点
         × observed_boost                           // 実入金実績があれば加点、推奨後N日入金なしなら減点
 ```
-時間予算（hours_per_week）内で貪欲法により選択 → 「今週やること」。
+時間予算（hours_per_week）内で貪欲法により選択 → 「今週やること」。プランは **certain_usd（fixed + per_task：当てにできる額）** と **speculative_usd（売れたら）** を分けて提示する。設計思想：夢を売らず、今週確実に入る額を先に出す。
 
 ### 6.3 AIの役割
 - free_text からのプロフィール補完

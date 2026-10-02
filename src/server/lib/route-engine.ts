@@ -10,6 +10,9 @@ import type {
 
 export const LEGITIMACY_THRESHOLD = 60;
 
+/** Prefer money you can count on. Speculative (make it and hope it sells) is heavily discounted. */
+export const CERTAINTY_WEIGHT: Record<Opportunity['certainty'], number> = { fixed: 1, per_task: 0.9, speculative: 0.4 };
+
 /** Skill synonyms so "javascript" matches "html5_game_dev"-style requirements loosely. */
 const SKILL_ALIASES: Record<string, string[]> = {
   html5_game_dev: ['javascript', 'typescript', 'game_dev', 'phaser', 'godot', 'unity', 'webgl'],
@@ -83,6 +86,7 @@ export function routeOne(
   const expected_hourly = o.effort_hours_estimate > 0 ? o.reward_estimate_usd / o.effort_hours_estimate : 0;
   const score =
     expected_hourly *
+    CERTAINTY_WEIGHT[o.certainty] *
     (o.legitimacy.score / 100) *
     timeDiscount(o.payout_days_estimate) *
     observedBoost(o, exec, now);
@@ -119,6 +123,7 @@ export function buildWeeklyPlan(
     items.push({
       opportunity_id: o.id,
       name: o.name,
+      certainty: o.certainty,
       hours: slot,
       expected_usd: Math.round(expected * 100) / 100,
       first_step: o.requirements[0] ? `Check: ${o.requirements[0]}` : `Sign up at ${o.url}`,
@@ -127,11 +132,14 @@ export function buildWeeklyPlan(
     hours += slot;
     if (hours >= profile.hours_per_week) break;
   }
+  const sum = (xs: WeeklyPlanItem[]) => Math.round(xs.reduce((s, i) => s + i.expected_usd, 0) * 100) / 100;
   return {
     generated_at: new Date().toISOString(),
     hours_budget: profile.hours_per_week,
     hours_used: hours,
-    expected_usd: Math.round(items.reduce((s, i) => s + i.expected_usd, 0) * 100) / 100,
+    expected_usd: sum(items),
+    certain_usd: sum(items.filter((i) => i.certainty !== 'speculative')),
+    speculative_usd: sum(items.filter((i) => i.certainty === 'speculative')),
     items,
     summary: '',
   };

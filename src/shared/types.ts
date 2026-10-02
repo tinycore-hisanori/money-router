@@ -13,6 +13,8 @@ export type Category =
   | 'other';
 
 export type RewardModel = 'per_task' | 'rev_share' | 'bounty' | 'hourly' | 'one_time';
+/** How certain the payout is once you do the work. fixed > per_task > speculative. */
+export type Certainty = 'fixed' | 'per_task' | 'speculative';
 export type OpportunityStatus = 'active' | 'paused' | 'closed' | 'suspect';
 export type ExecutionStatus = 'todo' | 'applied' | 'active' | 'paid' | 'skipped';
 
@@ -44,6 +46,7 @@ export interface Opportunity {
   payout_cycle: string;
   payout_days_estimate: number;
   reward_model: RewardModel;
+  certainty: Certainty;
   reward_estimate_usd: number;
   effort_hours_estimate: number;
   skills_required: string[];
@@ -115,6 +118,7 @@ export interface RoutedOpportunity {
 export interface WeeklyPlanItem {
   opportunity_id: string;
   name: string;
+  certainty: Certainty;
   hours: number;
   expected_usd: number;
   first_step: string;
@@ -126,6 +130,9 @@ export interface WeeklyPlan {
   hours_budget: number;
   hours_used: number;
   expected_usd: number;
+  /** Portion of expected_usd from fixed + per_task items (money you can count on). */
+  certain_usd: number;
+  speculative_usd: number;
   items: WeeklyPlanItem[];
   summary: string;
 }

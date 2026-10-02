@@ -86,7 +86,7 @@ export async function explainPlan(plan: WeeklyPlan, profile: UserProfile, opport
   const r = await structured<{ summary: string; items: { opportunity_id: string; why: string; first_step: string }[] }>({
     model: config.models.explain,
     system:
-      'You are a concise financial-ops assistant for independent creators. Given a weekly earning plan, write a 2-sentence summary and, for each item, one sentence on why it fits this user and one concrete first step. Plain English, no hype.',
+      'You are a concise financial-ops assistant for independent creators. Given a weekly earning plan, write a 2-sentence summary that states the money the user can count on this week (fixed/per_task items) separately from speculative items, and, for each item, one sentence on why it fits this user and one concrete first step. Plain English, no hype.',
     user: JSON.stringify({
       profile: { country: profile.country, skills: profile.skills, hours_per_week: profile.hours_per_week, free_text: profile.free_text },
       items: plan.items.map((i) => ({ ...i, opportunity: pick(byId.get(i.opportunity_id)) })),

@@ -34,9 +34,15 @@ export default function Dashboard({ tick, onChange }: { tick: number; onChange: 
           </div>
         </div>
         <div className="card">
-          <div className="k">This week · expected</div>
-          <div className="v">
-            ${plan?.expected_usd ?? 0} <small>for {plan?.hours_used ?? 0}h of {plan?.hours_budget ?? 0}h</small>
+          <div className="k">This week · count on it</div>
+          <div className="v" style={{ color: 'var(--accent)' }}>
+            ${plan?.certain_usd ?? 0} <small>fixed + per-task, {plan?.hours_used ?? 0}h of {plan?.hours_budget ?? 0}h</small>
+          </div>
+        </div>
+        <div className="card">
+          <div className="k">This week · speculative</div>
+          <div className="v" style={{ color: 'var(--muted)' }}>
+            ${plan?.speculative_usd ?? 0} <small>if it sells</small>
           </div>
         </div>
         <div className="card">
@@ -61,7 +67,9 @@ export default function Dashboard({ tick, onChange }: { tick: number; onChange: 
         {plan?.items.map((i) => (
           <div className="plan-item" key={i.opportunity_id}>
             <div>
-              <h4>{i.name}</h4>
+              <h4>
+                {i.name} <span className={`pill ${i.certainty === 'fixed' ? 'ok' : i.certainty === 'per_task' ? 'warn' : ''}`}>{i.certainty.replace('_', ' ')}</span>
+              </h4>
               <p>{i.why}</p>
               <p>
                 <b style={{ color: 'var(--text)' }}>First step:</b> {i.first_step}

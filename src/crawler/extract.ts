@@ -20,6 +20,7 @@ Rules:
 - Numbers must come from the page. If a value is not on the page, use your best conservative estimate and lower "confidence".
 - countries_allowed/blocked are ISO2 codes; leave empty when unknown or worldwide.
 - skills_required are snake_case tokens (html5_game_dev, web_dev, security, writing, design, audio, video, 3d, data, english).
+- certainty: "fixed" when a defined action yields a defined amount (sign-up bonus, referral bonus, fixed bounty, promo); "per_task" when each completed task pays a known amount but tasks must be obtained (user tests, transcription, labeling, gigs); "speculative" when income depends on sales or traffic (revenue share, marketplace sales).
 - reward_estimate_usd: for per_task = typical payment per task; for rev_share = realistic monthly income for a small creator; for hourly = hourly rate.
 - effort_hours_estimate: hours per unit of reward (per task, or per month of upkeep for rev_share).
 Hint for this source: ${source.parse_hint ?? 'none'}`,
@@ -34,7 +35,7 @@ Hint for this source: ${source.parse_hint ?? 'none'}`,
           type: 'array',
           items: {
             type: 'object',
-            required: ['name', 'provider', 'category', 'url', 'payout_methods', 'payout_currency', 'min_payout', 'payout_cycle', 'payout_days_estimate', 'reward_model', 'reward_estimate_usd', 'effort_hours_estimate', 'skills_required', 'countries_allowed', 'countries_blocked', 'requirements', 'confidence'],
+            required: ['name', 'provider', 'category', 'url', 'payout_methods', 'payout_currency', 'min_payout', 'payout_cycle', 'payout_days_estimate', 'reward_model', 'certainty', 'reward_estimate_usd', 'effort_hours_estimate', 'skills_required', 'countries_allowed', 'countries_blocked', 'requirements', 'confidence'],
             properties: {
               name: { type: 'string' },
               provider: { type: 'string' },
@@ -46,6 +47,7 @@ Hint for this source: ${source.parse_hint ?? 'none'}`,
               payout_cycle: { type: 'string' },
               payout_days_estimate: { type: 'integer' },
               reward_model: { type: 'string', enum: ['per_task', 'rev_share', 'bounty', 'hourly', 'one_time'] },
+              certainty: { type: 'string', enum: ['fixed', 'per_task', 'speculative'] },
               reward_estimate_usd: { type: 'number' },
               effort_hours_estimate: { type: 'number' },
               skills_required: { type: 'array', items: { type: 'string' } },

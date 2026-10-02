@@ -21,6 +21,12 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
     () => [
       { headerName: 'Opportunity', valueGetter: (p) => p.data?.opportunity.name, flex: 2, minWidth: 220, cellRenderer: (p: any) => <a href={p.data.opportunity.url} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>{p.value}</a> },
       { headerName: 'Category', valueGetter: (p) => p.data?.opportunity.category, width: 130 },
+      {
+        headerName: 'Certainty',
+        valueGetter: (p) => p.data?.opportunity.certainty,
+        width: 120,
+        cellRenderer: (p: any) => <span className={`pill ${p.value === 'fixed' ? 'ok' : p.value === 'per_task' ? 'warn' : ''}`}>{String(p.value).replace('_', ' ')}</span>,
+      },
       { headerName: 'Score', field: 'score', width: 100, valueFormatter: (p) => p.value?.toFixed(1), sort: 'desc' },
       { headerName: '$/h', field: 'expected_hourly', width: 90, valueFormatter: (p) => `$${p.value?.toFixed(0)}` },
       { headerName: 'Min payout', valueGetter: (p) => p.data?.opportunity.min_payout, width: 110, valueFormatter: (p) => `$${p.value}` },

@@ -14,6 +14,7 @@
     "payout_cycle": "NET30",
     "payout_days_estimate": 45,
     "reward_model": "rev_share",
+    "certainty": "speculative",
     "reward_estimate_usd": 150,
     "effort_hours_estimate": 20,
     "skills_required": [
@@ -57,6 +58,7 @@
     "payout_cycle": "NET60",
     "payout_days_estimate": 70,
     "reward_model": "rev_share",
+    "certainty": "speculative",
     "reward_estimate_usd": 40,
     "effort_hours_estimate": 10,
     "skills_required": [
@@ -99,6 +101,7 @@
     "payout_cycle": "on_request",
     "payout_days_estimate": 14,
     "reward_model": "rev_share",
+    "certainty": "speculative",
     "reward_estimate_usd": 60,
     "effort_hours_estimate": 8,
     "skills_required": [
@@ -142,6 +145,7 @@
     "payout_cycle": "per_bounty",
     "payout_days_estimate": 21,
     "reward_model": "bounty",
+    "certainty": "per_task",
     "reward_estimate_usd": 500,
     "effort_hours_estimate": 25,
     "skills_required": [
@@ -184,6 +188,7 @@
     "payout_cycle": "7_days",
     "payout_days_estimate": 7,
     "reward_model": "per_task",
+    "certainty": "per_task",
     "reward_estimate_usd": 10,
     "effort_hours_estimate": 0.33,
     "skills_required": [
@@ -235,6 +240,7 @@
     "payout_cycle": "weekly",
     "payout_days_estimate": 10,
     "reward_model": "per_task",
+    "certainty": "per_task",
     "reward_estimate_usd": 9,
     "effort_hours_estimate": 0.25,
     "skills_required": [],
@@ -276,6 +282,7 @@
     "payout_cycle": "on_request",
     "payout_days_estimate": 5,
     "reward_model": "per_task",
+    "certainty": "per_task",
     "reward_estimate_usd": 8,
     "effort_hours_estimate": 0.5,
     "skills_required": [
@@ -330,6 +337,7 @@
     "payout_cycle": "monthly",
     "payout_days_estimate": 40,
     "reward_model": "rev_share",
+    "certainty": "speculative",
     "reward_estimate_usd": 30,
     "effort_hours_estimate": 10,
     "skills_required": [
@@ -372,6 +380,7 @@
     "payout_cycle": "monthly",
     "payout_days_estimate": 35,
     "reward_model": "rev_share",
+    "certainty": "speculative",
     "reward_estimate_usd": 120,
     "effort_hours_estimate": 15,
     "skills_required": [
@@ -415,6 +424,7 @@
     "payout_cycle": "weekly",
     "payout_days_estimate": 10,
     "reward_model": "hourly",
+    "certainty": "per_task",
     "reward_estimate_usd": 35,
     "effort_hours_estimate": 1,
     "skills_required": [
@@ -459,6 +469,7 @@
     "payout_cycle": "14_days_after_completion",
     "payout_days_estimate": 16,
     "reward_model": "per_task",
+    "certainty": "per_task",
     "reward_estimate_usd": 60,
     "effort_hours_estimate": 3,
     "skills_required": [
@@ -502,6 +513,7 @@
     "payout_cycle": "weekly",
     "payout_days_estimate": 10,
     "reward_model": "rev_share",
+    "certainty": "speculative",
     "reward_estimate_usd": 50,
     "effort_hours_estimate": 6,
     "skills_required": [],
@@ -543,6 +555,7 @@
     "payout_cycle": "instant",
     "payout_days_estimate": 1,
     "reward_model": "rev_share",
+    "certainty": "speculative",
     "reward_estimate_usd": 15,
     "effort_hours_estimate": 2,
     "skills_required": [],
@@ -583,6 +596,7 @@
     "payout_cycle": "on_qualification",
     "payout_days_estimate": 14,
     "reward_model": "one_time",
+    "certainty": "fixed",
     "reward_estimate_usd": 10,
     "effort_hours_estimate": 0.1,
     "skills_required": [],
@@ -596,6 +610,147 @@
     "legitimacy": {
       "score": 100,
       "notes": "First-party PayPal promotion; US only",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.5,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "swagbucks:signup",
+    "source_id": "swagbucks",
+    "name": "Swagbucks Sign-up Bonus",
+    "provider": "Swagbucks",
+    "category": "referral",
+    "url": "https://www.swagbucks.com/",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 5,
+    "payout_cycle": "on_request",
+    "payout_days_estimate": 10,
+    "reward_model": "one_time",
+    "certainty": "fixed",
+    "reward_estimate_usd": 10,
+    "effort_hours_estimate": 0.5,
+    "skills_required": [],
+    "countries_allowed": [
+      "US",
+      "CA",
+      "GB",
+      "AU",
+      "IE",
+      "DE",
+      "FR",
+      "ES",
+      "IN",
+      "PT"
+    ],
+    "countries_blocked": [],
+    "requirements": [
+      "New account",
+      "Earn first 2,500 SB within 60 days"
+    ],
+    "legitimacy": {
+      "score": 86,
+      "notes": "Long-running rewards site; PayPal cash-out",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.5,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "rev:transcription",
+    "source_id": "rev",
+    "name": "Rev Transcription (per audio minute)",
+    "provider": "Rev",
+    "category": "microtask",
+    "url": "https://www.rev.com/freelancers",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 0,
+    "payout_cycle": "weekly",
+    "payout_days_estimate": 7,
+    "reward_model": "per_task",
+    "certainty": "per_task",
+    "reward_estimate_usd": 12,
+    "effort_hours_estimate": 1,
+    "skills_required": [
+      "english"
+    ],
+    "countries_allowed": [],
+    "countries_blocked": [],
+    "requirements": [
+      "Pass transcription test",
+      "Pays per audio minute, ~$0.30-1.10"
+    ],
+    "legitimacy": {
+      "score": 88,
+      "notes": "Established; weekly PayPal payouts",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.5,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "gengo:translation",
+    "source_id": "gengo",
+    "name": "Gengo Translation Jobs",
+    "provider": "Gengo",
+    "category": "freelance",
+    "url": "https://gengo.com/translators/",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 0,
+    "payout_cycle": "on_request",
+    "payout_days_estimate": 5,
+    "reward_model": "per_task",
+    "certainty": "per_task",
+    "reward_estimate_usd": 15,
+    "effort_hours_estimate": 1,
+    "skills_required": [
+      "english",
+      "japanese"
+    ],
+    "countries_allowed": [],
+    "countries_blocked": [],
+    "requirements": [
+      "Pass language pair test (EN↔JA available)"
+    ],
+    "legitimacy": {
+      "score": 87,
+      "notes": "Crowd translation, PayPal payouts; EN↔JA demand is steady",
       "scored_by": "seed",
       "scored_at": "2026-10-03T00:00:00.000Z",
       "mode": "seed"
@@ -625,6 +780,7 @@
     "payout_cycle": "unspecified",
     "payout_days_estimate": 90,
     "reward_model": "per_task",
+    "certainty": "per_task",
     "reward_estimate_usd": 50,
     "effort_hours_estimate": 0.2,
     "skills_required": [],

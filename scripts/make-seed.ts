@@ -10,7 +10,7 @@ const seed = (
 ): Opportunity => ({
   id, source_id, name, provider, category, url,
   payout_methods: ['PayPal'], payout_currency: 'USD', min_payout: 0, payout_cycle: 'monthly', payout_days_estimate: 30,
-  reward_model: 'per_task', reward_estimate_usd: 10, effort_hours_estimate: 1,
+  reward_model: 'per_task', certainty: 'per_task', reward_estimate_usd: 10, effort_hours_estimate: 1,
   skills_required: [], countries_allowed: [], countries_blocked: [], requirements: [],
   legitimacy: { score: 70, notes: 'seed data — not yet audited', scored_by: 'seed', scored_at: now, mode: 'seed' },
   confidence: 0.5, status: 'active', last_checked: now,
@@ -20,22 +20,22 @@ const seed = (
 
 const list: Opportunity[] = [
   seed('crazygames:revenue-share', 'crazygames', 'CrazyGames Revenue Share', 'CrazyGames', 'game_portal', 'https://developer.crazygames.com/', {
-    reward_model: 'rev_share', reward_estimate_usd: 150, effort_hours_estimate: 20, min_payout: 100, payout_cycle: 'NET30', payout_days_estimate: 45,
+    reward_model: 'rev_share', certainty: 'speculative', reward_estimate_usd: 150, effort_hours_estimate: 20, min_payout: 100, payout_cycle: 'NET30', payout_days_estimate: 45,
     skills_required: ['html5_game_dev'], requirements: ['Exclusive or non-exclusive HTML5 game submission', 'Integrate CrazyGames SDK'],
     legitimacy: { score: 92, notes: 'Established portal with public developer terms', scored_by: 'seed', scored_at: now, mode: 'seed' }, confidence: 0.8,
   }),
   seed('gamepix:revenue-share', 'gamepix', 'GamePix Revenue Share', 'GamePix', 'game_portal', 'https://developers.gamepix.com/', {
-    reward_model: 'rev_share', reward_estimate_usd: 40, effort_hours_estimate: 10, min_payout: 100, payout_cycle: 'NET60', payout_days_estimate: 70,
+    reward_model: 'rev_share', certainty: 'speculative', reward_estimate_usd: 40, effort_hours_estimate: 10, min_payout: 100, payout_cycle: 'NET60', payout_days_estimate: 70,
     skills_required: ['html5_game_dev'], requirements: ['Submit HTML5 games via developer portal'],
     legitimacy: { score: 78, notes: 'Legitimate but lower traffic; long payout cycle', scored_by: 'seed', scored_at: now, mode: 'seed' },
   }),
   seed('itchio:sales', 'itchio', 'itch.io Game & Asset Sales', 'itch.io', 'stock_assets', 'https://itch.io/docs/creators/payments', {
-    reward_model: 'rev_share', reward_estimate_usd: 60, effort_hours_estimate: 8, min_payout: 0, payout_cycle: 'on_request', payout_days_estimate: 14,
+    reward_model: 'rev_share', certainty: 'speculative', reward_estimate_usd: 60, effort_hours_estimate: 8, min_payout: 0, payout_cycle: 'on_request', payout_days_estimate: 14,
     skills_required: ['html5_game_dev'], requirements: ['Upload games, templates or assets', 'Set your own revenue share (default 10% to itch)'],
     legitimacy: { score: 94, notes: 'Creator-friendly marketplace, direct-to-PayPal payouts', scored_by: 'seed', scored_at: now, mode: 'seed' }, confidence: 0.9,
   }),
   seed('hackerone:bounties', 'hackerone', 'HackerOne Bug Bounties', 'HackerOne', 'bug_bounty', 'https://hackerone.com/', {
-    reward_model: 'bounty', reward_estimate_usd: 500, effort_hours_estimate: 25, min_payout: 0, payout_cycle: 'per_bounty', payout_days_estimate: 21,
+    reward_model: 'bounty', certainty: 'per_task', reward_estimate_usd: 500, effort_hours_estimate: 25, min_payout: 0, payout_cycle: 'per_bounty', payout_days_estimate: 21,
     skills_required: ['security'], requirements: ['Valid, in-scope vulnerability report accepted by the program'],
     legitimacy: { score: 96, notes: 'Industry-standard platform, PayPal payout option', scored_by: 'seed', scored_at: now, mode: 'seed' }, confidence: 0.9,
   }),
@@ -55,17 +55,17 @@ const list: Opportunity[] = [
     legitimacy: { score: 92, notes: 'Academic research platform, pays reliably', scored_by: 'seed', scored_at: now, mode: 'seed' },
   }),
   seed('shutterstock:contributor', 'shutterstock', 'Shutterstock Contributor Earnings', 'Shutterstock', 'stock_assets', 'https://submit.shutterstock.com/', {
-    reward_model: 'rev_share', reward_estimate_usd: 30, effort_hours_estimate: 10, min_payout: 35, payout_cycle: 'monthly', payout_days_estimate: 40,
+    reward_model: 'rev_share', certainty: 'speculative', reward_estimate_usd: 30, effort_hours_estimate: 10, min_payout: 35, payout_cycle: 'monthly', payout_days_estimate: 40,
     skills_required: ['design'], requirements: ['Original photos, vectors, video or music'],
     legitimacy: { score: 90, notes: 'Established; per-download rates are low', scored_by: 'seed', scored_at: now, mode: 'seed' },
   }),
   seed('envato:codecanyon', 'envato', 'Envato (CodeCanyon) Author Sales', 'Envato', 'stock_assets', 'https://codecanyon.net/', {
-    reward_model: 'rev_share', reward_estimate_usd: 120, effort_hours_estimate: 15, min_payout: 50, payout_cycle: 'monthly', payout_days_estimate: 35,
+    reward_model: 'rev_share', certainty: 'speculative', reward_estimate_usd: 120, effort_hours_estimate: 15, min_payout: 50, payout_cycle: 'monthly', payout_days_estimate: 35,
     skills_required: ['web_dev'], requirements: ['Items pass review', 'HTML5 game templates and JS plugins sell well'],
     legitimacy: { score: 91, notes: 'Large marketplace, PayPal payout supported', scored_by: 'seed', scored_at: now, mode: 'seed' },
   }),
   seed('upwork:freelance', 'upwork', 'Upwork Freelance Contracts', 'Upwork', 'freelance', 'https://www.upwork.com/', {
-    reward_model: 'hourly', reward_estimate_usd: 35, effort_hours_estimate: 1, min_payout: 0, payout_cycle: 'weekly', payout_days_estimate: 10,
+    reward_model: 'hourly', certainty: 'per_task', reward_estimate_usd: 35, effort_hours_estimate: 1, min_payout: 0, payout_cycle: 'weekly', payout_days_estimate: 10,
     skills_required: ['web_dev', 'english'], requirements: ['Profile approval', '10% service fee'],
     legitimacy: { score: 93, notes: 'Escrow-backed, PayPal withdrawal available', scored_by: 'seed', scored_at: now, mode: 'seed' },
   }),
@@ -75,19 +75,34 @@ const list: Opportunity[] = [
     legitimacy: { score: 92, notes: 'Established; competitive pricing', scored_by: 'seed', scored_at: now, mode: 'seed' },
   }),
   seed('gumroad:products', 'gumroad', 'Gumroad Digital Products', 'Gumroad', 'stock_assets', 'https://gumroad.com/', {
-    reward_model: 'rev_share', reward_estimate_usd: 50, effort_hours_estimate: 6, min_payout: 10, payout_cycle: 'weekly', payout_days_estimate: 10,
+    reward_model: 'rev_share', certainty: 'speculative', reward_estimate_usd: 50, effort_hours_estimate: 6, min_payout: 10, payout_cycle: 'weekly', payout_days_estimate: 10,
     skills_required: [], requirements: ['Sell tools, templates, source code or art', '10% flat fee'],
     legitimacy: { score: 93, notes: 'Simple creator storefront, PayPal payouts', scored_by: 'seed', scored_at: now, mode: 'seed' },
   }),
   seed('kofi:tips', 'kofi', 'Ko-fi Tips & Shop', 'Ko-fi', 'other', 'https://ko-fi.com/', {
-    reward_model: 'rev_share', reward_estimate_usd: 15, effort_hours_estimate: 2, min_payout: 0, payout_cycle: 'instant', payout_days_estimate: 1,
+    reward_model: 'rev_share', certainty: 'speculative', reward_estimate_usd: 15, effort_hours_estimate: 2, min_payout: 0, payout_cycle: 'instant', payout_days_estimate: 1,
     skills_required: [], requirements: ['Audience to share the page with'],
     legitimacy: { score: 90, notes: '0% fee on tips, PayPal direct', scored_by: 'seed', scored_at: now, mode: 'seed' },
   }),
   seed('paypal-referral:invite', 'paypal-referral', 'PayPal Refer a Friend', 'PayPal', 'referral', 'https://www.paypal.com/us/webapps/mpp/invite', {
-    reward_model: 'one_time', reward_estimate_usd: 10, effort_hours_estimate: 0.1, min_payout: 0, payout_cycle: 'on_qualification', payout_days_estimate: 14,
+    reward_model: 'one_time', certainty: 'fixed', reward_estimate_usd: 10, effort_hours_estimate: 0.1, min_payout: 0, payout_cycle: 'on_qualification', payout_days_estimate: 14,
     countries_allowed: ['US'], requirements: ['Friend must make a qualifying purchase'],
     legitimacy: { score: 100, notes: 'First-party PayPal promotion; US only', scored_by: 'seed', scored_at: now, mode: 'seed' },
+  }),
+  seed('swagbucks:signup', 'swagbucks', 'Swagbucks Sign-up Bonus', 'Swagbucks', 'referral', 'https://www.swagbucks.com/', {
+    reward_model: 'one_time', certainty: 'fixed', reward_estimate_usd: 10, effort_hours_estimate: 0.5, min_payout: 5, payout_cycle: 'on_request', payout_days_estimate: 10,
+    countries_allowed: ['US', 'CA', 'GB', 'AU', 'IE', 'DE', 'FR', 'ES', 'IN', 'PT'], requirements: ['New account', 'Earn first 2,500 SB within 60 days'],
+    legitimacy: { score: 86, notes: 'Long-running rewards site; PayPal cash-out', scored_by: 'seed', scored_at: now, mode: 'seed' },
+  }),
+  seed('rev:transcription', 'rev', 'Rev Transcription (per audio minute)', 'Rev', 'microtask', 'https://www.rev.com/freelancers', {
+    reward_model: 'per_task', certainty: 'per_task', reward_estimate_usd: 12, effort_hours_estimate: 1, min_payout: 0, payout_cycle: 'weekly', payout_days_estimate: 7,
+    skills_required: ['english'], requirements: ['Pass transcription test', 'Pays per audio minute, ~$0.30-1.10'],
+    legitimacy: { score: 88, notes: 'Established; weekly PayPal payouts', scored_by: 'seed', scored_at: now, mode: 'seed' },
+  }),
+  seed('gengo:translation', 'gengo', 'Gengo Translation Jobs', 'Gengo', 'freelance', 'https://gengo.com/translators/', {
+    reward_model: 'per_task', certainty: 'per_task', reward_estimate_usd: 15, effort_hours_estimate: 1, min_payout: 0, payout_cycle: 'on_request', payout_days_estimate: 5,
+    skills_required: ['english', 'japanese'], requirements: ['Pass language pair test (EN↔JA available)'],
+    legitimacy: { score: 87, notes: 'Crowd translation, PayPal payouts; EN↔JA demand is steady', scored_by: 'seed', scored_at: now, mode: 'seed' },
   }),
   seed('shady:crypto-tasks', 'other', 'EasyPayDaily Crypto Micro Tasks', 'EasyPayDaily', 'microtask', 'https://example.com/easypaydaily', {
     reward_model: 'per_task', reward_estimate_usd: 50, effort_hours_estimate: 0.2, min_payout: 500, payout_cycle: 'unspecified', payout_days_estimate: 90,
