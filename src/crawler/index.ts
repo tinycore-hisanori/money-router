@@ -4,7 +4,8 @@ import crypto from 'node:crypto';
 import { auditPlanFor, config } from '../server/lib/config.js';
 import { store } from '../server/lib/storage.js';
 import { llmAvailable } from '../server/lib/llm.js';
-import { fetchPageText } from './fetch.js';
+import { acquireSourceText } from './fetch.js';
+import { braveQueriesUsed, resetBraveBudget } from './search.js';
 import { extractOpportunities } from './extract.js';
 import { auditOpportunity } from './audit.js';
 import type { CrawlStatus, Opportunity, Source } from '../shared/types.js';
@@ -25,6 +26,7 @@ export async function runCrawl(): Promise<CrawlStatus> {
   };
 
   console.log(`[crawl] ${sources.length} sources, mode=${config.crawler.mode}, audit=${plan.model}/${plan.mode}`);
+  resetBraveBudget();
 
   if (config.crawler.mode === 'mock' || !llmAvailable()) {
     if (config.crawler.mode !== 'mock') console.warn('[crawl] ANTHROPIC_API_KEY missing -> falling back to mock');
@@ -41,7 +43,8 @@ export async function runCrawl(): Promise<CrawlStatus> {
   for (const s of sources) {
     const fetched_at = new Date().toISOString();
     try {
-      const textBody = await fetchPageText(s.url);
+      const page = await acquireSourceText(s);
+      const textBody = page.text;
       const hash = crypto.createHash('sha256').update(textBody).digest('hex');
       const changed = hashes[s.id] !== hash;
       hashes[s.id] = hash;
@@ -49,7 +52,7 @@ export async function runCrawl(): Promise<CrawlStatus> {
       let fromSource = existing.filter((o) => o.source_id === s.id);
 
       if (changed) {
-        const extracted = await extractOpportunities(s, textBody);
+        const extracted = await extractOpportunities(s, textBody, page.via === 'search_snippets' ? 0.5 : 1);
         status.totals.rejected_no_paypal += extracted.rejected_no_paypal;
         fromSource = extracted.opportunities.map((o) => mergeWithExisting(o, byId.get(o.id), fetched_at));
       }
@@ -63,8 +66,8 @@ export async function runCrawl(): Promise<CrawlStatus> {
       }
 
       for (const o of fromSource) byId.set(o.id, { ...o, last_checked: fetched_at, content_hash: hash });
-      status.sources[s.id] = { ok: true, fetched_at, changed, opportunities: fromSource.length };
-      console.log(`[crawl] ${s.id}: ${changed ? 'changed' : 'unchanged'}, ${fromSource.length} opportunities`);
+      status.sources[s.id] = { ok: true, fetched_at, changed, opportunities: fromSource.length, via: page.via, url: page.url };
+      console.log(`[crawl] ${s.id}: ${changed ? 'changed' : 'unchanged'} (${page.via}), ${fromSource.length} opportunities`);
     } catch (e: any) {
       status.sources[s.id] = { ok: false, fetched_at, changed: false, opportunities: 0, error: String(e.message ?? e) };
       console.error(`[crawl] ${s.id} failed:`, e.message ?? e);
@@ -87,7 +90,7 @@ async function finish(list: Opportunity[], status: CrawlStatus, hashes: Record<s
   await store.saveOpportunities(list);
   await store.savePageHashes(hashes);
   await store.saveCrawlStatus(status);
-  console.log(`[crawl] done: ${status.totals.active}/${status.totals.opportunities} active`);
+  console.log(`[crawl] done: ${status.totals.active}/${status.totals.opportunities} active, brave queries used: ${braveQueriesUsed()}`);
 }
 
 export type { Source };

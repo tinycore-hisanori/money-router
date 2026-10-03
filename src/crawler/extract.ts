@@ -10,7 +10,7 @@ interface Extracted {
 const CATEGORIES = ['game_portal', 'bug_bounty', 'user_testing', 'survey', 'microtask', 'stock_assets', 'freelance', 'affiliate', 'referral', 'other'];
 
 /** Page text -> structured opportunities. Only PayPal-payable ones are kept; the rest are reported as rejected. */
-export async function extractOpportunities(source: Source, pageText: string): Promise<{ opportunities: Opportunity[]; rejected_no_paypal: number }> {
+export async function extractOpportunities(source: Source, pageText: string, confidenceCap = 1): Promise<{ opportunities: Opportunity[]; rejected_no_paypal: number }> {
   const r = await structured<Extracted>({
     model: config.models.extract,
     maxTokens: 4096,
@@ -68,6 +68,7 @@ Hint for this source: ${source.parse_hint ?? 'none'}`,
     .filter((o) => o.payout_methods.some((m) => /paypal/i.test(m)))
     .map((o, i) => ({
       ...o,
+      confidence: Math.min(o.confidence, confidenceCap),
       id: `${source.id}:${slug(o.name)}${i ? `-${i}` : ''}`,
       source_id: source.id,
       legitimacy: { score: source.trust_baseline, notes: 'not yet audited', scored_by: 'baseline', scored_at: now, mode: 'seed' },

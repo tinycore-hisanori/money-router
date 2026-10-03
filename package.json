@@ -5,9 +5,13 @@
   "private": true,
   "type": "module",
   "license": "MIT",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "dev": "concurrently -n api,web \"tsx watch src/server/index.ts\" \"npm --prefix client run dev\"",
+    "dev": "concurrently -n api,web \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "tsx watch src/server/index.ts",
+    "dev:web": "npm --prefix client run dev",
     "build": "npm --prefix client run build && tsc -p tsconfig.json",
     "start": "node dist/server/index.js",
     "crawl": "tsx src/crawler/cli.ts",
@@ -17,7 +21,6 @@
     "postinstall": "npm --prefix client install"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.52.0",
     "@hono/node-server": "^1.13.0",
     "dotenv": "^16.4.5",
     "hono": "^4.6.0"
