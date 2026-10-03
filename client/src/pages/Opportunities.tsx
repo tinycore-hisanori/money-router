@@ -3,6 +3,7 @@ import { AgGridReact } from 'ag-grid-react';
 import type { ColDef } from 'ag-grid-community';
 import type { ExecutionStatus } from '@shared/types';
 import { api, type Routed } from '../api';
+import type { LocalizedSummary } from '@shared/types';
 
 const EXEC: (ExecutionStatus | '')[] = ['', 'todo', 'applied', 'active', 'paid', 'skipped'];
 
@@ -10,6 +11,24 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
   const [rows, setRows] = useState<Routed[]>([]);
   const [onlyEligible, setOnlyEligible] = useState(true);
   const [crawling, setCrawling] = useState(false);
+  const [selected, setSelected] = useState<Routed | null>(null);
+  const [lang, setLang] = useState('ja');
+  const [brief, setBrief] = useState<LocalizedSummary | null>(null);
+  const [briefBusy, setBriefBusy] = useState(false);
+
+  useEffect(() => {
+    api.profile().then((p) => setLang(p.language || 'ja')).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!selected) return setBrief(null);
+    const o = selected.opportunity;
+    const have = o.localized?.[lang];
+    if (have) return setBrief(have);
+    setBrief(null);
+    setBriefBusy(true);
+    api.localize(o.id, lang).then(setBrief).catch(() => setBrief(null)).finally(() => setBriefBusy(false));
+  }, [selected, lang]);
 
   useEffect(() => {
     api.route().then(setRows);
@@ -93,8 +112,49 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
         <div className="spacer" />
         <button className="ghost" onClick={crawl} disabled={crawling}>{crawling ? 'Crawling…' : 'Run crawler now'}</button>
       </div>
-      <div className="ag-theme-money" style={{ height: 'calc(100vh - 180px)', minHeight: 400 }}>
-        <AgGridReact<Routed> rowData={data} columnDefs={cols} defaultColDef={{ sortable: true, filter: true, resizable: true }} tooltipShowDelay={300} animateRows />
+      <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 380px' : '1fr', gap: 12 }}>
+        <div className="ag-theme-money" style={{ height: 'calc(100vh - 180px)', minHeight: 400 }}>
+          <AgGridReact<Routed>
+            rowData={data}
+            columnDefs={cols}
+            defaultColDef={{ sortable: true, filter: true, resizable: true }}
+            tooltipShowDelay={300}
+            animateRows
+            rowSelection="single"
+            onRowClicked={(e) => setSelected(e.data ?? null)}
+          />
+        </div>
+        {selected && (
+          <div className="card" style={{ overflow: 'auto', maxHeight: 'calc(100vh - 180px)' }}>
+            <div className="toolbar">
+              <h3 style={{ margin: 0, fontSize: 15 }}>{selected.opportunity.name}</h3>
+              <div className="spacer" />
+              <select value={lang} onChange={(e) => setLang(e.target.value)} style={{ background: 'transparent', color: 'inherit', border: '1px solid var(--line)', borderRadius: 4 }}>
+                {['ja', 'en', 'es', 'pt', 'de', 'fr', 'ko', 'zh'].map((l) => <option key={l} value={l}>{l}</option>)}
+              </select>
+              <button className="ghost" style={{ padding: '2px 8px' }} onClick={() => setSelected(null)}>×</button>
+            </div>
+            {briefBusy && <p className="muted">Writing brief…</p>}
+            {brief && (
+              <>
+                <p>{brief.summary}</p>
+                <ol style={{ paddingLeft: 18 }}>{brief.how_to.map((h, i) => <li key={i} style={{ marginBottom: 4 }}>{h}</li>)}</ol>
+                <p style={{ color: 'var(--accent)' }}>{brief.payout}</p>
+                <p className="muted" style={{ fontSize: 12 }}>by {brief.generated_by}</p>
+              </>
+            )}
+            {!brief && !briefBusy && <p className="muted">No brief yet (AI off or failed).</p>}
+            <hr style={{ border: 0, borderTop: '1px solid var(--line)' }} />
+            <p className="muted" style={{ fontSize: 12 }}>
+              <b style={{ color: 'var(--text)' }}>Legitimacy {selected.opportunity.legitimacy.score}</b> ({selected.opportunity.legitimacy.scored_by}, {selected.opportunity.legitimacy.mode})<br />
+              {selected.opportunity.legitimacy.notes}
+            </p>
+            {selected.exclusions.length > 0 && (
+              <p className="muted" style={{ fontSize: 12 }}><b style={{ color: 'var(--accent-2)' }}>Not for you:</b> {selected.exclusions.map((e) => e.detail).join('; ')}</p>
+            )}
+            <p className="muted" style={{ fontSize: 12 }}><a href={selected.opportunity.url} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>{selected.opportunity.url}</a></p>
+          </div>
+        )}
       </div>
     </div>
   );

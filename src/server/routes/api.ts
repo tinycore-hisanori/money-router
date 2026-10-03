@@ -55,6 +55,7 @@ api.put('/profile', async (c) => {
     ...current,
     ...body,
     country: (body.country ?? current.country).toUpperCase(),
+    language: (body.language ?? current.language ?? 'ja').toLowerCase(),
     skills: (body.skills ?? current.skills).map((s) => s.trim().toLowerCase()).filter(Boolean),
   };
   delete (next as any).enrich;
@@ -144,4 +145,18 @@ api.post('/crawl', async (c) => {
   if (config.crawler.token && c.req.query('token') !== config.crawler.token) return c.json({ error: 'forbidden' }, 403);
   const { runCrawl } = await import('../../crawler/index.js');
   return c.json(await runCrawl());
+});
+
+// ---- on-demand localized brief for one opportunity (for languages not pre-generated)
+api.post('/opportunities/:id/localize', async (c) => {
+  const id = c.req.param('id');
+  const lang = (c.req.query('lang') ?? 'ja').toLowerCase();
+  const list = await store.getOpportunities();
+  const o = list.find((x) => x.id === id);
+  if (!o) return c.json({ error: 'not found' }, 404);
+  if (o.localized?.[lang]) return c.json(o.localized[lang]);
+  const { localizeOpportunity } = await import('../../crawler/localize.js');
+  const l = await localizeOpportunity(o, [lang]);
+  await store.saveOpportunities(list.map((x) => (x.id === id ? { ...x, localized: { ...(x.localized ?? {}), ...l } } : x)));
+  return c.json(l[lang] ?? null);
 });

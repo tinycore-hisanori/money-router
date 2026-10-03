@@ -14,8 +14,10 @@ export const config = {
   dataDir: path.resolve(process.env.DATA_DIR ?? './data/runtime'),
   seedDir: path.resolve('./data'),
   anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? '',
+  locales: (process.env.LOCALES ?? 'ja,en').split(',').map((s) => s.trim()).filter(Boolean),
   models: {
     extract: process.env.MODEL_EXTRACT ?? 'claude-sonnet-5-5',
+    localize: process.env.MODEL_LOCALIZE ?? process.env.MODEL_EXTRACT ?? 'claude-sonnet-5-5',
     audit: process.env.MODEL_AUDIT ?? 'claude-sonnet-5-5',
     match: process.env.MODEL_MATCH ?? 'claude-opus-5-5',
     explain: process.env.MODEL_EXPLAIN ?? 'claude-opus-5-5',

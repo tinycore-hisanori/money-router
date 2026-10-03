@@ -26,6 +26,15 @@ export interface LegitimacyScore {
   mode: 'full' | 'diff' | 'seed';
 }
 
+/** AI-written summary in one language: what it is, what to do, how you get paid. */
+export interface LocalizedSummary {
+  summary: string;
+  how_to: string[];
+  payout: string;
+  generated_by: string;
+  generated_at: string;
+}
+
 export interface ObservedStats {
   total_received_usd: number;
   payments_count: number;
@@ -59,6 +68,7 @@ export interface Opportunity {
   last_checked: string;
   content_hash?: string;
   observed: ObservedStats;
+  localized?: Record<string, LocalizedSummary>;
 }
 
 export interface Source {
@@ -75,6 +85,7 @@ export interface Source {
 
 export interface UserProfile {
   country: string; // ISO2
+  language: string; // BCP-47-ish: ja, en, ...
   skills: string[];
   hours_per_week: number;
   existing_accounts: string[]; // source_id[]

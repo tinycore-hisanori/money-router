@@ -43,6 +43,10 @@ export default function Profile({ onChange }: { onChange: () => void }) {
           <input value={p.country} onChange={(e) => setP({ ...p, country: e.target.value })} />
         </label>
         <label className="field">
+          Language for briefs (ja, en, es, …)
+          <input value={p.language ?? 'ja'} onChange={(e) => setP({ ...p, language: e.target.value })} />
+        </label>
+        <label className="field">
           Hours per week
           <input type="number" value={p.hours_per_week} onChange={(e) => setP({ ...p, hours_per_week: Number(e.target.value) })} />
         </label>

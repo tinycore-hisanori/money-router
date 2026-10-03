@@ -1,4 +1,4 @@
-import type { ExecutionStatus, Payment, RoutedOpportunity, UserProfile, WeeklyPlan } from '@shared/types';
+import type { ExecutionStatus, LocalizedSummary, Payment, RoutedOpportunity, UserProfile, WeeklyPlan } from '@shared/types';
 
 async function j<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...init });
@@ -21,4 +21,5 @@ export const api = {
   setMatch: (tx: string, status: 'confirmed' | 'rejected', opportunity_id?: string | null) =>
     j<Payment>('/api/payments/' + encodeURIComponent(tx), { method: 'PUT', body: JSON.stringify({ status, opportunity_id }) }),
   crawl: () => j<any>('/api/crawl', { method: 'POST' }),
+  localize: (id: string, lang: string) => j<LocalizedSummary | null>(`/api/opportunities/${encodeURIComponent(id)}/localize?lang=${encodeURIComponent(lang)}`, { method: 'POST' }),
 };

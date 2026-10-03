@@ -32,6 +32,7 @@ const seed = (name: string) => path.join(config.seedDir, name);
 
 const DEFAULT_PROFILE: UserProfile = {
   country: 'JP',
+  language: 'ja',
   skills: [],
   hours_per_week: 10,
   existing_accounts: [],

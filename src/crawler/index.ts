@@ -8,6 +8,7 @@ import { acquireSourceText } from './fetch.js';
 import { braveQueriesUsed, resetBraveBudget } from './search.js';
 import { extractOpportunities } from './extract.js';
 import { auditOpportunity } from './audit.js';
+import { localizeOpportunity } from './localize.js';
 import type { CrawlStatus, Opportunity, Source } from '../shared/types.js';
 
 export async function runCrawl(): Promise<CrawlStatus> {
@@ -76,6 +77,18 @@ export async function runCrawl(): Promise<CrawlStatus> {
         const needs = plan.mode === 'full' || changed || o.legitimacy.mode === 'seed';
         if (!needs) continue;
         fromSource[i] = { ...o, legitimacy: await auditOpportunity(o, s, plan) };
+      }
+
+      // Localized briefs for anything new/changed or missing a configured locale.
+      for (let i = 0; i < fromSource.length; i++) {
+        const o = fromSource[i];
+        const missing = config.locales.some((l) => !o.localized?.[l]);
+        if (!changed && !missing) continue;
+        try {
+          fromSource[i] = { ...o, localized: { ...(o.localized ?? {}), ...(await localizeOpportunity(o)) } };
+        } catch (e: any) {
+          console.warn(`[crawl] localize failed for ${o.id}: ${e.message ?? e}`);
+        }
       }
 
       for (const o of fromSource) byId.set(o.id, { ...o, last_checked: fetched_at, content_hash: hash });
