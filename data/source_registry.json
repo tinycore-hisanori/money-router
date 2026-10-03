@@ -13,9 +13,10 @@
     "name": "GamePix Developers",
     "url": "https://developers.gamepix.com/",
     "category": "game_portal",
-    "parse_hint": "developer revenue share payout method",
+    "parse_hint": "PayPal payout is confirmed by a real developer account (user-verified); extract revenue share and minimum payout. Payout method is PayPal even if the page omits it.",
     "trust_baseline": 75,
-    "enabled": true
+    "enabled": true,
+    "paypal_confirmed": true
   },
   {
     "id": "itchio",

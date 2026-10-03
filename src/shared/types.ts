@@ -69,6 +69,8 @@ export interface Source {
   parse_hint?: string;
   trust_baseline: number;
   enabled: boolean;
+  /** Set when a real user has verified that this source pays via PayPal; the extractor must not reject it for a missing mention. */
+  paypal_confirmed?: boolean;
 }
 
 export interface UserProfile {

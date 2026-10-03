@@ -23,7 +23,7 @@ Rules:
 - certainty: "fixed" when a defined action yields a defined amount (sign-up bonus, referral bonus, fixed bounty, promo); "per_task" when each completed task pays a known amount but tasks must be obtained (user tests, transcription, labeling, gigs); "speculative" when income depends on sales or traffic (revenue share, marketplace sales).
 - reward_estimate_usd: for per_task = typical payment per task; for rev_share = realistic monthly income for a small creator; for hourly = hourly rate.
 - effort_hours_estimate: hours per unit of reward (per task, or per month of upkeep for rev_share).
-Hint for this source: ${source.parse_hint ?? 'none'}`,
+Hint for this source: ${source.parse_hint ?? 'none'}${source.paypal_confirmed ? '\nIMPORTANT: a real user has verified this source pays via PayPal. Include "PayPal" in payout_methods even if the page does not list payout methods.' : ''}`,
     user: `Source: ${source.name} (${source.url})\nCategory hint: ${source.category}\n\n---\n${pageText}`,
     toolName: 'report_opportunities',
     description: 'Report extracted opportunities and rejected ones.',
