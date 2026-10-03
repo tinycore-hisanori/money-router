@@ -36,8 +36,12 @@ export async function fetchPageText(url: string, maxChars = 40_000): Promise<str
  */
 export async function acquireSourceText(source: Source): Promise<PageResult> {
   let firstErr: string | undefined;
+  let direct: string | null = null;
   try {
-    return { text: await fetchPageText(source.url), url: source.url, via: 'direct' };
+    direct = await fetchPageText(source.url);
+    // A landing page that never mentions PayPal is not enough to judge payout terms:
+    // keep it, but go find the payout/payment page and append it.
+    if (/paypal/i.test(direct)) return { text: direct, url: source.url, via: 'direct' };
   } catch (e: any) {
     firstErr = String(e.message ?? e);
   }
@@ -47,14 +51,22 @@ export async function acquireSourceText(source: Source): Promise<PageResult> {
   const alt = hits.filter((h) => hostOf(h.url).endsWith(domain) && h.url !== source.url).slice(0, 3);
   for (const h of alt) {
     try {
-      return { text: await fetchPageText(h.url), url: h.url, via: 'search_page' };
+      const t = await fetchPageText(h.url);
+      return { text: direct ? `${direct.slice(0, 15_000)}\n\n---- payout page (${h.url}) ----\n${t}` : t, url: h.url, via: 'search_page' };
     } catch {
       /* try next */
     }
   }
 
   const snippets = hits.flatMap((h) => [`# ${h.title}\n${h.url}\n${h.description}`, ...(h.extra_snippets ?? [])]).join('\n\n');
-  if (snippets.length > 200) return { text: snippets, url: hits[0]?.url ?? source.url, via: 'search_snippets' };
+  if (snippets.length > 200) {
+    return {
+      text: direct ? `${direct.slice(0, 15_000)}\n\n---- search snippets about payouts ----\n${snippets}` : snippets,
+      url: hits[0]?.url ?? source.url,
+      via: 'search_snippets',
+    };
+  }
+  if (direct) return { text: direct, url: source.url, via: 'direct' }; // nothing better; let the extractor decide
 
   throw new Error(`${firstErr}; no usable search fallback`);
 }

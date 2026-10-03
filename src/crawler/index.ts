@@ -47,7 +47,6 @@ export async function runCrawl(): Promise<CrawlStatus> {
       const textBody = page.text;
       const hash = crypto.createHash('sha256').update(textBody).digest('hex');
       const changed = hashes[s.id] !== hash;
-      hashes[s.id] = hash;
 
       let fromSource = existing.filter((o) => o.source_id === s.id);
 
@@ -66,6 +65,7 @@ export async function runCrawl(): Promise<CrawlStatus> {
       }
 
       for (const o of fromSource) byId.set(o.id, { ...o, last_checked: fetched_at, content_hash: hash });
+      hashes[s.id] = hash; // commit only after extraction + audit succeeded
       status.sources[s.id] = { ok: true, fetched_at, changed, opportunities: fromSource.length, via: page.via, url: page.url };
       console.log(`[crawl] ${s.id}: ${changed ? 'changed' : 'unchanged'} (${page.via}), ${fromSource.length} opportunities`);
     } catch (e: any) {
