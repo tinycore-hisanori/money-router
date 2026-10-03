@@ -80,9 +80,16 @@ npm run crawl          # or click "Run crawler now" in Opportunities
 
 ### Enable PayPal (sandbox only)
 
-1. Create a REST app at https://developer.paypal.com (Sandbox). Put `PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECRET` in `.env`.
-2. Create two sandbox accounts: a **business** account that owns the app (sender for demo payouts) and a **personal** account as the receiver. Set `PAYPAL_RECEIVER_EMAIL` to the receiver.
-3. Seed demo payouts and sync:
+Two sandbox Business accounts play two roles:
+
+| | Role | App | `.env` |
+|---|---|---|---|
+| **A** | The Money Router user (receives money) | `Money Router` | `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_RECEIVER_EMAIL` = A's email |
+| **B** | Demo payer pretending to be CrazyGames, itch.io… | `Money Router Seeder` | `PAYPAL_SEED_CLIENT_ID`, `PAYPAL_SEED_CLIENT_SECRET` |
+
+1. https://developer.paypal.com → Apps & Credentials (Sandbox) → Create App `Money Router`, type Merchant, owned by account A (the auto-created Business account is fine).
+2. Testing Tools → Sandbox Accounts → Create a second **Business** account (US). Create App `Money Router Seeder` owned by it.
+3. Seed demo payouts from B to A, then sync:
 
 ```bash
 npm run seed:payments   # Payouts API: simulated platform payments into the receiver account

@@ -3,14 +3,19 @@ import type { Payment } from '../../shared/types.js';
 
 const BASE = 'https://api-m.sandbox.paypal.com';
 
-let token: { value: string; exp: number } | null = null;
+type Cred = 'main' | 'seed';
+const tokens: Record<Cred, { value: string; exp: number } | null> = { main: null, seed: null };
 
 export const paypalAvailable = () => Boolean(config.paypal.clientId && config.paypal.clientSecret);
+export const seedAvailable = () => Boolean(config.paypal.seedClientId && config.paypal.seedClientSecret);
 
-async function accessToken(): Promise<string> {
-  if (token && token.exp > Date.now() + 60_000) return token.value;
-  if (!paypalAvailable()) throw new Error('PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET not set');
-  const basic = Buffer.from(`${config.paypal.clientId}:${config.paypal.clientSecret}`).toString('base64');
+async function accessToken(cred: Cred = 'main'): Promise<string> {
+  const t = tokens[cred];
+  if (t && t.exp > Date.now() + 60_000) return t.value;
+  const id = cred === 'main' ? config.paypal.clientId : config.paypal.seedClientId;
+  const secret = cred === 'main' ? config.paypal.clientSecret : config.paypal.seedClientSecret;
+  if (!id || !secret) throw new Error(cred === 'main' ? 'PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET not set' : 'PAYPAL_SEED_CLIENT_ID / PAYPAL_SEED_CLIENT_SECRET not set');
+  const basic = Buffer.from(`${id}:${secret}`).toString('base64');
   const res = await fetch(`${BASE}/v1/oauth2/token`, {
     method: 'POST',
     headers: { Authorization: `Basic ${basic}`, 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -18,15 +23,15 @@ async function accessToken(): Promise<string> {
   });
   if (!res.ok) throw new Error(`PayPal auth failed: ${res.status} ${await res.text()}`);
   const j = (await res.json()) as { access_token: string; expires_in: number };
-  token = { value: j.access_token, exp: Date.now() + j.expires_in * 1000 };
-  return token.value;
+  tokens[cred] = { value: j.access_token, exp: Date.now() + j.expires_in * 1000 };
+  return j.access_token;
 }
 
-async function api<T>(method: string, path: string, body?: unknown, headers: Record<string, string> = {}): Promise<T> {
+async function api<T>(method: string, path: string, body?: unknown, headers: Record<string, string> = {}, cred: Cred = 'main'): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     method,
     headers: {
-      Authorization: `Bearer ${await accessToken()}`,
+      Authorization: `Bearer ${await accessToken(cred)}`,
       'Content-Type': 'application/json',
       ...headers,
     },
@@ -125,7 +130,8 @@ export async function getInvoice(id: string): Promise<any> {
 
 /**
  * Payouts v1 — used only by scripts/seed-payments.ts to simulate platform
- * payouts into the receiver sandbox account for demos.
+ * payouts into the receiver sandbox account for demos. Sent from the SEED
+ * credentials (account B), since PayPal rejects self-to-self payouts.
  */
 export async function createPayout(items: { email: string; amount: number; currency: string; note: string; sender_item_id: string }[]) {
   const body = {
@@ -141,5 +147,5 @@ export async function createPayout(items: { email: string; amount: number; curre
       sender_item_id: i.sender_item_id,
     })),
   };
-  return api<any>('POST', '/v1/payments/payouts', body);
+  return api<any>('POST', '/v1/payments/payouts', body, {}, 'seed');
 }

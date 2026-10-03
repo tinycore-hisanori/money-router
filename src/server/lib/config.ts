@@ -26,6 +26,12 @@ export const config = {
     clientId: process.env.PAYPAL_CLIENT_ID ?? '',
     clientSecret: process.env.PAYPAL_CLIENT_SECRET ?? '',
     receiverEmail: process.env.PAYPAL_RECEIVER_EMAIL ?? '',
+    seedClientId: process.env.PAYPAL_SEED_CLIENT_ID ?? '',
+    seedClientSecret: process.env.PAYPAL_SEED_CLIENT_SECRET ?? '',
+  },
+  brave: {
+    apiKey: process.env.BRAVE_SEARCH_API_KEY ?? '',
+    maxQueriesPerRun: Number(process.env.DISCOVERY_MAX_QUERIES_PER_RUN ?? 50),
   },
   crawler: {
     mode: (process.env.CRAWLER_MODE ?? 'mock') as 'mock' | 'live',

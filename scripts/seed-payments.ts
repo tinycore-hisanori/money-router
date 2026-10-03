@@ -1,6 +1,6 @@
 // Demo helper: simulate platform payouts into the receiver sandbox account using PayPal Payouts (sandbox).
 // Usage: npm run seed:payments
-// Requires PAYPAL_CLIENT_ID/SECRET of a sandbox BUSINESS app with Payouts enabled, and PAYPAL_RECEIVER_EMAIL.
+// Requires PAYPAL_SEED_CLIENT_ID/SECRET (account B, the demo payer) and PAYPAL_RECEIVER_EMAIL (account A).
 import { config } from '../src/server/lib/config.js';
 import { createPayout } from '../src/server/lib/paypal.js';
 
