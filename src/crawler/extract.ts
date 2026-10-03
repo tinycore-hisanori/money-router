@@ -19,7 +19,7 @@ Rules:
 - Only include an opportunity if PayPal is explicitly listed as a payout method. Put anything else in "rejected" with the reason.
 - Numbers must come from the page. If a value is not on the page, use your best conservative estimate and lower "confidence".
 - countries_allowed/blocked are ISO2 codes; leave empty when unknown or worldwide.
-- skills_required are snake_case tokens (html5_game_dev, web_dev, security, writing, design, audio, video, 3d, data, english).
+- skills_required are snake_case tokens (html5_game_dev, web_dev, security, writing, design, audio, video, 3d, data, english). Include "english" ONLY when the work itself requires producing or speaking English (transcription, tutoring, English copywriting, voice tests) — not merely because the site is written in English. Leave skills_required empty when anyone can do it.
 - certainty: "fixed" when a defined action yields a defined amount (sign-up bonus, referral bonus, fixed bounty, promo); "per_task" when each completed task pays a known amount but tasks must be obtained (user tests, transcription, labeling, gigs); "speculative" when income depends on sales or traffic (revenue share, marketplace sales).
 - reward_estimate_usd: for per_task = typical payment per task; for rev_share = realistic monthly income for a small creator; for hourly = hourly rate.
 - effort_hours_estimate: hours per unit of reward (per task, or per month of upkeep for rev_share).

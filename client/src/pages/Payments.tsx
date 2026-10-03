@@ -3,6 +3,7 @@ import { AgGridReact } from 'ag-grid-react';
 import type { ColDef } from 'ag-grid-community';
 import type { Payment } from '@shared/types';
 import { api, type Routed } from '../api';
+import { t } from '../i18n';
 
 export default function Payments({ tick, onChange }: { tick: number; onChange: () => void }) {
   const [rows, setRows] = useState<Payment[]>([]);
@@ -33,12 +34,12 @@ export default function Payments({ tick, onChange }: { tick: number; onChange: (
 
   const cols = useMemo<ColDef<Payment>[]>(
     () => [
-      { field: 'date', width: 170, valueFormatter: (p) => new Date(p.value).toLocaleString(), sort: 'desc' },
-      { field: 'amount', width: 110, valueFormatter: (p) => `${p.value.toFixed(2)} ${p.data?.currency}` },
-      { field: 'payer_name', headerName: 'Payer', flex: 1 },
-      { field: 'note', headerName: 'Note / subject', flex: 2, valueGetter: (p) => p.data?.note || p.data?.subject },
+      { field: 'date', headerName: t('pay.date'), width: 170, valueFormatter: (p) => new Date(p.value).toLocaleString(), sort: 'desc' },
+      { field: 'amount', headerName: t('pay.amount'), width: 110, valueFormatter: (p) => `${p.value.toFixed(2)} ${p.data?.currency}` },
+      { field: 'payer_name', headerName: t('pay.payer'), flex: 1 },
+      { field: 'note', headerName: t('pay.note'), flex: 2, valueGetter: (p) => p.data?.note || p.data?.subject },
       {
-        headerName: 'Matched to',
+        headerName: t('pay.matched'),
         flex: 2,
         cellRenderer: (p: any) => {
           const d: Payment = p.data;
@@ -51,7 +52,7 @@ export default function Payments({ tick, onChange }: { tick: number; onChange: (
               }}
               style={{ background: 'transparent', color: 'inherit', border: '1px solid var(--line)', borderRadius: 4, maxWidth: '100%' }}
             >
-              <option value="">— unmatched —</option>
+              <option value="">{t('pay.unmatched')}</option>
               {opps.map((r) => (
                 <option key={r.opportunity.id} value={r.opportunity.id}>{r.opportunity.name}</option>
               ))}
@@ -60,7 +61,7 @@ export default function Payments({ tick, onChange }: { tick: number; onChange: (
         },
       },
       {
-        headerName: 'Match',
+        headerName: t('pay.match'),
         width: 150,
         valueGetter: (p) => p.data?.match_status,
         tooltipValueGetter: (p) => p.data?.match_reason ?? '',
@@ -82,7 +83,7 @@ export default function Payments({ tick, onChange }: { tick: number; onChange: (
           if (d.match_status !== 'auto') return null;
           return (
             <button className="ghost" style={{ padding: '2px 8px' }} onClick={async () => { await api.setMatch(d.transaction_id, 'confirmed'); onChange(); }}>
-              Confirm
+              {t('pay.confirm')}
             </button>
           );
         },
@@ -94,13 +95,13 @@ export default function Payments({ tick, onChange }: { tick: number; onChange: (
   return (
     <div className="grid">
       <div className="toolbar">
-        <button className="primary" onClick={sync} disabled={busy}>{busy ? 'Syncing…' : 'Sync PayPal (last 30 days)'}</button>
-        <span className="muted">{msg || 'Pulls incoming sandbox transactions and lets AI match them to opportunities.'}</span>
+        <button className="primary" onClick={sync} disabled={busy}>{busy ? t('pay.syncing') : t('pay.sync')}</button>
+        <span className="muted">{msg || t('pay.hint')}</span>
       </div>
       <div className="ag-theme-money" style={{ height: 'calc(100vh - 180px)', minHeight: 400 }}>
         <AgGridReact<Payment> rowData={rows} columnDefs={cols} defaultColDef={{ sortable: true, filter: true, resizable: true }} tooltipShowDelay={300} />
       </div>
-      <p className="muted">Matched totals feed back into each opportunity's "Verified $" and ranking. {names.size} opportunities loaded.</p>
+      <p className="muted">{t('pay.footer')} ({names.size})</p>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import Opportunities from './pages/Opportunities';
 import Profile from './pages/Profile';
 import Payments from './pages/Payments';
 import Sources from './pages/Sources';
+import { setLang, t, type Key } from './i18n';
 
 type Page = 'dashboard' | 'opportunities' | 'sources' | 'profile' | 'payments';
 
@@ -14,8 +15,10 @@ export default function App() {
   const [tick, setTick] = useState(0);
   const refresh = () => setTick((t) => t + 1);
 
+  const [, setLangTick] = useState(0);
   useEffect(() => {
     api.status().then(setStatus).catch(() => setStatus(null));
+    api.profile().then((p) => { setLang(p.language || 'ja'); setLangTick((x) => x + 1); }).catch(() => {});
   }, [tick]);
 
   const caps = status?.capabilities ?? {};
@@ -30,19 +33,19 @@ export default function App() {
         <nav>
           {(['dashboard', 'opportunities', 'sources', 'profile', 'payments'] as Page[]).map((p) => (
             <button key={p} className={page === p ? 'active' : ''} onClick={() => setPage(p)}>
-              {p[0].toUpperCase() + p.slice(1)}
+              {t(`nav.${p}` as Key)}
             </button>
           ))}
         </nav>
         <div className="caps">
           <span>
-            AI <b className={caps.llm ? '' : 'off'}>{caps.llm ? 'on' : 'off'}</b>
+            {t('hdr.ai')} <b className={caps.llm ? '' : 'off'}>{caps.llm ? t('hdr.on') : t('hdr.off')}</b>
           </span>
           <span>
-            PayPal <b className={caps.paypal ? '' : 'off'}>{caps.paypal ? 'sandbox' : 'off'}</b>
+            PayPal <b className={caps.paypal ? '' : 'off'}>{caps.paypal ? 'sandbox' : t('hdr.off')}</b>
           </span>
           <span>
-            Crawl <b>{crawl?.last_run ? new Date(crawl.last_run).toLocaleString() : 'never'}</b>
+            {t('hdr.crawl')} <b>{crawl?.last_run ? new Date(crawl.last_run).toLocaleString() : t('hdr.never')}</b>
             {crawl?.audit_model ? ` · ${crawl.audit_model}/${crawl.audit_mode}` : ''}
           </span>
         </div>

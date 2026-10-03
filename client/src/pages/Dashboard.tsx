@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { WeeklyPlan } from '@shared/types';
 import { api, type Routed } from '../api';
+import { t, type Key } from '../i18n';
 
 export default function Dashboard({ tick, onChange }: { tick: number; onChange: () => void }) {
   const [plan, setPlan] = useState<WeeklyPlan | null>(null);
@@ -14,6 +15,10 @@ export default function Dashboard({ tick, onChange }: { tick: number; onChange: 
 
   const observed = routed.reduce((s, r) => s + r.opportunity.observed.total_received_usd, 0);
   const eligible = routed.filter((r) => r.eligible).length;
+  const exclusionCounts = routed.reduce<Record<string, number>>((m, r) => {
+    for (const code of new Set(r.exclusions.map((e) => e.code))) m[code] = (m[code] ?? 0) + 1;
+    return m;
+  }, {});
 
   const explain = async () => {
     setBusy(true);
@@ -28,53 +33,67 @@ export default function Dashboard({ tick, onChange }: { tick: number; onChange: 
     <div className="grid">
       <div className="cards">
         <div className="card">
-          <div className="k">Eligible for you</div>
+          <div className="k">{t('dash.eligible')}</div>
           <div className="v">
-            {eligible} <small>/ {routed.length} opportunities</small>
+            {eligible} <small>{t('dash.ofOpps', { n: routed.length })}</small>
           </div>
         </div>
         <div className="card">
-          <div className="k">This week · count on it</div>
+          <div className="k">{t('dash.certain')}</div>
           <div className="v" style={{ color: 'var(--accent)' }}>
-            ${plan?.certain_usd ?? 0} <small>fixed + per-task, {plan?.hours_used ?? 0}h of {plan?.hours_budget ?? 0}h</small>
+            ${plan?.certain_usd ?? 0} <small>{t('dash.certainSub', { used: plan?.hours_used ?? 0, budget: plan?.hours_budget ?? 0 })}</small>
           </div>
         </div>
         <div className="card">
-          <div className="k">This week · speculative</div>
+          <div className="k">{t('dash.spec')}</div>
           <div className="v" style={{ color: 'var(--muted)' }}>
-            ${plan?.speculative_usd ?? 0} <small>if it sells</small>
+            ${plan?.speculative_usd ?? 0} <small>{t('dash.specSub')}</small>
           </div>
         </div>
         <div className="card">
-          <div className="k">Verified via PayPal</div>
+          <div className="k">{t('dash.verified')}</div>
           <div className="v">
-            ${observed.toFixed(2)} <small>received (matched)</small>
+            ${observed.toFixed(2)} <small>{t('dash.verifiedSub')}</small>
           </div>
         </div>
       </div>
 
       <div className="card">
         <div className="toolbar">
-          <h3 style={{ margin: 0 }}>This week</h3>
+          <h3 style={{ margin: 0 }}>{t('dash.thisWeek')}</h3>
           <span className="muted">{plan?.summary}</span>
           <div className="spacer" />
           <button className="ghost" onClick={explain} disabled={busy}>
-            {busy ? 'Thinking…' : 'Explain with AI'}
+            {busy ? t('dash.thinking') : t('dash.explain')}
           </button>
-          <button className="ghost" onClick={onChange}>Refresh</button>
+          <button className="ghost" onClick={onChange}>{t('dash.refresh')}</button>
         </div>
-        {!plan?.items.length && <p className="muted">No eligible opportunities. Update your profile (country, skills, hours).</p>}
+        {!plan?.items.length && (
+          <div>
+            <p className="muted">{t('dash.empty')}</p>
+            {Object.keys(exclusionCounts).length > 0 && (
+              <div className="muted" style={{ fontSize: 13 }}>
+                <b style={{ color: 'var(--text)' }}>{t('dash.whyNot')}</b>
+                <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+                  {Object.entries(exclusionCounts).sort((a, b) => b[1] - a[1]).map(([code, n]) => (
+                    <li key={code}>{t(`excl.${code}` as Key)}: {n}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
         {plan?.items.map((i) => (
           <div className="plan-item" key={i.opportunity_id}>
             <div>
               <h4>
-                {i.name} <span className={`pill ${i.certainty === 'fixed' ? 'ok' : i.certainty === 'per_task' ? 'warn' : ''}`}>{i.certainty.replace('_', ' ')}</span>
+                {i.name} <span className={`pill ${i.certainty === 'fixed' ? 'ok' : i.certainty === 'per_task' ? 'warn' : ''}`}>{t(`cert.${i.certainty}` as Key)}</span>
               </h4>
               <p>{i.why}</p>
               <p>
-                <b style={{ color: 'var(--text)' }}>First step:</b> {i.first_step}
+                <b style={{ color: 'var(--text)' }}>{t('dash.firstStep')}</b> {i.first_step}
               </p>
-              <p>{i.hours}h this week</p>
+              <p>{t('dash.hours', { h: i.hours })}</p>
             </div>
             <div className="usd">${i.expected_usd}</div>
           </div>
