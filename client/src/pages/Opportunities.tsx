@@ -38,7 +38,18 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
 
   const cols = useMemo<ColDef<Routed>[]>(
     () => [
-      { headerName: 'Opportunity', valueGetter: (p) => p.data?.opportunity.name, flex: 2, minWidth: 220, cellRenderer: (p: any) => <a href={p.data.opportunity.url} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>{p.value}</a> },
+      {
+        headerName: '',
+        width: 84,
+        sortable: false,
+        filter: false,
+        cellRenderer: (p: any) => (
+          <button className="ghost" style={{ padding: '2px 10px' }} onClick={() => setSelected(p.data)} title="AI brief in your language">
+            Brief
+          </button>
+        ),
+      },
+      { headerName: 'Opportunity', valueGetter: (p) => p.data?.opportunity.name, flex: 2, minWidth: 220, cellRenderer: (p: any) => <a href={p.data.opportunity.url} target="_blank" rel="noreferrer" style={{ color: 'inherit' }} title="Open official page">{p.value} ↗</a> },
       { headerName: 'Category', valueGetter: (p) => p.data?.opportunity.category, width: 130 },
       {
         headerName: 'Certainty',
@@ -120,8 +131,6 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
             defaultColDef={{ sortable: true, filter: true, resizable: true }}
             tooltipShowDelay={300}
             animateRows
-            rowSelection="single"
-            onRowClicked={(e) => setSelected(e.data ?? null)}
           />
         </div>
         {selected && (
