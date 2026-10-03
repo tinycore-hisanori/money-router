@@ -47,8 +47,14 @@ export async function acquireSourceText(source: Source): Promise<PageResult> {
   }
 
   const domain = hostOf(source.url);
-  const hits = await braveSearch(`${source.name} PayPal payout OR payment methods site:${domain}`, 5);
-  const alt = hits.filter((h) => hostOf(h.url).endsWith(domain) && h.url !== source.url).slice(0, 3);
+  let hits = await braveSearch(`${source.name} PayPal payout OR payment methods site:${domain}`, 5);
+  // Registered host may be wrong or unreachable: widen to the open web, keep official-looking hits first.
+  if (!hits.length) {
+    hits = await braveSearch(`${source.name} payout methods PayPal official`, 6);
+    const root = domain.split('.').slice(-2, -1)[0] ?? '';
+    hits.sort((a, b) => Number(hostOf(b.url).includes(root)) - Number(hostOf(a.url).includes(root)));
+  }
+  const alt = hits.filter((h) => h.url !== source.url).slice(0, 3);
   for (const h of alt) {
     try {
       const t = await fetchPageText(h.url);
