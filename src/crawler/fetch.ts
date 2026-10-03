@@ -47,7 +47,9 @@ export async function acquireSourceText(source: Source): Promise<PageResult> {
   }
 
   const domain = hostOf(source.url);
-  let hits = await braveSearch(`${source.name} PayPal payout OR payment methods site:${domain}`, 5);
+  // parse_hint steers the search toward the right page (e.g. "publisher payout", not an advertiser or product page)
+  const hint = source.parse_hint ? ` ${source.parse_hint.split(/[;,.]/)[0]}` : '';
+  let hits = await braveSearch(`${source.name}${hint} PayPal payout OR payment methods site:${domain}`, 5);
   // Registered host may be wrong or unreachable: widen to the open web, keep official-looking hits first.
   if (!hits.length) {
     hits = await braveSearch(`${source.name} payout methods PayPal official`, 6);

@@ -13,7 +13,7 @@
     "name": "GamePix Developers",
     "url": "https://developers.gamepix.com/",
     "category": "game_portal",
-    "parse_hint": "HTML5 game distribution with revenue share",
+    "parse_hint": "developer revenue share payout method",
     "trust_baseline": 75,
     "enabled": true
   },
@@ -31,7 +31,7 @@
     "name": "Yandex Games Developers",
     "url": "https://yandex.com/dev/games/doc/en/monetization/monetization",
     "category": "game_portal",
-    "parse_hint": "Ad revenue for HTML5 games",
+    "parse_hint": "developer payout for HTML5 games (not Yandex Direct advertisers)",
     "trust_baseline": 80,
     "enabled": true
   },
@@ -297,7 +297,8 @@
     "url": "https://assetstore.unity.com/publishing",
     "category": "stock_assets",
     "trust_baseline": 90,
-    "enabled": true
+    "enabled": true,
+    "parse_hint": "publisher payout and revenue share (not asset product pages)"
   },
   {
     "id": "redbubble",
