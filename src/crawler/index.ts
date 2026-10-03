@@ -49,11 +49,24 @@ export async function runCrawl(): Promise<CrawlStatus> {
       const changed = hashes[s.id] !== hash;
 
       let fromSource = existing.filter((o) => o.source_id === s.id);
+      let rejected: { name: string; reason: string }[] = [];
 
       if (changed) {
         const extracted = await extractOpportunities(s, textBody, page.via === 'search_snippets' ? 0.5 : 1);
         status.totals.rejected_no_paypal += extracted.rejected_no_paypal;
+        rejected = extracted.rejected;
         fromSource = extracted.opportunities.map((o) => mergeWithExisting(o, byId.get(o.id), fetched_at));
+        // Live data supersedes seed/mock rows and stale rows for this source. Rows with verified
+        // payments are kept but marked closed so their history survives.
+        const keep = new Set(fromSource.map((o) => o.id));
+        for (const old of existing.filter((o) => o.source_id === s.id && !keep.has(o.id))) {
+          if (old.observed.payments_count > 0) byId.set(old.id, { ...old, status: 'closed' });
+          else byId.delete(old.id);
+        }
+      } else if (fromSource.some((o) => o.legitimacy.mode !== 'seed')) {
+        // Unchanged page but leftover seed rows from before the first live run: drop them.
+        for (const o of fromSource.filter((o) => o.legitimacy.mode === 'seed')) byId.delete(o.id);
+        fromSource = fromSource.filter((o) => o.legitimacy.mode !== 'seed');
       }
 
       // Audit: full mode re-scores everything; diff mode only what changed / never scored.
@@ -66,7 +79,7 @@ export async function runCrawl(): Promise<CrawlStatus> {
 
       for (const o of fromSource) byId.set(o.id, { ...o, last_checked: fetched_at, content_hash: hash });
       hashes[s.id] = hash; // commit only after extraction + audit succeeded
-      status.sources[s.id] = { ok: true, fetched_at, changed, opportunities: fromSource.length, via: page.via, url: page.url };
+      status.sources[s.id] = { ok: true, fetched_at, changed, opportunities: fromSource.length, via: page.via, url: page.url, rejected };
       console.log(`[crawl] ${s.id}: ${changed ? 'changed' : 'unchanged'} (${page.via}), ${fromSource.length} opportunities`);
     } catch (e: any) {
       status.sources[s.id] = { ok: false, fetched_at, changed: false, opportunities: 0, error: String(e.message ?? e) };

@@ -144,7 +144,7 @@ export interface CrawlStatus {
   audit_mode: 'full' | 'diff' | null;
   sources: Record<
     string,
-    { ok: boolean; fetched_at: string; changed: boolean; opportunities: number; error?: string; via?: 'direct' | 'search_page' | 'search_snippets'; url?: string }
+    { ok: boolean; fetched_at: string; changed: boolean; opportunities: number; error?: string; via?: 'direct' | 'search_page' | 'search_snippets'; url?: string; rejected?: { name: string; reason: string }[] }
   >;
   totals: { opportunities: number; active: number; rejected_no_paypal: number };
 }

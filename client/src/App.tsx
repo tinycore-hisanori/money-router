@@ -4,8 +4,9 @@ import Dashboard from './pages/Dashboard';
 import Opportunities from './pages/Opportunities';
 import Profile from './pages/Profile';
 import Payments from './pages/Payments';
+import Sources from './pages/Sources';
 
-type Page = 'dashboard' | 'opportunities' | 'profile' | 'payments';
+type Page = 'dashboard' | 'opportunities' | 'sources' | 'profile' | 'payments';
 
 export default function App() {
   const [page, setPage] = useState<Page>('dashboard');
@@ -27,7 +28,7 @@ export default function App() {
           Money <span>Router</span>
         </h1>
         <nav>
-          {(['dashboard', 'opportunities', 'profile', 'payments'] as Page[]).map((p) => (
+          {(['dashboard', 'opportunities', 'sources', 'profile', 'payments'] as Page[]).map((p) => (
             <button key={p} className={page === p ? 'active' : ''} onClick={() => setPage(p)}>
               {p[0].toUpperCase() + p.slice(1)}
             </button>
@@ -49,6 +50,7 @@ export default function App() {
       <main>
         {page === 'dashboard' && <Dashboard tick={tick} onChange={refresh} />}
         {page === 'opportunities' && <Opportunities tick={tick} onChange={refresh} />}
+        {page === 'sources' && <Sources tick={tick} />}
         {page === 'profile' && <Profile onChange={refresh} />}
         {page === 'payments' && <Payments tick={tick} onChange={refresh} />}
       </main>

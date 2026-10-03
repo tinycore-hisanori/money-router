@@ -10,7 +10,7 @@ interface Extracted {
 const CATEGORIES = ['game_portal', 'bug_bounty', 'user_testing', 'survey', 'microtask', 'stock_assets', 'freelance', 'affiliate', 'referral', 'other'];
 
 /** Page text -> structured opportunities. Only PayPal-payable ones are kept; the rest are reported as rejected. */
-export async function extractOpportunities(source: Source, pageText: string, confidenceCap = 1): Promise<{ opportunities: Opportunity[]; rejected_no_paypal: number }> {
+export async function extractOpportunities(source: Source, pageText: string, confidenceCap = 1): Promise<{ opportunities: Opportunity[]; rejected_no_paypal: number; rejected: { name: string; reason: string }[] }> {
   const r = await structured<Extracted>({
     model: config.models.extract,
     maxTokens: 4096,
@@ -76,7 +76,11 @@ Hint for this source: ${source.parse_hint ?? 'none'}`,
       last_checked: now,
       observed: { total_received_usd: 0, payments_count: 0, avg_days_to_payout: null, last_payment_at: null },
     }));
-  return { opportunities, rejected_no_paypal: r.rejected.length + (r.opportunities.length - opportunities.length) };
+  const rejected = [
+    ...r.rejected,
+    ...r.opportunities.filter((o) => !o.payout_methods.some((m) => /paypal/i.test(m))).map((o) => ({ name: o.name, reason: `payout methods: ${o.payout_methods.join(', ') || 'none found'}` })),
+  ];
+  return { opportunities, rejected_no_paypal: rejected.length, rejected };
 }
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
