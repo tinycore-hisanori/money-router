@@ -22,7 +22,7 @@ export const config = {
   },
   auditSchedule: parseAuditSchedule(process.env.AUDIT_SCHEDULE ?? ''),
   paypal: {
-    env: (process.env.PAYPAL_ENV ?? 'sandbox') as 'sandbox',
+    env: ((process.env.PAYPAL_ENV || 'sandbox').trim().toLowerCase()) as 'sandbox',
     clientId: process.env.PAYPAL_CLIENT_ID ?? '',
     clientSecret: process.env.PAYPAL_CLIENT_SECRET ?? '',
     receiverEmail: process.env.PAYPAL_RECEIVER_EMAIL ?? '',
@@ -45,7 +45,7 @@ export const config = {
 
 if (config.paypal.env !== 'sandbox') {
   // Hard guard: this project never talks to PayPal production.
-  throw new Error('PAYPAL_ENV must be "sandbox"');
+  throw new Error(`PAYPAL_ENV must be "sandbox" (got "${config.paypal.env}")`);
 }
 
 /**
