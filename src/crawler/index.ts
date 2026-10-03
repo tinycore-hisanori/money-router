@@ -46,10 +46,11 @@ export async function runCrawl(): Promise<CrawlStatus> {
       const page = await acquireSourceText(s);
       const textBody = page.text;
       const hash = crypto.createHash('sha256').update(textBody).digest('hex');
-      const changed = hashes[s.id] !== hash;
-
       let fromSource = existing.filter((o) => o.source_id === s.id);
       let rejected: { name: string; reason: string }[] = [];
+      // Re-extract when the page changed, or when we have nothing for this source yet
+      // (a source with zero kept rows must never be skipped on a stale hash).
+      const changed = hashes[s.id] !== hash || fromSource.length === 0;
 
       if (changed) {
         const extracted = await extractOpportunities(s, textBody, page.via === 'search_snippets' ? 0.5 : 1);
