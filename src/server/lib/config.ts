@@ -37,9 +37,17 @@ export const config = {
   },
   guards: {
     adminToken: process.env.ADMIN_TOKEN ?? '',
-    dailyDiscovery: Number(process.env.DEMO_DAILY_DISCOVERY ?? 3),
-    dailyBriefs: Number(process.env.DEMO_DAILY_BRIEFS ?? 50),
-    dailyCrawls: Number(process.env.DEMO_DAILY_CRAWLS ?? 1),
+    judgeToken: process.env.JUDGE_TOKEN ?? '',
+    public: {
+      discovery: Number(process.env.DEMO_DAILY_DISCOVERY ?? 3),
+      briefs: Number(process.env.DEMO_DAILY_BRIEFS ?? 50),
+      crawls: Number(process.env.DEMO_DAILY_CRAWLS ?? 1),
+    },
+    judge: {
+      discovery: Number(process.env.JUDGE_DAILY_DISCOVERY ?? 10),
+      briefs: Number(process.env.JUDGE_DAILY_BRIEFS ?? 200),
+      crawls: Number(process.env.JUDGE_DAILY_CRAWLS ?? 5),
+    },
   },
   crawler: {
     mode: (process.env.CRAWLER_MODE ?? 'mock') as 'mock' | 'live',

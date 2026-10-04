@@ -5,7 +5,7 @@ import { enrichProfile, explainPlan, matchPayments } from '../lib/ai.js';
 import { createInvoiceDraft, getInvoice, listIncomingTransactions, paypalAvailable, sendInvoice } from '../lib/paypal.js';
 import { llmAvailable } from '../lib/llm.js';
 import { config } from '../lib/config.js';
-import { consume, isAdmin, remaining } from '../lib/guard.js';
+import { canCurate, consume, isAdmin, remaining, tierOf } from '../lib/guard.js';
 import type { ExecutionStatus, Opportunity, Payment, UserProfile } from '../../shared/types.js';
 
 export const api = new Hono();
@@ -22,7 +22,8 @@ api.get('/status', async (c) => {
     crawl,
     capabilities: { llm: llmAvailable(), paypal: paypalAvailable() },
     admin: isAdmin(c),
-    demo: { discovery: await remaining('discovery'), briefs: await remaining('briefs'), crawls: await remaining('crawls') },
+    tier: tierOf(c),
+    demo: { discovery: await remaining(c, 'discovery'), briefs: await remaining(c, 'briefs'), crawls: await remaining(c, 'crawls') },
     models: config.models,
     audit_schedule: config.auditSchedule,
   });
@@ -178,13 +179,13 @@ api.post('/discover', async (c) => {
 });
 api.get('/candidates', async (c) => c.json(await store.getCandidates()));
 api.post('/candidates/:id/approve', async (c) => {
-  if (!isAdmin(c)) return c.json({ error: 'admin_only' }, 403);
+  if (!canCurate(c)) return c.json({ error: 'admin_only' }, 403);
   const { approveCandidate } = await import('../../crawler/discover.js');
   const src = await approveCandidate(c.req.param('id'));
   return src ? c.json(src) : c.json({ error: 'not found' }, 404);
 });
 api.post('/candidates/:id/reject', async (c) => {
-  if (!isAdmin(c)) return c.json({ error: 'admin_only' }, 403);
+  if (!canCurate(c)) return c.json({ error: 'admin_only' }, 403);
   const { rejectCandidate } = await import('../../crawler/discover.js');
   await rejectCandidate(c.req.param('id'));
   return c.json({ ok: true });

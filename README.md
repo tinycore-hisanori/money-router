@@ -131,8 +131,9 @@ docs/SPEC_v1.0.md            full specification (Japanese)
 
 The operator does, so costly actions are guarded:
 
-- **Admin key** (`ADMIN_TOKEN`): entered once in the UI (🔑 in the header) — unlimited Discovery, crawls and briefs, and the only way to approve/reject discovered sources.
-- **Public demo allowance** per day (`DEMO_DAILY_DISCOVERY=3`, `DEMO_DAILY_BRIEFS=50`, `DEMO_DAILY_CRAWLS=1`): judges and visitors can try everything a few times; after that the UI points to the demo video. Worst-case cost is bounded by these numbers.
+- **Admin key** (`ADMIN_TOKEN`): entered once in the UI (🔑 in the header) — unlimited Discovery, crawls and briefs; may approve/reject discovered sources.
+- **Judge key** (`JUDGE_TOKEN`, shared privately with hackathon judges): its own daily pool (`JUDGE_DAILY_DISCOVERY=10`, `JUDGE_DAILY_BRIEFS=200`, `JUDGE_DAILY_CRAWLS=5`) and may approve/reject, so the full discover → approve → crawl loop can be exercised.
+- **Public allowance** per day (`DEMO_DAILY_DISCOVERY=3`, `DEMO_DAILY_BRIEFS=50`, `DEMO_DAILY_CRAWLS=1`): anyone can try a few times; after that the UI points to the demo video. Worst-case cost is bounded by these numbers.
 - Routing, plans, the opportunity grid and PayPal sync cost nothing to view.
 
 In a product, "AI Discovery" is the natural paid tier (e.g. N runs per month); browsing and routing stay free.

@@ -118,9 +118,11 @@ const dict = {
   // guards
   'guard.demoLeft': { ja: '本日のデモ枠 残り {n}/{limit}', en: 'Demo allowance today: {n}/{limit} left' },
   'guard.exhausted': { ja: '本日のデモ枠は使い切りました。デモ動画をご覧いただくか、明日またお試しください。', en: 'Today\'s demo allowance is used up. Please watch the demo video or try again tomorrow.' },
-  'guard.adminOnly': { ja: '承認・却下は管理者のみ可能です（審査員の方は閲覧のみ）。', en: 'Approve/reject is admin-only (judges can view).' },
+  'guard.adminOnly': { ja: '承認・却下にはアクセスキー（審査員／管理者）が必要です。ヘッダーの🔑から入力してください。', en: 'Approve/reject needs an access key (judge / admin) — enter it via 🔑 in the header.' },
   'guard.admin': { ja: '管理者', en: 'admin' },
-  'guard.keyPrompt': { ja: '管理者キーを入力（空で解除）', en: 'Enter admin key (empty to clear)' },
+  'guard.judge': { ja: '審査員', en: 'judge' },
+  'guard.keyHint': { ja: 'アクセスキー（審査員／管理者）', en: 'Access key (judge / admin)' },
+  'guard.keyPrompt': { ja: 'アクセスキーを入力（空で解除）', en: 'Enter access key (empty to clear)' },
   // payments
   'pay.sync': { ja: 'PayPal同期（直近30日）', en: 'Sync PayPal (last 30 days)' },
   'pay.syncing': { ja: '同期中…', en: 'Syncing…' },

@@ -37,7 +37,7 @@ export default function Sources({ tick }: { tick: number }) {
     }
   };
   const demo = status?.demo?.discovery;
-  const canDiscover = status?.admin || (demo && demo.remaining > 0);
+  const canDiscover = status?.tier === 'admin' || (demo && demo.remaining > 0);
   const pending = cands.filter((c) => c.status === 'candidate').sort((a, b) => b.fit_score - a.fit_score);
   const done = cands.filter((c) => c.status !== 'candidate');
   const entries = Object.entries(crawl.sources ?? {}) as [string, any][];
@@ -50,7 +50,7 @@ export default function Sources({ tick }: { tick: number }) {
           <h3 style={{ margin: 0 }}>{t('disc.title')}</h3>
           <span className="muted">{t('disc.hint')}</span>
           <div className="spacer" />
-          {!status?.admin && demo && <span className="muted">{t('guard.demoLeft', { n: demo.remaining, limit: demo.limit })}</span>}
+          {status?.tier !== 'admin' && demo && <span className="muted">{t('guard.demoLeft', { n: demo.remaining, limit: demo.limit })}</span>}
           <button className="primary" onClick={discover} disabled={busy || !canDiscover}>{busy ? t('disc.running') : t('disc.run')}</button>
         </div>
         {msg && <p className="muted" style={{ color: 'var(--accent-2)' }}>{msg}</p>}

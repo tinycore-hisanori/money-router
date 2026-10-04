@@ -62,8 +62,8 @@ export default function App() {
           </span>
           <button
             className="ghost"
-            style={{ padding: '2px 8px', fontSize: 12, color: status?.admin ? 'var(--accent)' : 'var(--muted)' }}
-            title={t('guard.keyPrompt')}
+            style={{ padding: '2px 8px', fontSize: 12, color: status?.tier && status.tier !== 'public' ? 'var(--accent)' : 'var(--muted)' }}
+            title={t('guard.keyHint')}
             onClick={() => {
               const v = window.prompt(t('guard.keyPrompt'), adminToken.get());
               if (v === null) return;
@@ -71,7 +71,7 @@ export default function App() {
               refresh();
             }}
           >
-            {status?.admin ? `🔑 ${t('guard.admin')}` : '🔑'}
+            {status?.tier === 'admin' ? `🔑 ${t('guard.admin')}` : status?.tier === 'judge' ? `🔑 ${t('guard.judge')}` : '🔑'}
           </button>
         </div>
       </header>
