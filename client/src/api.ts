@@ -21,5 +21,9 @@ export const api = {
   setMatch: (tx: string, status: 'confirmed' | 'rejected', opportunity_id?: string | null) =>
     j<Payment>('/api/payments/' + encodeURIComponent(tx), { method: 'PUT', body: JSON.stringify({ status, opportunity_id }) }),
   crawl: () => j<any>('/api/crawl', { method: 'POST' }),
+  discover: (max = 12) => j<any>(`/api/discover?max=${max}`, { method: 'POST' }),
+  candidates: () => j<any[]>('/api/candidates'),
+  approve: (id: string) => j<any>(`/api/candidates/${encodeURIComponent(id)}/approve`, { method: 'POST' }),
+  reject: (id: string) => j<any>(`/api/candidates/${encodeURIComponent(id)}/reject`, { method: 'POST' }),
   localize: (id: string, lang: string) => j<LocalizedSummary | null>(`/api/opportunities/${encodeURIComponent(id)}/localize?lang=${encodeURIComponent(lang)}`, { method: 'POST' }),
 };

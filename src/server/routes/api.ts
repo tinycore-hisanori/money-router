@@ -160,3 +160,23 @@ api.post('/opportunities/:id/localize', async (c) => {
   await store.saveOpportunities(list.map((x) => (x.id === id ? { ...x, localized: { ...(x.localized ?? {}), ...l } } : x)));
   return c.json(l[lang] ?? null);
 });
+
+// ---- Source Discovery (AI finds new PayPal-paying sources for this profile; human approves)
+api.post('/discover', async (c) => {
+  if (config.crawler.token && c.req.query('token') !== config.crawler.token) return c.json({ error: 'forbidden' }, 403);
+  const { runDiscovery } = await import('../../crawler/discover.js');
+  const max = Number(c.req.query('max') ?? 12);
+  return c.json(await runDiscovery({ maxQueries: max }));
+});
+api.get('/candidates', async (c) => c.json(await store.getCandidates()));
+api.post('/candidates/:id/approve', async (c) => {
+  const { approveCandidate } = await import('../../crawler/discover.js');
+  const src = await approveCandidate(c.req.param('id'));
+  return src ? c.json(src) : c.json({ error: 'not found' }, 404);
+});
+api.post('/candidates/:id/reject', async (c) => {
+  const { rejectCandidate } = await import('../../crawler/discover.js');
+  await rejectCandidate(c.req.param('id'));
+  return c.json({ ok: true });
+});
+api.get('/sources', async (c) => c.json(await store.getSources()));

@@ -10,6 +10,10 @@ export type Category =
   | 'freelance'
   | 'affiliate'
   | 'referral'
+  | 'contest'
+  | 'licensing'
+  | 'localization'
+  | 'data_collection'
   | 'other';
 
 export type RewardModel = 'per_task' | 'rev_share' | 'bounty' | 'hourly' | 'one_time';

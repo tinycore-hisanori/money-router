@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { config } from './config.js';
+import type { SourceCandidate } from '../../crawler/discover.js';
 import type {
   CrawlStatus,
   ExecutionStatus,
@@ -58,7 +59,22 @@ export const store = {
   },
   saveOpportunities: (list: Opportunity[]) => writeJson(runtime('opportunities.json'), list),
 
-  getSources: () => readJson<Source[]>(seed('source_registry.json'), []),
+  // Sources = seed registry + runtime additions (approved discoveries). Runtime file wins on id clash.
+  async getSources(): Promise<Source[]> {
+    const base = await readJson<Source[]>(seed('source_registry.json'), []);
+    const extra = await readJson<Source[]>(runtime('sources_extra.json'), []);
+    const byId = new Map(base.map((s) => [s.id, s]));
+    for (const s of extra) byId.set(s.id, s);
+    return [...byId.values()];
+  },
+  async saveSources(list: Source[]) {
+    const base = await readJson<Source[]>(seed('source_registry.json'), []);
+    const baseIds = new Set(base.map((s) => s.id));
+    await writeJson(runtime('sources_extra.json'), list.filter((s) => !baseIds.has(s.id)));
+  },
+
+  getCandidates: () => readJson<SourceCandidate[]>(runtime('source_candidates.json'), []),
+  saveCandidates: (c: SourceCandidate[]) => writeJson(runtime('source_candidates.json'), c),
 
   getProfile: () => readJson<UserProfile>(runtime('profile.json'), DEFAULT_PROFILE),
   saveProfile: (p: UserProfile) => writeJson(runtime('profile.json'), p),

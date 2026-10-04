@@ -7,7 +7,7 @@ interface Extracted {
   rejected: { name: string; reason: string }[];
 }
 
-const CATEGORIES = ['game_portal', 'bug_bounty', 'user_testing', 'survey', 'microtask', 'stock_assets', 'freelance', 'affiliate', 'referral', 'other'];
+const CATEGORIES = ['game_portal', 'bug_bounty', 'user_testing', 'survey', 'microtask', 'stock_assets', 'freelance', 'affiliate', 'referral', 'contest', 'licensing', 'localization', 'data_collection', 'other'];
 
 /** Page text -> structured opportunities. Only PayPal-payable ones are kept; the rest are reported as rejected. */
 export async function extractOpportunities(source: Source, pageText: string, confidenceCap = 1): Promise<{ opportunities: Opportunity[]; rejected_no_paypal: number; rejected: { name: string; reason: string }[] }> {
@@ -20,7 +20,7 @@ Rules:
 - Numbers must come from the page. If a value is not on the page, use your best conservative estimate and lower "confidence".
 - countries_allowed/blocked are ISO2 codes; leave empty when unknown or worldwide.
 - skills_required are snake_case tokens (html5_game_dev, web_dev, security, writing, design, audio, video, 3d, data, english). Include "english" ONLY when the work itself requires producing or speaking English (transcription, tutoring, English copywriting, voice tests) — not merely because the site is written in English. Leave skills_required empty when anyone can do it.
-- certainty: "fixed" when a defined action yields a defined amount (sign-up bonus, referral bonus, fixed bounty, promo); "per_task" when each completed task pays a known amount but tasks must be obtained (user tests, transcription, labeling, gigs); "speculative" when income depends on sales or traffic (revenue share, marketplace sales).
+- certainty: "fixed" when a defined action yields a defined amount (sign-up bonus, referral bonus, fixed bounty, promo, contest/hackathon prize with a stated amount); "per_task" when each completed task pays a known amount but tasks must be obtained (user tests, transcription, labeling, gigs); "speculative" when income depends on sales or traffic (revenue share, marketplace sales).
 - reward_estimate_usd: for per_task = typical payment per task; for rev_share = realistic monthly income for a small creator; for hourly = hourly rate.
 - effort_hours_estimate: hours per unit of reward (per task, or per month of upkeep for rev_share).
 Hint for this source: ${source.parse_hint ?? 'none'}${source.paypal_confirmed ? '\nIMPORTANT: a real user has verified this source pays via PayPal. Include "PayPal" in payout_methods even if the page does not list payout methods.' : ''}`,

@@ -4,16 +4,82 @@ import { t } from '../i18n';
 
 export default function Sources({ tick }: { tick: number }) {
   const [status, setStatus] = useState<any>(null);
-  useEffect(() => {
+  const [cands, setCands] = useState<any[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [last, setLast] = useState<any>(null);
+  const [local, setLocal] = useState(0);
+  const reload = () => {
     api.status().then(setStatus);
-  }, [tick]);
+    api.candidates().then(setCands).catch(() => setCands([]));
+  };
+  useEffect(reload, [tick, local]);
   const crawl = status?.crawl;
   if (!crawl) return null;
+
+  const discover = async () => {
+    setBusy(true);
+    try {
+      setLast(await api.discover(12));
+      setLocal((x) => x + 1);
+    } catch (e: any) {
+      alert(String(e.message ?? e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const act = async (id: string, ok: boolean) => {
+    await (ok ? api.approve(id) : api.reject(id));
+    setLocal((x) => x + 1);
+  };
+  const pending = cands.filter((c) => c.status === 'candidate').sort((a, b) => b.fit_score - a.fit_score);
+  const done = cands.filter((c) => c.status !== 'candidate');
   const entries = Object.entries(crawl.sources ?? {}) as [string, any][];
   const rejectedTotal = entries.reduce((n, [, s]) => n + (s.rejected?.length ?? 0), 0);
 
   return (
     <div className="grid">
+      <div className="card" style={{ borderColor: 'var(--accent)' }}>
+        <div className="toolbar">
+          <h3 style={{ margin: 0 }}>{t('disc.title')}</h3>
+          <span className="muted">{t('disc.hint')}</span>
+          <div className="spacer" />
+          <button className="primary" onClick={discover} disabled={busy}>{busy ? t('disc.running') : t('disc.run')}</button>
+        </div>
+        {last && (
+          <details style={{ marginBottom: 10 }}>
+            <summary className="muted" style={{ cursor: 'pointer' }}>{t('disc.lastRun')} ({last.queries?.length}) · +{last.new_candidates}</summary>
+            <ul className="muted" style={{ fontSize: 12, paddingLeft: 18 }}>
+              {last.queries?.map((q: any, i: number) => <li key={i}>[{q.category}] {q.query} — {q.hits} hits</li>)}
+            </ul>
+          </details>
+        )}
+        {!pending.length && <p className="muted">{t('disc.none')}</p>}
+        {pending.map((c) => (
+          <div className="plan-item" key={c.id}>
+            <div>
+              <h4>
+                <a href={c.url} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>{c.name} ↗</a>{' '}
+                <span className="pill">{c.category}</span>{' '}
+                <span className={`pill ${c.fit_score >= 70 ? 'ok' : 'warn'}`}>{t('disc.fit')} {c.fit_score}</span>{' '}
+                <span className={`pill ${c.legitimacy_hint >= 70 ? 'ok' : c.legitimacy_hint >= 50 ? 'warn' : 'bad'}`}>{t('disc.legit')} {c.legitimacy_hint}</span>
+              </h4>
+              <p>{c.why}</p>
+              <p><b style={{ color: 'var(--text)' }}>{t('disc.evidence')}:</b> {c.paypal_evidence}</p>
+              {c.country_note && <p><b style={{ color: 'var(--text)' }}>{t('disc.country')}:</b> {c.country_note}</p>}
+              <p style={{ fontSize: 12 }}>{t('disc.query')}: {c.query}</p>
+            </div>
+            <div style={{ display: 'grid', gap: 6, alignContent: 'start' }}>
+              <button className="primary" onClick={() => act(c.id, true)}>{t('disc.approve')}</button>
+              <button className="ghost" onClick={() => act(c.id, false)}>{t('disc.reject')}</button>
+            </div>
+          </div>
+        ))}
+        {done.length > 0 && (
+          <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+            {done.map((c) => `${c.name} (${c.status === 'approved' ? t('disc.approved') : t('disc.rejected')})`).join(' · ')}
+          </p>
+        )}
+      </div>
       <div className="cards">
         <div className="card"><div className="k">{t('src.crawled')}</div><div className="v">{entries.filter(([, s]) => s.ok).length} <small>/ {entries.length}</small></div></div>
         <div className="card"><div className="k">{t('src.kept')}</div><div className="v">{crawl.totals?.active ?? 0} <small>{t('src.keptSub')}</small></div></div>

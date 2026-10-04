@@ -15,6 +15,7 @@
     "build": "npm --prefix client run build && tsc -p tsconfig.json",
     "start": "node dist/server/index.js",
     "crawl": "tsx src/crawler/cli.ts",
+    "discover": "tsx src/crawler/discover-cli.ts",
     "seed": "tsx scripts/make-seed.ts",
     "seed:payments": "tsx scripts/seed-payments.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit && npm --prefix client run typecheck",
