@@ -95,6 +95,10 @@ const dict = {
   'q.hoursTitle': { ja: '週にどのくらい時間を使えますか？', en: 'How many hours a week can you spend?' },
   'q.countryTitle': { ja: 'お住まいの国', en: 'Where do you live?' },
   'q.langTitle': { ja: '表示言語', en: 'Display language' },
+  // onboarding
+  'onb.title': { ja: 'まず3つだけ教えてください', en: 'Three quick things first' },
+  'onb.body': { ja: 'お住まいの国・週に使える時間・できること（チェック）を保存すると、あなた向けの案件と「今週やること」が出ます。30秒で終わります。', en: 'Save your country, weekly hours and what you can do, and the router shows opportunities and a weekly plan for you. Takes 30 seconds.' },
+  'onb.cta': { ja: 'プロフィールを設定する', en: 'Set up your profile' },
   // payments
   'pay.sync': { ja: 'PayPal同期（直近30日）', en: 'Sync PayPal (last 30 days)' },
   'pay.syncing': { ja: '同期中…', en: 'Syncing…' },

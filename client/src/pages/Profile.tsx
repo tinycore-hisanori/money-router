@@ -8,7 +8,7 @@ const COUNTRIES: [string, string][] = [['JP', '日本 / Japan'], ['US', 'United 
 const LANGS: [string, string][] = [['ja', '日本語'], ['en', 'English'], ['es', 'Español'], ['pt', 'Português'], ['de', 'Deutsch'], ['fr', 'Français'], ['ko', '한국어'], ['zh', '中文']];
 const HOURS = [2, 5, 10, 15, 20, 30, 40];
 
-export default function Profile({ onChange }: { onChange: () => void }) {
+export default function Profile({ onChange, onboarding }: { onChange: () => void; onboarding?: boolean }) {
   const [p, setP] = useState<UserProfile | null>(null);
   const [other, setOther] = useState('');
   const [accounts, setAccounts] = useState('');
@@ -50,6 +50,12 @@ export default function Profile({ onChange }: { onChange: () => void }) {
 
   return (
     <div className="grid">
+      {onboarding && (
+        <div className="card" style={{ borderColor: 'var(--accent)' }}>
+          <h3 style={{ margin: '0 0 6px' }}>{t('onb.title')}</h3>
+          <p className="muted" style={{ margin: 0 }}>{t('onb.body')}</p>
+        </div>
+      )}
       <div className="card">
         <div className="form">
           <label className="field">

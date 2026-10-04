@@ -16,9 +16,21 @@ export default function App() {
   const refresh = () => setTick((t) => t + 1);
 
   const [, setLangTick] = useState(0);
+  const [needsProfile, setNeedsProfile] = useState(false);
+  const [booted, setBooted] = useState(false);
   useEffect(() => {
     api.status().then(setStatus).catch(() => setStatus(null));
-    api.profile().then((p) => { setLang(p.language || 'ja'); setLangTick((x) => x + 1); }).catch(() => {});
+    api.profile()
+      .then((p) => {
+        setLang(p.language || 'ja');
+        setLangTick((x) => x + 1);
+        const empty = p.skills.length === 0 && !p.free_text;
+        setNeedsProfile(empty);
+        // First visit with an empty profile: start on the Profile page (not a gate — nav stays usable).
+        if (!booted && empty) setPage('profile');
+        setBooted(true);
+      })
+      .catch(() => {});
   }, [tick]);
 
   const caps = status?.capabilities ?? {};
@@ -51,10 +63,10 @@ export default function App() {
         </div>
       </header>
       <main>
-        {page === 'dashboard' && <Dashboard tick={tick} onChange={refresh} />}
+        {page === 'dashboard' && <Dashboard tick={tick} onChange={refresh} onSetup={needsProfile ? () => setPage('profile') : undefined} />}
         {page === 'opportunities' && <Opportunities tick={tick} onChange={refresh} />}
         {page === 'sources' && <Sources tick={tick} />}
-        {page === 'profile' && <Profile onChange={refresh} />}
+        {page === 'profile' && <Profile onChange={refresh} onboarding={needsProfile} />}
         {page === 'payments' && <Payments tick={tick} onChange={refresh} />}
       </main>
     </>

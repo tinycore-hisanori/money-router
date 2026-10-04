@@ -3,7 +3,7 @@ import type { WeeklyPlan } from '@shared/types';
 import { api, type Routed } from '../api';
 import { t, type Key } from '../i18n';
 
-export default function Dashboard({ tick, onChange }: { tick: number; onChange: () => void }) {
+export default function Dashboard({ tick, onChange, onSetup }: { tick: number; onChange: () => void; onSetup?: () => void }) {
   const [plan, setPlan] = useState<WeeklyPlan | null>(null);
   const [routed, setRouted] = useState<Routed[]>([]);
   const [busy, setBusy] = useState(false);
@@ -70,7 +70,14 @@ export default function Dashboard({ tick, onChange }: { tick: number; onChange: 
         </div>
         {!plan?.items.length && (
           <div>
-            <p className="muted">{t('dash.empty')}</p>
+            {onSetup ? (
+              <div style={{ padding: '8px 0 12px' }}>
+                <p style={{ margin: '0 0 8px' }}>{t('onb.body')}</p>
+                <button className="primary" onClick={onSetup}>{t('onb.cta')}</button>
+              </div>
+            ) : (
+              <p className="muted">{t('dash.empty')}</p>
+            )}
             {Object.keys(exclusionCounts).length > 0 && (
               <div className="muted" style={{ fontSize: 13 }}>
                 <b style={{ color: 'var(--text)' }}>{t('dash.whyNot')}</b>
