@@ -16,6 +16,10 @@ export const CERTAINTY_WEIGHT: Record<Opportunity['certainty'], number> = { fixe
 /** Skill synonyms so "javascript" matches "html5_game_dev"-style requirements loosely. */
 const SKILL_ALIASES: Record<string, string[]> = {
   html5_game_dev: ['javascript', 'typescript', 'game_dev', 'phaser', 'godot', 'unity', 'webgl'],
+  game_dev: ['html5_game_dev', 'unity', 'godot', 'unreal'],
+  mobile_dev: ['android', 'ios', 'flutter', 'react_native'],
+  teaching: ['tutoring', 'english_teaching'],
+  data: ['data_entry', 'labeling', 'annotation'],
   web_dev: ['javascript', 'typescript', 'react', 'html', 'css', 'node'],
   security: ['pentest', 'bug_bounty', 'appsec', 'ctf'],
   writing: ['copywriting', 'blogging', 'english'],
