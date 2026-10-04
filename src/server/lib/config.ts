@@ -35,6 +35,12 @@ export const config = {
     apiKey: process.env.BRAVE_SEARCH_API_KEY ?? '',
     maxQueriesPerRun: Number(process.env.DISCOVERY_MAX_QUERIES_PER_RUN ?? 50),
   },
+  guards: {
+    adminToken: process.env.ADMIN_TOKEN ?? '',
+    dailyDiscovery: Number(process.env.DEMO_DAILY_DISCOVERY ?? 3),
+    dailyBriefs: Number(process.env.DEMO_DAILY_BRIEFS ?? 50),
+    dailyCrawls: Number(process.env.DEMO_DAILY_CRAWLS ?? 1),
+  },
   crawler: {
     mode: (process.env.CRAWLER_MODE ?? 'mock') as 'mock' | 'live',
     hourUtc: process.env.CRAWL_HOUR_UTC === '' || process.env.CRAWL_HOUR_UTC === undefined ? null : Number(process.env.CRAWL_HOUR_UTC),

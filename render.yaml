@@ -25,6 +25,14 @@ services:
         sync: false
       - key: PAYPAL_RECEIVER_EMAIL
         sync: false
+      - key: ADMIN_TOKEN
+        sync: false
+      - key: DEMO_DAILY_DISCOVERY
+        value: "3"
+      - key: DEMO_DAILY_BRIEFS
+        value: "50"
+      - key: DEMO_DAILY_CRAWLS
+        value: "1"
       - key: MODEL_EXTRACT
         value: claude-sonnet-5-5
       - key: MODEL_AUDIT

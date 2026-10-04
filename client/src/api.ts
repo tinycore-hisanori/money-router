@@ -1,8 +1,24 @@
 import type { ExecutionStatus, LocalizedSummary, Payment, RoutedOpportunity, UserProfile, WeeklyPlan } from '@shared/types';
 
+export const adminToken = {
+  get: () => { try { return localStorage.getItem('mr_admin_token') ?? ''; } catch { return ''; } },
+  set: (v: string) => { try { v ? localStorage.setItem('mr_admin_token', v) : localStorage.removeItem('mr_admin_token'); } catch {} },
+};
+
+export class ApiError extends Error {
+  constructor(public status: number, public body: any) { super(body?.error ?? String(status)); }
+}
+
 async function j<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...init });
-  if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const tok = adminToken.get();
+  if (tok) headers['x-admin-token'] = tok;
+  const res = await fetch(url, { ...init, headers: { ...headers, ...(init?.headers as any) } });
+  if (!res.ok) {
+    let body: any = null;
+    try { body = await res.json(); } catch { body = { error: await res.text() }; }
+    throw new ApiError(res.status, body);
+  }
   return res.json() as Promise<T>;
 }
 

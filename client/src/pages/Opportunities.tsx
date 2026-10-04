@@ -16,6 +16,7 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
   const [lang, setLang] = useState('ja');
   const [brief, setBrief] = useState<LocalizedSummary | null>(null);
   const [briefBusy, setBriefBusy] = useState(false);
+  const [briefErr, setBriefErr] = useState('');
 
   useEffect(() => {
     api.profile().then((p) => setLang(p.language || 'ja')).catch(() => {});
@@ -27,8 +28,9 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
     const have = o.localized?.[lang];
     if (have) return setBrief(have);
     setBrief(null);
+    setBriefErr('');
     setBriefBusy(true);
-    api.localize(o.id, lang).then(setBrief).catch(() => setBrief(null)).finally(() => setBriefBusy(false));
+    api.localize(o.id, lang).then(setBrief).catch((e) => { setBrief(null); if (e?.status === 429) setBriefErr(t('guard.exhausted')); }).finally(() => setBriefBusy(false));
   }, [selected, lang]);
 
   useEffect(() => {
@@ -153,7 +155,7 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
                 <p className="muted" style={{ fontSize: 12 }}>{t('brief.by')}{brief.generated_by}</p>
               </>
             )}
-            {!brief && !briefBusy && <p className="muted">{t('brief.none')}</p>}
+            {!brief && !briefBusy && <p className="muted">{briefErr || t('brief.none')}</p>}
             <hr style={{ border: 0, borderTop: '1px solid var(--line)' }} />
             <p className="muted" style={{ fontSize: 12 }}>
               <b style={{ color: 'var(--text)' }}>{t('brief.legit')} {selected.opportunity.legitimacy.score}</b> ({selected.opportunity.legitimacy.scored_by}, {selected.opportunity.legitimacy.mode})<br />

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api } from '../api';
+import { api, ApiError } from '../api';
 import { t } from '../i18n';
 
 export default function Sources({ tick }: { tick: number }) {
@@ -8,6 +8,7 @@ export default function Sources({ tick }: { tick: number }) {
   const [busy, setBusy] = useState(false);
   const [last, setLast] = useState<any>(null);
   const [local, setLocal] = useState(0);
+  const [msg, setMsg] = useState('');
   const reload = () => {
     api.status().then(setStatus);
     api.candidates().then(setCands).catch(() => setCands([]));
@@ -22,15 +23,21 @@ export default function Sources({ tick }: { tick: number }) {
       setLast(await api.discover(12));
       setLocal((x) => x + 1);
     } catch (e: any) {
-      alert(String(e.message ?? e));
+      setMsg(e instanceof ApiError && e.status === 429 ? t('guard.exhausted') : String(e.message ?? e));
     } finally {
       setBusy(false);
     }
   };
   const act = async (id: string, ok: boolean) => {
-    await (ok ? api.approve(id) : api.reject(id));
-    setLocal((x) => x + 1);
+    try {
+      await (ok ? api.approve(id) : api.reject(id));
+      setLocal((x) => x + 1);
+    } catch (e: any) {
+      setMsg(e instanceof ApiError && e.status === 403 ? t('guard.adminOnly') : String(e.message ?? e));
+    }
   };
+  const demo = status?.demo?.discovery;
+  const canDiscover = status?.admin || (demo && demo.remaining > 0);
   const pending = cands.filter((c) => c.status === 'candidate').sort((a, b) => b.fit_score - a.fit_score);
   const done = cands.filter((c) => c.status !== 'candidate');
   const entries = Object.entries(crawl.sources ?? {}) as [string, any][];
@@ -43,8 +50,10 @@ export default function Sources({ tick }: { tick: number }) {
           <h3 style={{ margin: 0 }}>{t('disc.title')}</h3>
           <span className="muted">{t('disc.hint')}</span>
           <div className="spacer" />
-          <button className="primary" onClick={discover} disabled={busy}>{busy ? t('disc.running') : t('disc.run')}</button>
+          {!status?.admin && demo && <span className="muted">{t('guard.demoLeft', { n: demo.remaining, limit: demo.limit })}</span>}
+          <button className="primary" onClick={discover} disabled={busy || !canDiscover}>{busy ? t('disc.running') : t('disc.run')}</button>
         </div>
+        {msg && <p className="muted" style={{ color: 'var(--accent-2)' }}>{msg}</p>}
         {last && (
           <details style={{ marginBottom: 10 }}>
             <summary className="muted" style={{ cursor: 'pointer' }}>{t('disc.lastRun')} ({last.queries?.length}) · +{last.new_candidates}</summary>

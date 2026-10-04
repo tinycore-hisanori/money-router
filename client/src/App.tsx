@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api } from './api';
+import { api, adminToken } from './api';
 import Dashboard from './pages/Dashboard';
 import Opportunities from './pages/Opportunities';
 import Profile from './pages/Profile';
@@ -60,6 +60,19 @@ export default function App() {
             {t('hdr.crawl')} <b>{crawl?.last_run ? new Date(crawl.last_run).toLocaleString() : t('hdr.never')}</b>
             {crawl?.audit_model ? ` · ${crawl.audit_model}/${crawl.audit_mode}` : ''}
           </span>
+          <button
+            className="ghost"
+            style={{ padding: '2px 8px', fontSize: 12, color: status?.admin ? 'var(--accent)' : 'var(--muted)' }}
+            title={t('guard.keyPrompt')}
+            onClick={() => {
+              const v = window.prompt(t('guard.keyPrompt'), adminToken.get());
+              if (v === null) return;
+              adminToken.set(v.trim());
+              refresh();
+            }}
+          >
+            {status?.admin ? `🔑 ${t('guard.admin')}` : '🔑'}
+          </button>
         </div>
       </header>
       <main>

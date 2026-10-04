@@ -127,6 +127,16 @@ docs/SPEC_v1.0.md            full specification (Japanese)
 - **Render** — hosting (web service + disk)
 - Hono, React, Vite, TypeScript
 
+## Who pays for the AI?
+
+The operator does, so costly actions are guarded:
+
+- **Admin key** (`ADMIN_TOKEN`): entered once in the UI (🔑 in the header) — unlimited Discovery, crawls and briefs, and the only way to approve/reject discovered sources.
+- **Public demo allowance** per day (`DEMO_DAILY_DISCOVERY=3`, `DEMO_DAILY_BRIEFS=50`, `DEMO_DAILY_CRAWLS=1`): judges and visitors can try everything a few times; after that the UI points to the demo video. Worst-case cost is bounded by these numbers.
+- Routing, plans, the opportunity grid and PayPal sync cost nothing to view.
+
+In a product, "AI Discovery" is the natural paid tier (e.g. N runs per month); browsing and routing stay free.
+
 ## Disclaimer
 
 Earnings figures are estimates extracted from public pages and may be wrong or out of date. Always check the platform's own terms before committing time or money. Money Router never asks for or stores bank or card details.
