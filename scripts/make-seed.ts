@@ -11,7 +11,7 @@ const seed = (
   id, source_id, name, provider, category, url,
   payout_methods: ['PayPal'], payout_currency: 'USD', min_payout: 0, payout_cycle: 'monthly', payout_days_estimate: 30,
   reward_model: 'per_task', certainty: 'per_task', reward_estimate_usd: 10, effort_hours_estimate: 1,
-  skills_required: [], countries_allowed: [], countries_blocked: [], requirements: [],
+  skills_required: [], countries_allowed: [], countries_blocked: [], requirements: [], deadline: null,
   legitimacy: { score: 70, notes: 'seed data — not yet audited', scored_by: 'seed', scored_at: now, mode: 'seed' },
   confidence: 0.5, status: 'active', last_checked: now,
   observed: { total_received_usd: 0, payments_count: 0, avg_days_to_payout: null, last_payment_at: null },
@@ -103,6 +103,11 @@ const list: Opportunity[] = [
     reward_model: 'per_task', certainty: 'per_task', reward_estimate_usd: 15, effort_hours_estimate: 1, min_payout: 0, payout_cycle: 'on_request', payout_days_estimate: 5,
     skills_required: ['english', 'japanese'], requirements: ['Pass language pair test (EN↔JA available)'],
     legitimacy: { score: 87, notes: 'Crowd translation, PayPal payouts; EN↔JA demand is steady', scored_by: 'seed', scored_at: now, mode: 'seed' },
+  }),
+  seed('devpost:paypal-ai-hackathon', 'devpost', 'PayPal AI Hackathon (Devpost) — prizes', 'Devpost / PayPal', 'contest', 'https://paypalaihackathon.devpost.com/', {
+    reward_model: 'one_time', certainty: 'fixed', reward_estimate_usd: 5000, effort_hours_estimate: 80, min_payout: 0, payout_cycle: 'after_judging', payout_days_estimate: 60,
+    skills_required: ['web_dev'], requirements: ['Public GitHub repo with license', 'Demo video under 3 minutes', 'Meaningful use of PayPal + AI'], deadline: '2026-11-12',
+    legitimacy: { score: 95, notes: 'Devpost-managed hackathon; prizes paid by Devpost (PayPal available)', scored_by: 'seed', scored_at: now, mode: 'seed' }, confidence: 0.8,
   }),
   seed('shady:crypto-tasks', 'other', 'EasyPayDaily Crypto Micro Tasks', 'EasyPayDaily', 'microtask', 'https://example.com/easypaydaily', {
     reward_model: 'per_task', reward_estimate_usd: 50, effort_hours_estimate: 0.2, min_payout: 500, payout_cycle: 'unspecified', payout_days_estimate: 90,

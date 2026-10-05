@@ -335,5 +335,33 @@
     "category": "survey",
     "trust_baseline": 70,
     "enabled": true
+  },
+  {
+    "id": "devpost",
+    "name": "Devpost Hackathons",
+    "url": "https://devpost.com/hackathons",
+    "category": "contest",
+    "parse_hint": "Open online hackathons with cash prizes; prizes are paid by Devpost (PayPal available). Extract each open hackathon with its deadline and prize.",
+    "trust_baseline": 95,
+    "enabled": true,
+    "paypal_confirmed": true
+  },
+  {
+    "id": "itchio-jams",
+    "name": "itch.io Game Jams",
+    "url": "https://itch.io/jams",
+    "category": "contest",
+    "parse_hint": "Game jams; keep only jams that state cash prizes. Extract deadline and prize.",
+    "trust_baseline": 85,
+    "enabled": true
+  },
+  {
+    "id": "gamedev-contests-ja",
+    "name": "ゲーム開発コンテスト（日本）",
+    "url": "https://www.koubo.co.jp/",
+    "category": "contest",
+    "parse_hint": "Japanese public-contest listing site (登竜門/公募ガイド). Keep game/app/IT contests with cash prizes; note whether prize payment via PayPal is possible for overseas-run contests.",
+    "trust_baseline": 70,
+    "enabled": true
   }
 ]

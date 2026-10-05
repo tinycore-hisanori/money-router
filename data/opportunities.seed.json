@@ -26,6 +26,7 @@
       "Exclusive or non-exclusive HTML5 game submission",
       "Integrate CrazyGames SDK"
     ],
+    "deadline": null,
     "legitimacy": {
       "score": 92,
       "notes": "Established portal with public developer terms",
@@ -69,6 +70,7 @@
     "requirements": [
       "Submit HTML5 games via developer portal"
     ],
+    "deadline": null,
     "legitimacy": {
       "score": 78,
       "notes": "Legitimate but lower traffic; long payout cycle",
@@ -113,6 +115,7 @@
       "Upload games, templates or assets",
       "Set your own revenue share (default 10% to itch)"
     ],
+    "deadline": null,
     "legitimacy": {
       "score": 94,
       "notes": "Creator-friendly marketplace, direct-to-PayPal payouts",
@@ -156,6 +159,7 @@
     "requirements": [
       "Valid, in-scope vulnerability report accepted by the program"
     ],
+    "deadline": null,
     "legitimacy": {
       "score": 96,
       "notes": "Industry-standard platform, PayPal payout option",
@@ -208,6 +212,7 @@
       "Pass a sample test",
       "Microphone and screen recording"
     ],
+    "deadline": null,
     "legitimacy": {
       "score": 90,
       "notes": "Well-known; test availability varies a lot by country",
@@ -250,6 +255,7 @@
       "Android or iOS device",
       "Record gameplay with voice"
     ],
+    "deadline": null,
     "legitimacy": {
       "score": 84,
       "notes": "Legit; invitations are sporadic",
@@ -305,6 +311,7 @@
     "requirements": [
       "Waitlist / limited sign-ups in many countries"
     ],
+    "deadline": null,
     "legitimacy": {
       "score": 92,
       "notes": "Academic research platform, pays reliably",
@@ -348,6 +355,7 @@
     "requirements": [
       "Original photos, vectors, video or music"
     ],
+    "deadline": null,
     "legitimacy": {
       "score": 90,
       "notes": "Established; per-download rates are low",
@@ -392,6 +400,7 @@
       "Items pass review",
       "HTML5 game templates and JS plugins sell well"
     ],
+    "deadline": null,
     "legitimacy": {
       "score": 91,
       "notes": "Large marketplace, PayPal payout supported",
@@ -437,6 +446,7 @@
       "Profile approval",
       "10% service fee"
     ],
+    "deadline": null,
     "legitimacy": {
       "score": 93,
       "notes": "Escrow-backed, PayPal withdrawal available",
@@ -481,6 +491,7 @@
       "20% platform fee",
       "Gig description and samples"
     ],
+    "deadline": null,
     "legitimacy": {
       "score": 92,
       "notes": "Established; competitive pricing",
@@ -523,6 +534,7 @@
       "Sell tools, templates, source code or art",
       "10% flat fee"
     ],
+    "deadline": null,
     "legitimacy": {
       "score": 93,
       "notes": "Simple creator storefront, PayPal payouts",
@@ -564,6 +576,7 @@
     "requirements": [
       "Audience to share the page with"
     ],
+    "deadline": null,
     "legitimacy": {
       "score": 90,
       "notes": "0% fee on tips, PayPal direct",
@@ -607,6 +620,7 @@
     "requirements": [
       "Friend must make a qualifying purchase"
     ],
+    "deadline": null,
     "legitimacy": {
       "score": 100,
       "notes": "First-party PayPal promotion; US only",
@@ -660,6 +674,7 @@
       "New account",
       "Earn first 2,500 SB within 60 days"
     ],
+    "deadline": null,
     "legitimacy": {
       "score": 86,
       "notes": "Long-running rewards site; PayPal cash-out",
@@ -704,6 +719,7 @@
       "Pass transcription test",
       "Pays per audio minute, ~$0.30-1.10"
     ],
+    "deadline": null,
     "legitimacy": {
       "score": 88,
       "notes": "Established; weekly PayPal payouts",
@@ -748,6 +764,7 @@
     "requirements": [
       "Pass language pair test (EN↔JA available)"
     ],
+    "deadline": null,
     "legitimacy": {
       "score": 87,
       "notes": "Crowd translation, PayPal payouts; EN↔JA demand is steady",
@@ -756,6 +773,52 @@
       "mode": "seed"
     },
     "confidence": 0.5,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "devpost:paypal-ai-hackathon",
+    "source_id": "devpost",
+    "name": "PayPal AI Hackathon (Devpost) — prizes",
+    "provider": "Devpost / PayPal",
+    "category": "contest",
+    "url": "https://paypalaihackathon.devpost.com/",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 0,
+    "payout_cycle": "after_judging",
+    "payout_days_estimate": 60,
+    "reward_model": "one_time",
+    "certainty": "fixed",
+    "reward_estimate_usd": 5000,
+    "effort_hours_estimate": 80,
+    "skills_required": [
+      "web_dev"
+    ],
+    "countries_allowed": [],
+    "countries_blocked": [],
+    "requirements": [
+      "Public GitHub repo with license",
+      "Demo video under 3 minutes",
+      "Meaningful use of PayPal + AI"
+    ],
+    "deadline": "2026-11-12",
+    "legitimacy": {
+      "score": 95,
+      "notes": "Devpost-managed hackathon; prizes paid by Devpost (PayPal available)",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.8,
     "status": "active",
     "last_checked": "2026-10-03T00:00:00.000Z",
     "observed": {
@@ -790,6 +853,7 @@
       "$29 activation fee",
       "Guaranteed $500/day"
     ],
+    "deadline": null,
     "legitimacy": {
       "score": 12,
       "notes": "Upfront fee, guaranteed-income claims, unreachable payout threshold — scam pattern",

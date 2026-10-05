@@ -14,6 +14,9 @@
 世界中の「PayPalで報酬を受け取れる稼ぎ口」をAIが収集・審査し、ユーザーの国・スキル・時間に合わせて実行計画に変換し、PayPalの実入金で収益性を検証し続けるツール。
 
 ### 1.2 解く問題
+
+**実例（2026-10-05）**：MapleStory Worlds Global Creator Challenge（Nexon、募集 6/4〜10/7、賞金総額 $65,000）を締切2日前まで知らなかった。告知が韓国中心でDevpostにも載らず、日本語情報も無かった。「情報は存在するのに、言語と場所の壁で届かない」—— Money Router の Discover が解くべき問題の典型。
+
 - PayPal払いの副収入案件（ゲームポータル開発者収益、バグバウンティ、ユーザーテスト、アンケート、マイクロタスク、ストック素材、フリーランス、アフィリエイト、紹介特典）は無数にあるが、散在していて見つけにくい
 - 詐欺・払われない・最低出金額に届かない案件が大量に混ざっている
 - 「自分の国で使えるか」「自分のスキルで稼げるか」「いつ入金されるか」を案件ごとに調べるコストが高い
@@ -25,7 +28,7 @@
 ### 1.4 3本柱
 | 柱 | 役割 | AIの使い所 | PayPalの使い所 |
 |---|---|---|---|
-| Discover | 案件の収集・構造化・審査 | ページからの構造化抽出、正当性スコア、重複統合 | — |
+| Discover | 案件の収集・構造化・審査。**コンテスト・懸賞金・ハッカソン**を含む | ページからの構造化抽出、正当性スコア、重複統合、締切の抽出 | — |
 | Route | ユーザー条件→実行計画 | 自然言語プロフィール解釈、優先度付け、週次プランの説明文生成 | — |
 | Track | 実入金で閉じる | 入金と案件のマッチング、実測収益性でランキング更新 | Transaction Search API、Invoicing API、Payouts API（デモ用） |
 
@@ -96,7 +99,7 @@
 | source_id | string | source_registry のID |
 | name | string | 案件名（例: CrazyGames Developer Revenue Share） |
 | provider | string | 提供元 |
-| category | enum | game_portal / bug_bounty / user_testing / survey / microtask / stock_assets / freelance / affiliate / referral / other |
+| category | enum | game_portal / bug_bounty / user_testing / survey / microtask / stock_assets / freelance / affiliate / referral / **contest** / **licensing** / **localization** / **data_collection** / other |
 | url | string | 公式URL |
 | payout_methods | string[] | 支払い方法。PayPal を含む案件のみ採用 |
 | payout_currency | string | USD 等 |
@@ -111,6 +114,7 @@
 | countries_allowed | string[] | ISO2。空=全世界 |
 | countries_blocked | string[] | ISO2 |
 | requirements | string[] | 条件の箇条書き（年齢、ポートフォリオ等） |
+| deadline | date \| null | 応募・提出締切（コンテスト、ハッカソン、期間限定プロモ）。開放型は null。**v0.6.0 の「申込期限」の継承** |
 | legitimacy_score | number 0-100 | AI審査スコア |
 | legitimacy_notes | string | 根拠 |
 | confidence | number 0-1 | 抽出信頼度 |
@@ -194,6 +198,14 @@ AUDIT_SCHEDULE=mon:claude-fable-5-1:full,thu:claude-opus-5-5:full
 
 → 「PayPal受取可」が確認できないものは AI が自動で落とす。これ自体がデモの見せ場。
 
+### 5.3 コンテスト・懸賞金・ハッカソン（category: contest）
+「期限と確定額がある情報」の代表であり、本プロダクトの原点（v0.6.0 の銀行キャンペーン）に最も近いカテゴリ。
+- 収集元：Devpost（賞金は Devpost 経由で PayPal 支払い可）、itch.io ジャム（賞金ありのみ）、日本の公募サイト（登竜門／公募ガイド）、ゲーム会社の開発者コンテスト（Nexon 等）、各社ハッカソン告知
+- **多言語ソースを前提にする**：韓国・中国・欧州の公募サイトも Discovery の検索対象に含め、要約はユーザー言語で出す（MapleStory の教訓）
+- 抽出：`deadline` と賞金額を必ず取る。締切超過は `deadline_passed` として除外し、自動で `closed` 化
+- ルーティング：締切が近いほど優先（7日以内 ×1.5、30日以内 ×1.25）。certainty は `fixed`（賞金額が明示）
+- 注意：コンテストは「応募すれば必ず入る」ではないため、週次プランの期待値は `reward × 採択率の保守的推定` を用いる（v1.1 で調整）
+
 ---
 
 ## 6. Route（実行計画）
@@ -212,6 +224,7 @@ AUDIT_SCHEDULE=mon:claude-fable-5-1:full,thu:claude-opus-5-5:full
 expected_hourly = reward_estimate_usd / effort_hours_estimate
 score = expected_hourly
         × certainty_weight (fixed 1.0 / per_task 0.9 / speculative 0.4)   // 「作れば売れるかも」は強く割引
+        × deadline_urgency (7日以内 1.5 / 30日以内 1.25 / それ以外 1.0)  // 締切が近いものを先に
         × legitimacy_score/100
         × time_discount(payout_days_estimate)      // 入金が遠いほど減点
         × observed_boost                           // 実入金実績があれば加点、推奨後N日入金なしなら減点
@@ -317,3 +330,4 @@ score = expected_hourly
 - マルチユーザー＋PayPal Log In（Connect with PayPal）
 - 通知（期限・新規高額案件・支払い遅延）
 - 日本の銀行キャンペーン（v0.6.0の領域）を Discover の1カテゴリとして復活（AI抽出で）
+- コンテストの期待値補正（採択率）、締切リマインド通知、多言語公募サイトの定期巡回（韓国・中国・欧州）

@@ -62,6 +62,7 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
       },
       { headerName: t('col.score'), field: 'score', width: 100, valueFormatter: (p) => p.value?.toFixed(1), sort: 'desc' },
       { headerName: t('col.hourly'), field: 'expected_hourly', width: 90, valueFormatter: (p) => `$${p.value?.toFixed(0)}` },
+      { headerName: t('col.deadline'), valueGetter: (p) => p.data?.opportunity.deadline, width: 110, valueFormatter: (p) => p.value ?? '—' },
       { headerName: t('col.minPayout'), valueGetter: (p) => p.data?.opportunity.min_payout, width: 110, valueFormatter: (p) => `$${p.value}` },
       { headerName: t('col.days'), valueGetter: (p) => p.data?.opportunity.payout_days_estimate, width: 110 },
       {

@@ -66,6 +66,8 @@ export interface Opportunity {
   countries_allowed: string[]; // ISO2, empty = worldwide
   countries_blocked: string[];
   requirements: string[];
+  /** ISO date when applications/submissions close (contests, hackathons, limited promos). null = open-ended. */
+  deadline: string | null;
   legitimacy: LegitimacyScore;
   confidence: number; // 0-1 extraction confidence
   status: OpportunityStatus;
@@ -114,6 +116,7 @@ export interface Payment {
 
 export interface ExclusionReason {
   code:
+    | 'deadline_passed'
     | 'country'
     | 'skills'
     | 'min_payout_unreachable'

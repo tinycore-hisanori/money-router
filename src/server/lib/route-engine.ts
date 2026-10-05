@@ -35,6 +35,16 @@ function hasSkill(user: string[], required: string): boolean {
   return (SKILL_ALIASES[required] ?? []).some((a) => u.has(a));
 }
 
+/** Things that close soon move up: x1.5 within 7 days, x1.25 within 30 days, x1 otherwise. */
+export function deadlineUrgency(deadline: string | null, now: Date): number {
+  if (!deadline) return 1;
+  const days = (new Date(deadline).getTime() - now.getTime()) / 86_400_000;
+  if (days < 0) return 1;
+  if (days <= 7) return 1.5;
+  if (days <= 30) return 1.25;
+  return 1;
+}
+
 /** Discount for money that arrives late: 1.0 at <=7 days, decays toward 0.5 at ~90 days. */
 export function timeDiscount(days: number): number {
   if (days <= 7) return 1;
@@ -64,6 +74,9 @@ export function routeOne(
 
   if (o.status !== 'active') exclusions.push({ code: 'status', detail: `status is ${o.status}` });
 
+  if (o.deadline && new Date(o.deadline).getTime() < now.getTime() - 86_400_000)
+    exclusions.push({ code: 'deadline_passed', detail: `deadline ${o.deadline} has passed` });
+
   if (o.countries_allowed.length && !o.countries_allowed.includes(profile.country))
     exclusions.push({ code: 'country', detail: `not available in ${profile.country}` });
   if (o.countries_blocked.includes(profile.country))
@@ -91,6 +104,7 @@ export function routeOne(
   const score =
     expected_hourly *
     CERTAINTY_WEIGHT[o.certainty] *
+    deadlineUrgency(o.deadline, now) *
     (o.legitimacy.score / 100) *
     timeDiscount(o.payout_days_estimate) *
     observedBoost(o, exec, now);
