@@ -207,6 +207,7 @@ AUDIT_SCHEDULE=mon:claude-fable-5-1:full,thu:claude-opus-5-5:full
 - 抽出：`deadline` と賞金額を必ず取る。締切超過は `deadline_passed` として除外し、自動で `closed` 化
 - **参加資格の検証を必須にする**（MapleStory の教訓その2：日本から参加できない可能性が規約に埋まっていた）：contest / referral は「Official Rules / 応募資格」ページを追加検索して本文に連結し、`eligibility_verified`（規約で明示的に確認できたか）と `eligibility_note`（引用）を抽出する。確認できない場合は `countries_allowed` を推測で埋めず、UI・要約に「参加資格 未確認（規約を確認）」の警告を出し、締切ブーストも付けない
 - ルーティング：締切が近いほど優先（7日以内 ×1.5、30日以内 ×1.25）。certainty は `fixed`（賞金額が明示）
+- **Event Radar（野良イベント探索）**：プラットフォーム登録制とは別に、「最近告知された単発イベント」をイベント名ではなく語彙（prize / deadline / 賞金 / 募集 / 공모전 / 상금 / 奖金 …）で英・日・韓・中の多言語検索（Brave freshness=1ヶ月）し、規約ページを添えて抽出 → 締切・賞金・参加資格付きで案件に直接登録（source_id = radar）。承認ゲートなし（ユーザーが支払う行為がないため、正当性スコアと資格警告で足りる）。締切超過で自動 closed。週1自動（RADAR_DOW）＋手動。MapleStory 型を拾うための本命機能
 - 注意：コンテストは「応募すれば必ず入る」ではないため、週次プランの期待値は `reward × 採択率の保守的推定` を用いる（v1.1 で調整）
 
 ---

@@ -119,6 +119,10 @@ const dict = {
   'disc.approved': { ja: '承認済み', en: 'approved' },
   'disc.rejected': { ja: '却下済み', en: 'rejected' },
   'disc.lastRun': { ja: '前回の探索クエリ', en: 'Last run queries' },
+  'radar.run': { ja: 'イベント探索（コンテスト・賞金）', en: 'Event Radar (contests & prizes)' },
+  'radar.running': { ja: '探索中…（2〜3分）', en: 'Scanning… (2–3 min)' },
+  'radar.hint': { ja: '最近告知された単発のコンテスト・ハッカソン・ジャムを英・日・韓・中で探し、締切・賞金・参加資格を読んで案件一覧に直接追加します（締切後は自動で消えます）。', en: 'Finds recently announced one-off contests, hackathons and jams in EN/JA/KO/ZH, reads deadline, prize and eligibility, and adds them straight to the list (they expire at the deadline).' },
+  'radar.result': { ja: 'ページ {p} 件を読み、{a} 件追加・{u} 件更新・{e} 件期限切れ', en: 'Read {p} pages: +{a} new, {u} updated, {e} expired' },
   // guards
   'guard.demoLeft': { ja: '本日のデモ枠 残り {n}/{limit}', en: 'Demo allowance today: {n}/{limit} left' },
   'guard.exhausted': { ja: '本日のデモ枠は使い切りました。デモ動画をご覧いただくか、明日またお試しください。', en: 'Today\'s demo allowance is used up. Please watch the demo video or try again tomorrow.' },

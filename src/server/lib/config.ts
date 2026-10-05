@@ -53,6 +53,8 @@ export const config = {
     mode: (process.env.CRAWLER_MODE ?? 'mock') as 'mock' | 'live',
     hourUtc: process.env.CRAWL_HOUR_UTC === '' || process.env.CRAWL_HOUR_UTC === undefined ? null : Number(process.env.CRAWL_HOUR_UTC),
     token: process.env.CRAWL_TOKEN ?? '',
+    /** UTC weekday (0=Sun) to run Event Radar after the daily crawl; null = manual only */
+    radarDow: process.env.RADAR_DOW === '' || process.env.RADAR_DOW === undefined ? null : Number(process.env.RADAR_DOW),
     userAgent:
       process.env.CRAWLER_USER_AGENT ??
       'MoneyRouterBot/1.0 (+https://github.com/tinycore-hisanori/money-router)',

@@ -30,6 +30,10 @@ if (config.crawler.hourUtc !== null) {
     try {
       const { runCrawl } = await import('../crawler/index.js');
       await runCrawl();
+      if (config.crawler.radarDow !== null && now.getUTCDay() === config.crawler.radarDow) {
+        const { runRadar } = await import('../crawler/radar.js');
+        await runRadar();
+      }
     } catch (e) {
       console.error('[crawl] scheduled run failed', e);
     }

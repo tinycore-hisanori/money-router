@@ -177,6 +177,12 @@ api.post('/discover', async (c) => {
   const max = Number(c.req.query('max') ?? 12);
   return c.json(await runDiscovery({ maxQueries: max }));
 });
+api.post('/radar', async (c) => {
+  const denied = await consume(c, 'discovery');
+  if (denied) return c.json(denied, 429);
+  const { runRadar } = await import('../../crawler/radar.js');
+  return c.json(await runRadar({ maxQueries: Number(c.req.query('max') ?? 10) }));
+});
 api.get('/candidates', async (c) => c.json(await store.getCandidates()));
 api.post('/candidates/:id/approve', async (c) => {
   if (!canCurate(c)) return c.json({ error: 'admin_only' }, 403);

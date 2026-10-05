@@ -14,7 +14,7 @@ export const braveQueriesUsed = () => used;
 export const resetBraveBudget = () => (used = 0);
 
 /** Brave Web Search. Returns [] (never throws) when the key is missing or the budget is spent. */
-export async function braveSearch(q: string, count = 5): Promise<SearchHit[]> {
+export async function braveSearch(q: string, count = 5, opts: { freshness?: 'pd' | 'pw' | 'pm' | 'py'; lang?: string } = {}): Promise<SearchHit[]> {
   if (!braveAvailable()) return [];
   if (used >= config.brave.maxQueriesPerRun) {
     console.warn(`[brave] query budget (${config.brave.maxQueriesPerRun}) spent; skipping "${q}"`);
@@ -22,6 +22,8 @@ export async function braveSearch(q: string, count = 5): Promise<SearchHit[]> {
   }
   used++;
   const qs = new URLSearchParams({ q, count: String(count), text_decorations: '0', extra_snippets: '1' });
+  if (opts.freshness) qs.set('freshness', opts.freshness);
+  if (opts.lang) qs.set('search_lang', opts.lang);
   const res = await fetch(`https://api.search.brave.com/res/v1/web/search?${qs}`, {
     headers: { Accept: 'application/json', 'X-Subscription-Token': config.brave.apiKey },
     signal: AbortSignal.timeout(15_000),

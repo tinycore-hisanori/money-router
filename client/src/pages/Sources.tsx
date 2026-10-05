@@ -36,6 +36,20 @@ export default function Sources({ tick }: { tick: number }) {
       setMsg(e instanceof ApiError && e.status === 403 ? t('guard.adminOnly') : String(e.message ?? e));
     }
   };
+  const [radarBusy, setRadarBusy] = useState(false);
+  const radar = async () => {
+    setRadarBusy(true);
+    setMsg('');
+    try {
+      const r = await api.radar(10);
+      setMsg(t('radar.result', { p: r.pages, a: r.added, u: r.updated, e: r.expired }));
+      setLocal((x) => x + 1);
+    } catch (e: any) {
+      setMsg(e instanceof ApiError && e.status === 429 ? t('guard.exhausted') : String(e.message ?? e));
+    } finally {
+      setRadarBusy(false);
+    }
+  };
   const demo = status?.demo?.discovery;
   const canDiscover = status?.tier === 'admin' || (demo && demo.remaining > 0);
   const pending = cands.filter((c) => c.status === 'candidate').sort((a, b) => b.fit_score - a.fit_score);
@@ -52,6 +66,11 @@ export default function Sources({ tick }: { tick: number }) {
           <div className="spacer" />
           {status?.tier !== 'admin' && demo && <span className="muted">{t('guard.demoLeft', { n: demo.remaining, limit: demo.limit })}</span>}
           <button className="primary" onClick={discover} disabled={busy || !canDiscover}>{busy ? t('disc.running') : t('disc.run')}</button>
+        </div>
+        <div className="toolbar" style={{ marginTop: 4 }}>
+          <span className="muted">{t('radar.hint')}</span>
+          <div className="spacer" />
+          <button className="primary" onClick={radar} disabled={radarBusy || !canDiscover} title={t('radar.run')}>{radarBusy ? t('radar.running') : t('radar.run')}</button>
         </div>
         {msg && <p className="muted" style={{ color: 'var(--accent-2)' }}>{msg}</p>}
         {last && (

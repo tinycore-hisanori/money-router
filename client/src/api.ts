@@ -38,6 +38,7 @@ export const api = {
     j<Payment>('/api/payments/' + encodeURIComponent(tx), { method: 'PUT', body: JSON.stringify({ status, opportunity_id }) }),
   crawl: () => j<any>('/api/crawl', { method: 'POST' }),
   discover: (max = 12) => j<any>(`/api/discover?max=${max}`, { method: 'POST' }),
+  radar: (max = 10) => j<any>(`/api/radar?max=${max}`, { method: 'POST' }),
   candidates: () => j<any[]>('/api/candidates'),
   approve: (id: string) => j<any>(`/api/candidates/${encodeURIComponent(id)}/approve`, { method: 'POST' }),
   reject: (id: string) => j<any>(`/api/candidates/${encodeURIComponent(id)}/reject`, { method: 'POST' }),
