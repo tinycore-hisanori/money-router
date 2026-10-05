@@ -11,7 +11,7 @@ const seed = (
   id, source_id, name, provider, category, url,
   payout_methods: ['PayPal'], payout_currency: 'USD', min_payout: 0, payout_cycle: 'monthly', payout_days_estimate: 30,
   reward_model: 'per_task', certainty: 'per_task', reward_estimate_usd: 10, effort_hours_estimate: 1,
-  skills_required: [], countries_allowed: [], countries_blocked: [], requirements: [], deadline: null,
+  skills_required: [], countries_allowed: [], countries_blocked: [], requirements: [], deadline: null, eligibility_verified: true, eligibility_note: 'seed data',
   legitimacy: { score: 70, notes: 'seed data — not yet audited', scored_by: 'seed', scored_at: now, mode: 'seed' },
   confidence: 0.5, status: 'active', last_checked: now,
   observed: { total_received_usd: 0, payments_count: 0, avg_days_to_payout: null, last_payment_at: null },

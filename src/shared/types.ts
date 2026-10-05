@@ -68,6 +68,10 @@ export interface Opportunity {
   requirements: string[];
   /** ISO date when applications/submissions close (contests, hackathons, limited promos). null = open-ended. */
   deadline: string | null;
+  /** True only when eligibility (countries / residency / age) was read from official rules or terms. */
+  eligibility_verified: boolean;
+  /** Quoted or paraphrased eligibility clause, or why it could not be verified. */
+  eligibility_note: string;
   legitimacy: LegitimacyScore;
   confidence: number; // 0-1 extraction confidence
   status: OpportunityStatus;
@@ -130,6 +134,8 @@ export interface RoutedOpportunity {
   opportunity: Opportunity;
   eligible: boolean;
   exclusions: ExclusionReason[];
+  /** Soft flags that do not exclude but must be shown (e.g. eligibility not verified). */
+  warnings: string[];
   expected_hourly: number;
   score: number;
   explanation?: string;

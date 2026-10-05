@@ -71,6 +71,8 @@ export function routeOne(
   now = new Date(),
 ): RoutedOpportunity {
   const exclusions: ExclusionReason[] = [];
+  const warnings: string[] = [];
+  if (o.eligibility_verified === false) warnings.push('eligibility_unverified');
 
   if (o.status !== 'active') exclusions.push({ code: 'status', detail: `status is ${o.status}` });
 
@@ -104,12 +106,12 @@ export function routeOne(
   const score =
     expected_hourly *
     CERTAINTY_WEIGHT[o.certainty] *
-    deadlineUrgency(o.deadline, now) *
+    (o.eligibility_verified === false ? 1 : deadlineUrgency(o.deadline, now)) *
     (o.legitimacy.score / 100) *
     timeDiscount(o.payout_days_estimate) *
     observedBoost(o, exec, now);
 
-  return { opportunity: o, eligible: exclusions.length === 0, exclusions, expected_hourly, score };
+  return { opportunity: o, eligible: exclusions.length === 0, exclusions, warnings, expected_hourly, score };
 }
 
 export function routeAll(

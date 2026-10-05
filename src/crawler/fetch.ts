@@ -35,6 +35,31 @@ export async function fetchPageText(url: string, maxChars = 40_000): Promise<str
  * 3. on failure: use the search snippets themselves as the text (lower confidence)
  */
 export async function acquireSourceText(source: Source): Promise<PageResult> {
+  const r = await acquireBase(source);
+  // Contests/promos: eligibility lives in Official Rules. Try hard to append them.
+  if (source.category === 'contest' || source.category === 'referral') {
+    const rules = await findRulesText(source);
+    if (rules) return { ...r, text: `${r.text.slice(0, 25_000)}\n\n---- OFFICIAL RULES / ELIGIBILITY (${rules.url}) ----\n${rules.text}` };
+  }
+  return r;
+}
+
+/** Look for an official rules / eligibility page on the same domain; returns null when nothing usable. */
+async function findRulesText(source: Source): Promise<{ url: string; text: string } | null> {
+  const domain = hostOf(source.url);
+  const hits = await braveSearch(`${source.name} official rules eligibility OR 応募資格 OR 参加資格 site:${domain}`, 5);
+  for (const h of hits.slice(0, 3)) {
+    try {
+      const text = await fetchPageText(h.url, 20_000);
+      if (/eligib|resident|citizen|応募資格|参加資格|対象|void where prohibited|18 years|age of majority/i.test(text)) return { url: h.url, text };
+    } catch {
+      /* next */
+    }
+  }
+  return null;
+}
+
+async function acquireBase(source: Source): Promise<PageResult> {
   let firstErr: string | undefined;
   let direct: string | null = null;
   try {

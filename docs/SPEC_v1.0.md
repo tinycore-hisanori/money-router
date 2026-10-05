@@ -115,6 +115,8 @@
 | countries_blocked | string[] | ISO2 |
 | requirements | string[] | 条件の箇条書き（年齢、ポートフォリオ等） |
 | deadline | date \| null | 応募・提出締切（コンテスト、ハッカソン、期間限定プロモ）。開放型は null。**v0.6.0 の「申込期限」の継承** |
+| eligibility_verified | bool | 参加資格（国・居住・年齢）を公式規約から確認できたか |
+| eligibility_note | string | 資格条項の引用、または未確認の理由 |
 | legitimacy_score | number 0-100 | AI審査スコア |
 | legitimacy_notes | string | 根拠 |
 | confidence | number 0-1 | 抽出信頼度 |
@@ -203,6 +205,7 @@ AUDIT_SCHEDULE=mon:claude-fable-5-1:full,thu:claude-opus-5-5:full
 - 収集元：Devpost（賞金は Devpost 経由で PayPal 支払い可）、itch.io ジャム（賞金ありのみ）、日本の公募サイト（登竜門／公募ガイド）、ゲーム会社の開発者コンテスト（Nexon 等）、各社ハッカソン告知
 - **多言語ソースを前提にする**：韓国・中国・欧州の公募サイトも Discovery の検索対象に含め、要約はユーザー言語で出す（MapleStory の教訓）
 - 抽出：`deadline` と賞金額を必ず取る。締切超過は `deadline_passed` として除外し、自動で `closed` 化
+- **参加資格の検証を必須にする**（MapleStory の教訓その2：日本から参加できない可能性が規約に埋まっていた）：contest / referral は「Official Rules / 応募資格」ページを追加検索して本文に連結し、`eligibility_verified`（規約で明示的に確認できたか）と `eligibility_note`（引用）を抽出する。確認できない場合は `countries_allowed` を推測で埋めず、UI・要約に「参加資格 未確認（規約を確認）」の警告を出し、締切ブーストも付けない
 - ルーティング：締切が近いほど優先（7日以内 ×1.5、30日以内 ×1.25）。certainty は `fixed`（賞金額が明示）
 - 注意：コンテストは「応募すれば必ず入る」ではないため、週次プランの期待値は `reward × 採択率の保守的推定` を用いる（v1.1 で調整）
 

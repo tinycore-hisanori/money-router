@@ -15,6 +15,7 @@ For each requested language produce:
 - summary: one sentence — what this is and who it suits (plain, no hype).
 - how_to: 3 concrete steps to start earning (imperative, each under 15 words).
 - payout: one sentence — how much, how often, minimum, and that it pays via PayPal. Include concrete numbers from the data.
+- If eligibility_verified is false, the summary MUST end with a short warning that eligibility (country/residency) could not be confirmed and the official rules must be checked. If countries are restricted, say so plainly.
 Write natively in each language (not a literal translation). Keep platform names in English.`,
     user: JSON.stringify({
       languages: locales.map((l) => ({ code: l, name: LANG_NAMES[l] ?? l })),
@@ -23,6 +24,7 @@ Write natively in each language (not a literal translation). Keep platform names
         reward_estimate_usd: o.reward_estimate_usd, effort_hours_estimate: o.effort_hours_estimate, min_payout: o.min_payout,
         payout_cycle: o.payout_cycle, payout_days_estimate: o.payout_days_estimate, countries_allowed: o.countries_allowed,
         skills_required: o.skills_required, requirements: o.requirements, legitimacy_notes: o.legitimacy.notes,
+        deadline: o.deadline, eligibility_verified: o.eligibility_verified, eligibility_note: o.eligibility_note,
       },
     }),
     schema: {

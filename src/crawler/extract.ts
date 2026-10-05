@@ -20,6 +20,8 @@ Rules:
 - Numbers must come from the page. If a value is not on the page, use your best conservative estimate and lower "confidence".
 - countries_allowed/blocked are ISO2 codes; leave empty when unknown or worldwide.
 - skills_required are snake_case tokens (html5_game_dev, web_dev, security, writing, design, audio, video, 3d, data, english). Include "english" ONLY when the work itself requires producing or speaking English (transcription, tutoring, English copywriting, voice tests) — not merely because the site is written in English. Leave skills_required empty when anyone can do it.
+- ELIGIBILITY IS CRITICAL. Contests, hackathons and promos often restrict by country of residence, age, or tax status in their Official Rules / Terms. Read any rules/terms text included below. Set eligibility_verified=true ONLY if you found an explicit eligibility clause, and quote it in eligibility_note. If the rules are not in the text, set eligibility_verified=false, eligibility_note="rules not found in provided text", and leave countries_allowed empty (do NOT guess).
+- countries_allowed: when the rules list eligible countries, fill ISO2 codes. countries_blocked: when the rules exclude countries (e.g. "void where prohibited", sanctioned countries, "residents of X not eligible").
 - deadline: ISO date (YYYY-MM-DD) when submissions/applications close, for contests, hackathons, jams and limited-time promos; null when open-ended. Never invent a date.
 - certainty: "fixed" when a defined action yields a defined amount (sign-up bonus, referral bonus, fixed bounty, promo, contest/hackathon prize with a stated amount); "per_task" when each completed task pays a known amount but tasks must be obtained (user tests, transcription, labeling, gigs); "speculative" when income depends on sales or traffic (revenue share, marketplace sales).
 - reward_estimate_usd: for per_task = typical payment per task; for rev_share = realistic monthly income for a small creator; for hourly = hourly rate.
@@ -36,7 +38,7 @@ Hint for this source: ${source.parse_hint ?? 'none'}${source.paypal_confirmed ? 
           type: 'array',
           items: {
             type: 'object',
-            required: ['name', 'provider', 'category', 'url', 'payout_methods', 'payout_currency', 'min_payout', 'payout_cycle', 'payout_days_estimate', 'reward_model', 'certainty', 'reward_estimate_usd', 'effort_hours_estimate', 'skills_required', 'countries_allowed', 'countries_blocked', 'requirements', 'deadline', 'confidence'],
+            required: ['name', 'provider', 'category', 'url', 'payout_methods', 'payout_currency', 'min_payout', 'payout_cycle', 'payout_days_estimate', 'reward_model', 'certainty', 'reward_estimate_usd', 'effort_hours_estimate', 'skills_required', 'countries_allowed', 'countries_blocked', 'requirements', 'deadline', 'eligibility_verified', 'eligibility_note', 'confidence'],
             properties: {
               name: { type: 'string' },
               provider: { type: 'string' },
@@ -56,6 +58,8 @@ Hint for this source: ${source.parse_hint ?? 'none'}${source.paypal_confirmed ? 
               countries_blocked: { type: 'array', items: { type: 'string' } },
               requirements: { type: 'array', items: { type: 'string' } },
               deadline: { type: ['string', 'null'] },
+              eligibility_verified: { type: 'boolean' },
+              eligibility_note: { type: 'string' },
               confidence: { type: 'number' },
             },
           },

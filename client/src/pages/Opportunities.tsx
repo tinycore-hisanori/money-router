@@ -62,7 +62,17 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
       },
       { headerName: t('col.score'), field: 'score', width: 100, valueFormatter: (p) => p.value?.toFixed(1), sort: 'desc' },
       { headerName: t('col.hourly'), field: 'expected_hourly', width: 90, valueFormatter: (p) => `$${p.value?.toFixed(0)}` },
-      { headerName: t('col.deadline'), valueGetter: (p) => p.data?.opportunity.deadline, width: 110, valueFormatter: (p) => p.value ?? '—' },
+      {
+        headerName: t('col.deadline'),
+        valueGetter: (p) => p.data?.opportunity.deadline,
+        width: 150,
+        cellRenderer: (p: any) => (
+          <>
+            {p.value ?? '—'}{' '}
+            {p.data?.warnings?.includes('eligibility_unverified') && <span className="pill bad" title={t('warn.eligibility_unverified')}>?</span>}
+          </>
+        ),
+      },
       { headerName: t('col.minPayout'), valueGetter: (p) => p.data?.opportunity.min_payout, width: 110, valueFormatter: (p) => `$${p.value}` },
       { headerName: t('col.days'), valueGetter: (p) => p.data?.opportunity.payout_days_estimate, width: 110 },
       {
@@ -158,6 +168,10 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
             )}
             {!brief && !briefBusy && <p className="muted">{briefErr || t('brief.none')}</p>}
             <hr style={{ border: 0, borderTop: '1px solid var(--line)' }} />
+            <p className="muted" style={{ fontSize: 12 }}>
+              <b style={{ color: selected.opportunity.eligibility_verified === false ? 'var(--danger)' : 'var(--text)' }}>{t('brief.eligibility')}</b>{' '}
+              {selected.opportunity.eligibility_verified === false ? t('warn.eligibility_unverified') + ' — ' : ''}{selected.opportunity.eligibility_note}
+            </p>
             <p className="muted" style={{ fontSize: 12 }}>
               <b style={{ color: 'var(--text)' }}>{t('brief.legit')} {selected.opportunity.legitimacy.score}</b> ({selected.opportunity.legitimacy.scored_by}, {selected.opportunity.legitimacy.mode})<br />
               {selected.opportunity.legitimacy.notes}

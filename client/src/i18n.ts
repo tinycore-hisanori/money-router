@@ -31,6 +31,8 @@ const dict = {
   'dash.hours': { ja: '今週 {h}h', en: '{h}h this week' },
   'dash.whyNot': { ja: '除外理由の内訳（全案件）', en: 'Why opportunities were excluded' },
   'excl.deadline_passed': { ja: '締切超過', en: 'Deadline passed' },
+  'warn.eligibility_unverified': { ja: '参加資格 未確認（規約を確認）', en: 'Eligibility unverified (check official rules)' },
+  'brief.eligibility': { ja: '参加資格', en: 'Eligibility' },
   'excl.country': { ja: '国の制限', en: 'Country restriction' },
   'excl.skills': { ja: 'スキル不足', en: 'Missing skills' },
   'excl.min_payout_unreachable': { ja: '最低出金額に届かない', en: 'Min payout unreachable' },

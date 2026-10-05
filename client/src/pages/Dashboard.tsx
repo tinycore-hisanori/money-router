@@ -95,6 +95,9 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
             <div>
               <h4>
                 {i.name} <span className={`pill ${i.certainty === 'fixed' ? 'ok' : i.certainty === 'per_task' ? 'warn' : ''}`}>{t(`cert.${i.certainty}` as Key)}</span>
+                {routed.find((r) => r.opportunity.id === i.opportunity_id)?.warnings?.includes('eligibility_unverified') && (
+                  <> <span className="pill bad">{t('warn.eligibility_unverified')}</span></>
+                )}
               </h4>
               <p>{i.why}</p>
               <p>

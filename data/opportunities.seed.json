@@ -27,6 +27,8 @@
       "Integrate CrazyGames SDK"
     ],
     "deadline": null,
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 92,
       "notes": "Established portal with public developer terms",
@@ -71,6 +73,8 @@
       "Submit HTML5 games via developer portal"
     ],
     "deadline": null,
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 78,
       "notes": "Legitimate but lower traffic; long payout cycle",
@@ -116,6 +120,8 @@
       "Set your own revenue share (default 10% to itch)"
     ],
     "deadline": null,
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 94,
       "notes": "Creator-friendly marketplace, direct-to-PayPal payouts",
@@ -160,6 +166,8 @@
       "Valid, in-scope vulnerability report accepted by the program"
     ],
     "deadline": null,
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 96,
       "notes": "Industry-standard platform, PayPal payout option",
@@ -213,6 +221,8 @@
       "Microphone and screen recording"
     ],
     "deadline": null,
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 90,
       "notes": "Well-known; test availability varies a lot by country",
@@ -256,6 +266,8 @@
       "Record gameplay with voice"
     ],
     "deadline": null,
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 84,
       "notes": "Legit; invitations are sporadic",
@@ -312,6 +324,8 @@
       "Waitlist / limited sign-ups in many countries"
     ],
     "deadline": null,
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 92,
       "notes": "Academic research platform, pays reliably",
@@ -356,6 +370,8 @@
       "Original photos, vectors, video or music"
     ],
     "deadline": null,
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 90,
       "notes": "Established; per-download rates are low",
@@ -401,6 +417,8 @@
       "HTML5 game templates and JS plugins sell well"
     ],
     "deadline": null,
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 91,
       "notes": "Large marketplace, PayPal payout supported",
@@ -447,6 +465,8 @@
       "10% service fee"
     ],
     "deadline": null,
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 93,
       "notes": "Escrow-backed, PayPal withdrawal available",
@@ -492,6 +512,8 @@
       "Gig description and samples"
     ],
     "deadline": null,
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 92,
       "notes": "Established; competitive pricing",
@@ -535,6 +557,8 @@
       "10% flat fee"
     ],
     "deadline": null,
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 93,
       "notes": "Simple creator storefront, PayPal payouts",
@@ -577,6 +601,8 @@
       "Audience to share the page with"
     ],
     "deadline": null,
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 90,
       "notes": "0% fee on tips, PayPal direct",
@@ -621,6 +647,8 @@
       "Friend must make a qualifying purchase"
     ],
     "deadline": null,
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 100,
       "notes": "First-party PayPal promotion; US only",
@@ -675,6 +703,8 @@
       "Earn first 2,500 SB within 60 days"
     ],
     "deadline": null,
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 86,
       "notes": "Long-running rewards site; PayPal cash-out",
@@ -720,6 +750,8 @@
       "Pays per audio minute, ~$0.30-1.10"
     ],
     "deadline": null,
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 88,
       "notes": "Established; weekly PayPal payouts",
@@ -765,6 +797,8 @@
       "Pass language pair test (EN↔JA available)"
     ],
     "deadline": null,
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 87,
       "notes": "Crowd translation, PayPal payouts; EN↔JA demand is steady",
@@ -811,6 +845,8 @@
       "Meaningful use of PayPal + AI"
     ],
     "deadline": "2026-11-12",
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 95,
       "notes": "Devpost-managed hackathon; prizes paid by Devpost (PayPal available)",
@@ -854,6 +890,8 @@
       "Guaranteed $500/day"
     ],
     "deadline": null,
+    "eligibility_verified": true,
+    "eligibility_note": "seed data",
     "legitimacy": {
       "score": 12,
       "notes": "Upfront fee, guaranteed-income claims, unreachable payout threshold — scam pattern",
