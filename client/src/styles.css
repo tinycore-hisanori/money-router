@@ -54,3 +54,10 @@ label.field input, label.field textarea, label.field select {
 .pill.warn { color: var(--accent-2); border-color: var(--accent-2); }
 .pill.bad { color: var(--danger); border-color: var(--danger); }
 .ag-theme-money { --ag-background-color: var(--panel); --ag-foreground-color: var(--text); --ag-header-background-color: #1d2531; --ag-border-color: var(--line); --ag-row-hover-color: #1f2834; --ag-odd-row-background-color: #151b24; }
+
+/* clickable plan cards + detail modal */
+.plan-item.clickable { cursor: pointer; border-radius: 8px; margin: 0 -8px; padding-left: 8px; padding-right: 8px; }
+.plan-item.clickable:hover { background: #1f2834; }
+.plan-item .hint { font-size: 12px; color: var(--muted); }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+.modal { width: min(720px, 100%); max-height: calc(100vh - 32px); overflow: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }

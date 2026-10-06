@@ -53,6 +53,7 @@ const dict = {
   'opp.crawl': { ja: '今すぐ巡回', en: 'Run crawler now' },
   'opp.crawling': { ja: '巡回中…', en: 'Crawling…' },
   'opp.brief': { ja: '要約', en: 'Brief' },
+  'dash.clickHint': { ja: 'クリックで要約と詳細', en: 'Click for brief & details' },
   'opp.briefTitle': { ja: 'あなたの言語でAI要約', en: 'AI brief in your language' },
   'opp.openPage': { ja: '公式ページを開く', en: 'Open official page' },
   'col.opportunity': { ja: '案件', en: 'Opportunity' },

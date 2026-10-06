@@ -3,7 +3,7 @@ import { AgGridReact } from 'ag-grid-react';
 import type { ColDef } from 'ag-grid-community';
 import type { ExecutionStatus } from '@shared/types';
 import { api, type Routed } from '../api';
-import type { LocalizedSummary } from '@shared/types';
+import OpportunityPanel from '../components/OpportunityPanel';
 import { t, type Key } from '../i18n';
 
 const EXEC: (ExecutionStatus | '')[] = ['', 'todo', 'applied', 'active', 'paid', 'skipped'];
@@ -14,24 +14,10 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
   const [crawling, setCrawling] = useState(false);
   const [selected, setSelected] = useState<Routed | null>(null);
   const [lang, setLang] = useState('ja');
-  const [brief, setBrief] = useState<LocalizedSummary | null>(null);
-  const [briefBusy, setBriefBusy] = useState(false);
-  const [briefErr, setBriefErr] = useState('');
 
   useEffect(() => {
     api.profile().then((p) => setLang(p.language || 'ja')).catch(() => {});
   }, []);
-
-  useEffect(() => {
-    if (!selected) return setBrief(null);
-    const o = selected.opportunity;
-    const have = o.localized?.[lang];
-    if (have) return setBrief(have);
-    setBrief(null);
-    setBriefErr('');
-    setBriefBusy(true);
-    api.localize(o.id, lang).then(setBrief).catch((e) => { setBrief(null); if (e?.status === 429) setBriefErr(t('guard.exhausted')); }).finally(() => setBriefBusy(false));
-  }, [selected, lang]);
 
   useEffect(() => {
     api.route().then(setRows);
@@ -159,65 +145,16 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
         <div className="spacer" />
         <button className="ghost" onClick={crawl} disabled={crawling}>{crawling ? t('opp.crawling') : t('opp.crawl')}</button>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: selected ? '1fr 380px' : '1fr', gap: 12 }}>
-        <div className="ag-theme-money" style={{ height: 'calc(100vh - 180px)', minHeight: 400 }}>
-          <AgGridReact<Routed>
-            rowData={data}
-            columnDefs={cols}
-            defaultColDef={{ sortable: true, filter: true, resizable: true }}
-            tooltipShowDelay={300}
-            animateRows
-          />
-        </div>
-        {selected && (
-          <div className="card" style={{ overflow: 'auto', maxHeight: 'calc(100vh - 180px)' }}>
-            <div className="toolbar">
-              <h3 style={{ margin: 0, fontSize: 15 }}>{selected.opportunity.name}</h3>
-              <div className="spacer" />
-              <select value={lang} onChange={(e) => setLang(e.target.value)} style={{ background: 'transparent', color: 'inherit', border: '1px solid var(--line)', borderRadius: 4 }}>
-                {['ja', 'en', 'es', 'pt', 'de', 'fr', 'ko', 'zh'].map((l) => <option key={l} value={l}>{l}</option>)}
-              </select>
-              <button className="ghost" style={{ padding: '2px 8px' }} onClick={() => setSelected(null)}>×</button>
-            </div>
-            {briefBusy && <p className="muted">{t('brief.writing')}</p>}
-            {brief && (
-              <>
-                <p>{brief.summary}</p>
-                <ol style={{ paddingLeft: 18 }}>{brief.how_to.map((h, i) => <li key={i} style={{ marginBottom: 4 }}>{h}</li>)}</ol>
-                <p style={{ color: 'var(--accent)' }}>{brief.payout}</p>
-                <p className="muted" style={{ fontSize: 12 }}>{t('brief.by')}{brief.generated_by}</p>
-              </>
-            )}
-            {!brief && !briefBusy && <p className="muted">{briefErr || t('brief.none')}</p>}
-            <hr style={{ border: 0, borderTop: '1px solid var(--line)' }} />
-            {(selected.opportunity.findings ?? []).length > 0 && (
-              <div style={{ fontSize: 12, marginBottom: 8 }}>
-                <b>{t('find.title')}</b>
-                <ul style={{ margin: '4px 0', paddingLeft: 18 }}>
-                  {selected.opportunity.findings.map((f, i) => (
-                    <li key={i} style={{ color: f.severity === 'warning' ? 'var(--danger)' : f.severity === 'caution' ? 'var(--accent-2)' : 'var(--muted)' }} title={f.evidence}>
-                      {f.severity === 'warning' ? '⚠' : f.severity === 'caution' ? '△' : 'ⓘ'} {brief?.findings?.[i] ?? f.message}
-                    </li>
-                  ))}
-                </ul>
-                {selected.effective_certainty !== selected.opportunity.certainty && <p className="muted" style={{ margin: 0 }}>{t('find.demoted')}</p>}
-              </div>
-            )}
-            <p className="muted" style={{ fontSize: 12 }}>
-              <b style={{ color: selected.opportunity.eligibility_verified === false ? 'var(--danger)' : 'var(--text)' }}>{t('brief.eligibility')}</b>{' '}
-              {selected.opportunity.eligibility_verified === false ? t('warn.eligibility_unverified') + ' — ' : ''}{selected.opportunity.eligibility_note}
-            </p>
-            <p className="muted" style={{ fontSize: 12 }}>
-              <b style={{ color: 'var(--text)' }}>{t('brief.legit')} {selected.opportunity.legitimacy.score}</b> ({selected.opportunity.legitimacy.scored_by}, {selected.opportunity.legitimacy.mode})<br />
-              {selected.opportunity.legitimacy.notes}
-            </p>
-            {selected.exclusions.length > 0 && (
-              <p className="muted" style={{ fontSize: 12 }}><b style={{ color: 'var(--accent-2)' }}>{t('brief.notForYou')}</b> {selected.exclusions.map((e) => e.detail).join('; ')}</p>
-            )}
-            <p className="muted" style={{ fontSize: 12 }}><a href={selected.opportunity.url} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>{selected.opportunity.url}</a></p>
-          </div>
-        )}
+      <div className="ag-theme-money" style={{ height: 'calc(100vh - 180px)', minHeight: 400 }}>
+        <AgGridReact<Routed>
+          rowData={data}
+          columnDefs={cols}
+          defaultColDef={{ sortable: true, filter: true, resizable: true }}
+          tooltipShowDelay={300}
+          animateRows
+        />
       </div>
+      {selected && <OpportunityPanel routed={selected} lang={lang} onLang={setLang} onClose={() => setSelected(null)} />}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { WeeklyPlan } from '@shared/types';
 import { api, type Routed } from '../api';
+import OpportunityPanel from '../components/OpportunityPanel';
 import { t, type Key } from '../i18n';
 
 export default function Dashboard({ tick, onChange, onSetup }: { tick: number; onChange: () => void; onSetup?: () => void }) {
@@ -8,6 +9,7 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
   const [routed, setRouted] = useState<Routed[]>([]);
   const [busy, setBusy] = useState(false);
   const [lang, setLangState] = useState('ja');
+  const [selected, setSelected] = useState<Routed | null>(null);
 
   useEffect(() => {
     api.plan().then(setPlan);
@@ -93,7 +95,12 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
           </div>
         )}
         {plan?.items.map((i) => (
-          <div className="plan-item" key={i.opportunity_id}>
+          <div
+            className="plan-item clickable"
+            key={i.opportunity_id}
+            title={t('dash.clickHint')}
+            onClick={() => { const r = routed.find((x) => x.opportunity.id === i.opportunity_id); if (r) setSelected(r); }}
+          >
             <div>
               <h4>
                 {i.name} <span className={`pill ${i.certainty === 'fixed' ? 'ok' : i.certainty === 'per_task' ? 'warn' : ''}`}>{t(`cert.${i.certainty}` as Key)}</span>
@@ -115,12 +122,13 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
               <p>
                 <b style={{ color: 'var(--text)' }}>{t('dash.firstStep')}</b> {i.first_step}
               </p>
-              <p>{t('dash.hours', { h: i.hours })}</p>
+              <p>{t('dash.hours', { h: i.hours })} <span className="hint">· {t('dash.clickHint')} ›</span></p>
             </div>
             <div className="usd">${i.expected_usd}</div>
           </div>
         ))}
       </div>
+      {selected && <OpportunityPanel routed={selected} lang={lang} onLang={setLangState} onClose={() => setSelected(null)} />}
     </div>
   );
 }
