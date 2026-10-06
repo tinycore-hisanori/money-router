@@ -134,6 +134,8 @@ function applyObserved(list: Opportunity[], payments: Payment[]): Opportunity[] 
     const last = ps.map((p) => p.date).sort().at(-1) ?? null;
     return {
       ...o,
+      // Verified money resolves the "no payout history" doubt for this opportunity.
+      findings: (o.findings ?? []).filter((f) => f.code !== 'no_payout_history'),
       observed: {
         total_received_usd: Math.round(ps.reduce((s, p) => s + p.amount, 0) * 100) / 100,
         payments_count: ps.length,

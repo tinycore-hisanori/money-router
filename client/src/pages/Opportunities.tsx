@@ -60,6 +60,28 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
         width: 120,
         cellRenderer: (p: any) => <span className={`pill ${p.value === 'fixed' ? 'ok' : p.value === 'per_task' ? 'warn' : ''}`}>{t(`cert.${p.value}` as Key)}</span>,
       },
+      {
+        headerName: t('col.risk'),
+        width: 90,
+        valueGetter: (p) => (p.data?.opportunity.findings ?? []).filter((f: any) => f.severity === 'warning').length * 10 + (p.data?.opportunity.findings ?? []).length,
+        tooltipValueGetter: (p) => {
+          const fs = p.data?.opportunity.findings ?? [];
+          const loc = p.data?.opportunity.localized?.[lang]?.findings;
+          return fs.length ? fs.map((f: any, i: number) => `${f.severity === 'warning' ? '⚠' : f.severity === 'caution' ? '△' : 'ⓘ'} ${loc?.[i] ?? f.message}`).join('\n') : t('find.none');
+        },
+        cellRenderer: (p: any) => {
+          const fs = p.data.opportunity.findings ?? [];
+          if (!fs.length) return <span className="muted">—</span>;
+          const w = fs.filter((f: any) => f.severity === 'warning').length;
+          const c = fs.filter((f: any) => f.severity === 'caution').length;
+          return (
+            <span>
+              {w > 0 && <span className="pill bad">⚠ {w}</span>}{' '}
+              {c > 0 && <span className="pill warn">△ {c}</span>}
+            </span>
+          );
+        },
+      },
       { headerName: t('col.score'), field: 'score', width: 100, valueFormatter: (p) => p.value?.toFixed(1), sort: 'desc' },
       { headerName: t('col.hourly'), field: 'expected_hourly', width: 90, valueFormatter: (p) => `$${p.value?.toFixed(0)}` },
       {
@@ -168,6 +190,19 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
             )}
             {!brief && !briefBusy && <p className="muted">{briefErr || t('brief.none')}</p>}
             <hr style={{ border: 0, borderTop: '1px solid var(--line)' }} />
+            {(selected.opportunity.findings ?? []).length > 0 && (
+              <div style={{ fontSize: 12, marginBottom: 8 }}>
+                <b>{t('find.title')}</b>
+                <ul style={{ margin: '4px 0', paddingLeft: 18 }}>
+                  {selected.opportunity.findings.map((f, i) => (
+                    <li key={i} style={{ color: f.severity === 'warning' ? 'var(--danger)' : f.severity === 'caution' ? 'var(--accent-2)' : 'var(--muted)' }} title={f.evidence}>
+                      {f.severity === 'warning' ? '⚠' : f.severity === 'caution' ? '△' : 'ⓘ'} {brief?.findings?.[i] ?? f.message}
+                    </li>
+                  ))}
+                </ul>
+                {selected.effective_certainty !== selected.opportunity.certainty && <p className="muted" style={{ margin: 0 }}>{t('find.demoted')}</p>}
+              </div>
+            )}
             <p className="muted" style={{ fontSize: 12 }}>
               <b style={{ color: selected.opportunity.eligibility_verified === false ? 'var(--danger)' : 'var(--text)' }}>{t('brief.eligibility')}</b>{' '}
               {selected.opportunity.eligibility_verified === false ? t('warn.eligibility_unverified') + ' — ' : ''}{selected.opportunity.eligibility_note}

@@ -7,10 +7,12 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
   const [plan, setPlan] = useState<WeeklyPlan | null>(null);
   const [routed, setRouted] = useState<Routed[]>([]);
   const [busy, setBusy] = useState(false);
+  const [lang, setLangState] = useState('ja');
 
   useEffect(() => {
     api.plan().then(setPlan);
     api.route().then(setRouted);
+    api.profile().then((p) => setLangState(p.language || 'ja')).catch(() => {});
   }, [tick]);
 
   const observed = routed.reduce((s, r) => s + r.opportunity.observed.total_received_usd, 0);
@@ -99,6 +101,16 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
                   <> <span className="pill bad">{t('warn.eligibility_unverified')}</span></>
                 )}
               </h4>
+              {(() => {
+                const r = routed.find((x) => x.opportunity.id === i.opportunity_id);
+                const fs = r?.opportunity.findings ?? [];
+                const loc = r?.opportunity.localized?.[lang]?.findings;
+                return fs.length ? (
+                  <p style={{ fontSize: 12, color: fs.some((f) => f.severity === 'warning') ? 'var(--danger)' : 'var(--accent-2)' }}>
+                    {fs.map((f, k) => `${f.severity === 'warning' ? '⚠' : '△'} ${loc?.[k] ?? f.message}`).join(' · ')}
+                  </p>
+                ) : null;
+              })()}
               <p>{i.why}</p>
               <p>
                 <b style={{ color: 'var(--text)' }}>{t('dash.firstStep')}</b> {i.first_step}

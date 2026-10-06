@@ -29,6 +29,7 @@
     "deadline": null,
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 92,
       "notes": "Established portal with public developer terms",
@@ -75,6 +76,7 @@
     "deadline": null,
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 78,
       "notes": "Legitimate but lower traffic; long payout cycle",
@@ -122,6 +124,7 @@
     "deadline": null,
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 94,
       "notes": "Creator-friendly marketplace, direct-to-PayPal payouts",
@@ -168,6 +171,7 @@
     "deadline": null,
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 96,
       "notes": "Industry-standard platform, PayPal payout option",
@@ -223,6 +227,7 @@
     "deadline": null,
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 90,
       "notes": "Well-known; test availability varies a lot by country",
@@ -268,6 +273,7 @@
     "deadline": null,
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 84,
       "notes": "Legit; invitations are sporadic",
@@ -326,6 +332,7 @@
     "deadline": null,
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 92,
       "notes": "Academic research platform, pays reliably",
@@ -372,6 +379,7 @@
     "deadline": null,
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 90,
       "notes": "Established; per-download rates are low",
@@ -419,6 +427,7 @@
     "deadline": null,
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 91,
       "notes": "Large marketplace, PayPal payout supported",
@@ -467,6 +476,7 @@
     "deadline": null,
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 93,
       "notes": "Escrow-backed, PayPal withdrawal available",
@@ -514,6 +524,7 @@
     "deadline": null,
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 92,
       "notes": "Established; competitive pricing",
@@ -559,6 +570,7 @@
     "deadline": null,
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 93,
       "notes": "Simple creator storefront, PayPal payouts",
@@ -603,6 +615,7 @@
     "deadline": null,
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 90,
       "notes": "0% fee on tips, PayPal direct",
@@ -649,6 +662,7 @@
     "deadline": null,
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 100,
       "notes": "First-party PayPal promotion; US only",
@@ -705,6 +719,7 @@
     "deadline": null,
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 86,
       "notes": "Long-running rewards site; PayPal cash-out",
@@ -752,6 +767,7 @@
     "deadline": null,
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 88,
       "notes": "Established; weekly PayPal payouts",
@@ -799,6 +815,7 @@
     "deadline": null,
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 87,
       "notes": "Crowd translation, PayPal payouts; EN↔JA demand is steady",
@@ -847,6 +864,7 @@
     "deadline": "2026-11-12",
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 95,
       "notes": "Devpost-managed hackathon; prizes paid by Devpost (PayPal available)",
@@ -855,6 +873,80 @@
       "mode": "seed"
     },
     "confidence": 0.8,
+    "status": "active",
+    "last_checked": "2026-10-03T00:00:00.000Z",
+    "observed": {
+      "total_received_usd": 0,
+      "payments_count": 0,
+      "avg_days_to_payout": null,
+      "last_payment_at": null
+    }
+  },
+  {
+    "id": "overpowered:jam-1",
+    "source_id": "overpowered-jam",
+    "name": "Overpowered Studios Game Jam #1",
+    "provider": "Overpowered Studios (individual)",
+    "category": "contest",
+    "url": "https://itch.io/jam/overpowered-studios-game-jam-1",
+    "payout_methods": [
+      "PayPal"
+    ],
+    "payout_currency": "USD",
+    "min_payout": 0,
+    "payout_cycle": "after_results",
+    "payout_days_estimate": 30,
+    "reward_model": "one_time",
+    "certainty": "fixed",
+    "reward_estimate_usd": 415,
+    "effort_hours_estimate": 30,
+    "skills_required": [
+      "game_dev"
+    ],
+    "countries_allowed": [],
+    "countries_blocked": [],
+    "requirements": [
+      "48-hour jam, Oct 9–11 (IST)",
+      "Submit on itch.io",
+      "Prizes paid in cash via PayPal"
+    ],
+    "deadline": "2026-10-11",
+    "eligibility_verified": false,
+    "eligibility_note": "rules not found in provided text — no country/age clause on the jam page",
+    "findings": [
+      {
+        "code": "prize_not_locked",
+        "severity": "warning",
+        "message": "Prize amounts are stated as a target to be confirmed before the jam starts.",
+        "evidence": "jam page: \"prize pool is a target amount and will be locked before start\""
+      },
+      {
+        "code": "eligibility_missing",
+        "severity": "warning",
+        "message": "No eligibility (country / age) clause on the page; ask on the host Discord.",
+        "evidence": "jam page has no rules section"
+      },
+      {
+        "code": "first_edition",
+        "severity": "caution",
+        "message": "First edition (\"#1\") run by an individual; no record of previous payouts.",
+        "evidence": "title \"Game Jam #1\"; host profile is a personal account"
+      },
+      {
+        "code": "individual_host",
+        "severity": "caution",
+        "message": "Host is an individual studio account, not a registered company.",
+        "evidence": "itch.io host profile"
+      }
+    ],
+    "legitimacy": {
+      "score": 62,
+      "notes": "Real jam page on itch.io with PayPal cash prizes, but first edition by an individual with an unlocked prize pool",
+      "scored_by": "seed",
+      "scored_at": "2026-10-03T00:00:00.000Z",
+      "mode": "seed"
+    },
+    "confidence": 0.7,
     "status": "active",
     "last_checked": "2026-10-03T00:00:00.000Z",
     "observed": {
@@ -892,6 +984,7 @@
     "deadline": null,
     "eligibility_verified": true,
     "eligibility_note": "seed data",
+    "findings": [],
     "legitimacy": {
       "score": 12,
       "notes": "Upfront fee, guaranteed-income claims, unreachable payout threshold — scam pattern",

@@ -9,7 +9,7 @@ import { auditPlanFor, config } from '../server/lib/config.js';
 import { structured } from '../server/lib/llm.js';
 import { store } from '../server/lib/storage.js';
 import { braveSearch, braveQueriesUsed, resetBraveBudget } from './search.js';
-import { fetchPageText } from './fetch.js';
+import { complaintSearchSection, fetchPageText } from './fetch.js';
 import { extractOpportunities } from './extract.js';
 import { auditOpportunity } from './audit.js';
 import { localizeOpportunity } from './localize.js';
@@ -70,6 +70,7 @@ export async function runRadar(opts: { maxQueries?: number; perQuery?: number } 
           if (/eligib|resident|citizen|応募資格|参加資格|참가|资格|void where prohibited/i.test(rt)) { text += `\n\n---- OFFICIAL RULES / ELIGIBILITY (${r.url}) ----\n${rt}`; break; }
         } catch { /* skip */ }
       }
+      text += await complaintSearchSection(h.title.slice(0, 60));
       result.pages++;
       try {
         const ex = await extractOpportunities({ ...RADAR_SOURCE, url: h.url, name: h.title.slice(0, 80) }, text, 0.8);

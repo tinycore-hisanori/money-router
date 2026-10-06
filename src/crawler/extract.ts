@@ -22,6 +22,14 @@ Rules:
 - skills_required are snake_case tokens (html5_game_dev, web_dev, security, writing, design, audio, video, 3d, data, english). Include "english" ONLY when the work itself requires producing or speaking English (transcription, tutoring, English copywriting, voice tests) — not merely because the site is written in English. Leave skills_required empty when anyone can do it.
 - ELIGIBILITY IS CRITICAL. Contests, hackathons and promos often restrict by country of residence, age, or tax status in their Official Rules / Terms. Read any rules/terms text included below. Set eligibility_verified=true ONLY if you found an explicit eligibility clause, and quote it in eligibility_note. If the rules are not in the text, set eligibility_verified=false, eligibility_note="rules not found in provided text", and leave countries_allowed empty (do NOT guess).
 - countries_allowed: when the rules list eligible countries, fill ISO2 codes. countries_blocked: when the rules exclude countries (e.g. "void where prohibited", sanctioned countries, "residents of X not eligible").
+- findings: PAYMENT-RISK findings, separate from scam detection. Add one per signal you can evidence (quote the text):
+  first_edition (caution): name contains "#1" / "1st" / "first", or no previous editions are mentioned.
+  individual_host (caution): host is an individual or hobby account rather than a company/organization.
+  prize_not_locked (warning): prize is a "target", "goal", "TBD", "will be confirmed/locked", "depends on sponsors", or funded by entry fees.
+  eligibility_missing (warning): no eligibility clause (country / age) anywhere in the text.
+  no_payout_history (caution): no evidence that past winners were paid (new host, no prior events).
+  payout_complaints (warning): the COMPLAINT SEARCH section below contains credible reports of non-payment for this host.
+  Use severity exactly as listed. Leave findings empty for established platforms with documented payouts.
 - deadline: ISO date (YYYY-MM-DD) when submissions/applications close, for contests, hackathons, jams and limited-time promos; null when open-ended. Never invent a date.
 - certainty: "fixed" when a defined action yields a defined amount (sign-up bonus, referral bonus, fixed bounty, promo, contest/hackathon prize with a stated amount); "per_task" when each completed task pays a known amount but tasks must be obtained (user tests, transcription, labeling, gigs); "speculative" when income depends on sales or traffic (revenue share, marketplace sales).
 - reward_estimate_usd: for per_task = typical payment per task; for rev_share = realistic monthly income for a small creator; for hourly = hourly rate.
@@ -38,7 +46,7 @@ Hint for this source: ${source.parse_hint ?? 'none'}${source.paypal_confirmed ? 
           type: 'array',
           items: {
             type: 'object',
-            required: ['name', 'provider', 'category', 'url', 'payout_methods', 'payout_currency', 'min_payout', 'payout_cycle', 'payout_days_estimate', 'reward_model', 'certainty', 'reward_estimate_usd', 'effort_hours_estimate', 'skills_required', 'countries_allowed', 'countries_blocked', 'requirements', 'deadline', 'eligibility_verified', 'eligibility_note', 'confidence'],
+            required: ['name', 'provider', 'category', 'url', 'payout_methods', 'payout_currency', 'min_payout', 'payout_cycle', 'payout_days_estimate', 'reward_model', 'certainty', 'reward_estimate_usd', 'effort_hours_estimate', 'skills_required', 'countries_allowed', 'countries_blocked', 'requirements', 'deadline', 'eligibility_verified', 'eligibility_note', 'findings', 'confidence'],
             properties: {
               name: { type: 'string' },
               provider: { type: 'string' },
@@ -60,6 +68,18 @@ Hint for this source: ${source.parse_hint ?? 'none'}${source.paypal_confirmed ? 
               deadline: { type: ['string', 'null'] },
               eligibility_verified: { type: 'boolean' },
               eligibility_note: { type: 'string' },
+              findings: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    code: { type: 'string', enum: ['first_edition', 'individual_host', 'prize_not_locked', 'eligibility_missing', 'no_payout_history', 'payout_complaints', 'other'] },
+                    severity: { type: 'string', enum: ['info', 'caution', 'warning'] },
+                    message: { type: 'string' },
+                    evidence: { type: 'string' },
+                  },
+                },
+              },
               confidence: { type: 'number' },
             },
           },

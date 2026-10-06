@@ -7,7 +7,7 @@ const LANG_NAMES: Record<string, string> = { ja: 'Japanese', en: 'English', es: 
 /** Generate "what / how / payout" summaries for every configured locale in one call. */
 export async function localizeOpportunity(o: Opportunity, locales = config.locales): Promise<Record<string, LocalizedSummary>> {
   if (!locales.length) return {};
-  const r = await structured<{ translations: { lang: string; summary: string; how_to: string[]; payout: string }[] }>({
+  const r = await structured<{ translations: { lang: string; summary: string; how_to: string[]; payout: string; findings: string[] }[] }>({
     model: config.models.localize,
     maxTokens: 2048,
     system: `You write short, practical briefs for independent creators about an earning opportunity, in several languages.
@@ -15,6 +15,7 @@ For each requested language produce:
 - summary: one sentence — what this is and who it suits (plain, no hype).
 - how_to: 3 concrete steps to start earning (imperative, each under 15 words).
 - payout: one sentence — how much, how often, minimum, and that it pays via PayPal. Include concrete numbers from the data.
+- findings: translate each payment-risk finding (given in English) into ONE plain sentence in the language, same order, same count. Example: "第1回目・個人主催のため、賞金が実際に支払われるか実績がありません".
 - If eligibility_verified is false, the summary MUST end with a short warning that eligibility (country/residency) could not be confirmed and the official rules must be checked. If countries are restricted, say so plainly.
 Write natively in each language (not a literal translation). Keep platform names in English.`,
     user: JSON.stringify({
@@ -25,6 +26,7 @@ Write natively in each language (not a literal translation). Keep platform names
         payout_cycle: o.payout_cycle, payout_days_estimate: o.payout_days_estimate, countries_allowed: o.countries_allowed,
         skills_required: o.skills_required, requirements: o.requirements, legitimacy_notes: o.legitimacy.notes,
         deadline: o.deadline, eligibility_verified: o.eligibility_verified, eligibility_note: o.eligibility_note,
+        findings: (o.findings ?? []).map((f) => ({ code: f.code, severity: f.severity, message: f.message })),
       },
     }),
     schema: {
@@ -32,13 +34,13 @@ Write natively in each language (not a literal translation). Keep platform names
       properties: {
         translations: {
           type: 'array',
-          items: { type: 'object', properties: { lang: { type: 'string' }, summary: { type: 'string' }, how_to: { type: 'array', items: { type: 'string' } }, payout: { type: 'string' } } },
+          items: { type: 'object', properties: { lang: { type: 'string' }, summary: { type: 'string' }, how_to: { type: 'array', items: { type: 'string' } }, payout: { type: 'string' }, findings: { type: 'array', items: { type: 'string' } } } },
         },
       },
     },
   });
   const now = new Date().toISOString();
   const out: Record<string, LocalizedSummary> = {};
-  for (const t of r.translations) out[t.lang] = { summary: t.summary, how_to: t.how_to, payout: t.payout, generated_by: config.models.localize, generated_at: now };
+  for (const t of r.translations) out[t.lang] = { summary: t.summary, how_to: t.how_to, payout: t.payout, findings: t.findings, generated_by: config.models.localize, generated_at: now };
   return out;
 }

@@ -30,11 +30,31 @@ export interface LegitimacyScore {
   mode: 'full' | 'diff' | 'seed';
 }
 
+export type FindingCode =
+  | 'first_edition'
+  | 'individual_host'
+  | 'prize_not_locked'
+  | 'eligibility_missing'
+  | 'no_payout_history'
+  | 'payout_complaints'
+  | 'other';
+export type FindingSeverity = 'info' | 'caution' | 'warning';
+
+/** Payment-risk finding: a reason, with evidence, that money might not arrive even if the offer is not a scam. */
+export interface Finding {
+  code: FindingCode;
+  severity: FindingSeverity;
+  message: string; // English; localized copies live in LocalizedSummary.findings
+  evidence: string; // quote or URL
+}
+
 /** AI-written summary in one language: what it is, what to do, how you get paid. */
 export interface LocalizedSummary {
   summary: string;
   how_to: string[];
   payout: string;
+  /** Findings translated into this language, same order as Opportunity.findings. */
+  findings?: string[];
   generated_by: string;
   generated_at: string;
 }
@@ -72,6 +92,8 @@ export interface Opportunity {
   eligibility_verified: boolean;
   /** Quoted or paraphrased eligibility clause, or why it could not be verified. */
   eligibility_note: string;
+  /** Payment-risk findings (separate from the 0-100 legitimacy score). */
+  findings: Finding[];
   legitimacy: LegitimacyScore;
   confidence: number; // 0-1 extraction confidence
   status: OpportunityStatus;
@@ -136,6 +158,8 @@ export interface RoutedOpportunity {
   exclusions: ExclusionReason[];
   /** Soft flags that do not exclude but must be shown (e.g. eligibility not verified). */
   warnings: string[];
+  /** Certainty after findings: any 'warning' finding demotes fixed/per_task to speculative. */
+  effective_certainty: Certainty;
   expected_hourly: number;
   score: number;
   explanation?: string;

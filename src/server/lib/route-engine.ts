@@ -73,6 +73,10 @@ export function routeOne(
   const exclusions: ExclusionReason[] = [];
   const warnings: string[] = [];
   if (o.eligibility_verified === false) warnings.push('eligibility_unverified');
+  const findings = o.findings ?? [];
+  for (const f of findings) if (f.severity === 'warning') warnings.push(`finding:${f.code}`);
+  // Any warning-level payment-risk finding: treat the money as speculative, whatever the offer claims.
+  const effective_certainty: Opportunity['certainty'] = findings.some((f) => f.severity === 'warning') ? 'speculative' : o.certainty;
 
   if (o.status !== 'active') exclusions.push({ code: 'status', detail: `status is ${o.status}` });
 
@@ -105,13 +109,13 @@ export function routeOne(
   const expected_hourly = o.effort_hours_estimate > 0 ? o.reward_estimate_usd / o.effort_hours_estimate : 0;
   const score =
     expected_hourly *
-    CERTAINTY_WEIGHT[o.certainty] *
+    CERTAINTY_WEIGHT[effective_certainty] *
     (o.eligibility_verified === false ? 1 : deadlineUrgency(o.deadline, now)) *
     (o.legitimacy.score / 100) *
     timeDiscount(o.payout_days_estimate) *
     observedBoost(o, exec, now);
 
-  return { opportunity: o, eligible: exclusions.length === 0, exclusions, warnings, expected_hourly, score };
+  return { opportunity: o, eligible: exclusions.length === 0, exclusions, warnings, effective_certainty, expected_hourly, score };
 }
 
 export function routeAll(
@@ -143,7 +147,7 @@ export function buildWeeklyPlan(
     items.push({
       opportunity_id: o.id,
       name: o.name,
-      certainty: o.certainty,
+      certainty: r.effective_certainty,
       hours: slot,
       expected_usd: Math.round(expected * 100) / 100,
       first_step: o.requirements[0] ? `Check: ${o.requirements[0]}` : `Sign up at ${o.url}`,

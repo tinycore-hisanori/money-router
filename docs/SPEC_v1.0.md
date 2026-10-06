@@ -117,6 +117,7 @@
 | deadline | date \| null | 応募・提出締切（コンテスト、ハッカソン、期間限定プロモ）。開放型は null。**v0.6.0 の「申込期限」の継承** |
 | eligibility_verified | bool | 参加資格（国・居住・年齢）を公式規約から確認できたか |
 | eligibility_note | string | 資格条項の引用、または未確認の理由 |
+| findings | Finding[] | **支払いリスク所見**。`code`（first_edition / individual_host / prize_not_locked / eligibility_missing / no_payout_history / payout_complaints / other）、`severity`（info / caution / warning）、`message`（英語。各言語訳は localized[lang].findings）、`evidence`（引用 or URL）。legitimacy_score（詐欺か否か）とは別に「詐欺ではないが払われないかもしれない」理由を根拠付きで残す |
 | legitimacy_score | number 0-100 | AI審査スコア |
 | legitimacy_notes | string | 根拠 |
 | confidence | number 0-1 | 抽出信頼度 |
@@ -208,6 +209,25 @@ AUDIT_SCHEDULE=mon:claude-fable-5-1:full,thu:claude-opus-5-5:full
 - **参加資格の検証を必須にする**（MapleStory の教訓その2：日本から参加できない可能性が規約に埋まっていた）：contest / referral は「Official Rules / 応募資格」ページを追加検索して本文に連結し、`eligibility_verified`（規約で明示的に確認できたか）と `eligibility_note`（引用）を抽出する。確認できない場合は `countries_allowed` を推測で埋めず、UI・要約に「参加資格 未確認（規約を確認）」の警告を出し、締切ブーストも付けない
 - ルーティング：締切が近いほど優先（7日以内 ×1.5、30日以内 ×1.25）。certainty は `fixed`（賞金額が明示）
 - **Event Radar（野良イベント探索）**：プラットフォーム登録制とは別に、「最近告知された単発イベント」をイベント名ではなく語彙（prize / deadline / 賞金 / 募集 / 공모전 / 상금 / 奖金 …）で英・日・韓・中の多言語検索（Brave freshness=1ヶ月）し、規約ページを添えて抽出 → 締切・賞金・参加資格付きで案件に直接登録（source_id = radar）。承認ゲートなし（ユーザーが支払う行為がないため、正当性スコアと資格警告で足りる）。締切超過で自動 closed。週1自動（RADAR_DOW）＋手動。MapleStory 型を拾うための本命機能
+
+### 5.4 支払いリスク所見（findings）— contest / referral
+**実例（2026-10-07）**：Overpowered Studios Game Jam #1（itch.io、賞金 $415 を PayPal 現金払い）。詐欺ではないが、賞金額が「目標額」で未確定、主催が個人で第1回、参加資格の記載なし。legitimacy_score 1本ではこのグレーが見えない。
+
+| シグナル | 検出方法 | severity |
+|---|---|---|
+| 第1回目 | 名称に #1 / 1st / first、または過去開催の記述なし | caution |
+| 個人主催 | 主催が企業・団体でなく個人アカウント | caution |
+| 賞金未確定 | target / goal / TBD / will lock / depends on sponsors 等 | warning |
+| 資格記載なし | eligibility_verified = false | warning |
+| 支払い実績なし | 過去受賞者の受取報告が見つからない | caution |
+| 不払い苦情 | 主催名 × never paid / not received / 未払い の検索（COMPLAINT SEARCH 節として抽出器に渡す）に信頼できる報告 | warning |
+
+反映：
+- warning が1件以上 → `effective_certainty = speculative`（重み 0.4）。**certain_usd には入れず speculative_usd に計上**
+- 一覧に「リスク」列（⚠ warning 数 / △ caution 数、ツールチップに所見一覧）。Brief パネルと週次プランのカードに所見をユーザー言語で表示
+- Track で入金が確認されたら、その案件の `no_payout_history` を解消（将来：同一主催者の次回開催に信頼を引き継ぐ）
+- テストケースとして `overpowered-jam` をレジストリに登録（Event Radar が拾うべき典型例：PayPal 賞金・Devpost 非掲載・Discord 告知）
+
 - 注意：コンテストは「応募すれば必ず入る」ではないため、週次プランの期待値は `reward × 採択率の保守的推定` を用いる（v1.1 で調整）
 
 ---

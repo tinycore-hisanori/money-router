@@ -38,10 +38,20 @@ export async function acquireSourceText(source: Source): Promise<PageResult> {
   const r = await acquireBase(source);
   // Contests/promos: eligibility lives in Official Rules. Try hard to append them.
   if (source.category === 'contest' || source.category === 'referral') {
+    let text = r.text.slice(0, 25_000);
     const rules = await findRulesText(source);
-    if (rules) return { ...r, text: `${r.text.slice(0, 25_000)}\n\n---- OFFICIAL RULES / ELIGIBILITY (${rules.url}) ----\n${rules.text}` };
+    if (rules) text += `\n\n---- OFFICIAL RULES / ELIGIBILITY (${rules.url}) ----\n${rules.text}`;
+    text += await complaintSearchSection(source.name);
+    return { ...r, text };
   }
   return r;
+}
+
+/** Search for non-payment complaints about a host; returns a section the extractor can cite (may be empty). */
+export async function complaintSearchSection(name: string): Promise<string> {
+  const hits = await braveSearch(`"${name}" ("never paid" OR "not paid" OR "didn't pay" OR "not received" OR scam OR 未払い OR 支払われない)`, 5);
+  if (!hits.length) return '\n\n---- COMPLAINT SEARCH ----\n(no results)';
+  return '\n\n---- COMPLAINT SEARCH (unverified web results; cite only credible, specific reports) ----\n' + hits.map((h) => `# ${h.title}\n${h.url}\n${h.description}`).join('\n\n');
 }
 
 /** Look for an official rules / eligibility page on the same domain; returns null when nothing usable. */

@@ -11,7 +11,7 @@ const seed = (
   id, source_id, name, provider, category, url,
   payout_methods: ['PayPal'], payout_currency: 'USD', min_payout: 0, payout_cycle: 'monthly', payout_days_estimate: 30,
   reward_model: 'per_task', certainty: 'per_task', reward_estimate_usd: 10, effort_hours_estimate: 1,
-  skills_required: [], countries_allowed: [], countries_blocked: [], requirements: [], deadline: null, eligibility_verified: true, eligibility_note: 'seed data',
+  skills_required: [], countries_allowed: [], countries_blocked: [], requirements: [], deadline: null, eligibility_verified: true, eligibility_note: 'seed data', findings: [],
   legitimacy: { score: 70, notes: 'seed data — not yet audited', scored_by: 'seed', scored_at: now, mode: 'seed' },
   confidence: 0.5, status: 'active', last_checked: now,
   observed: { total_received_usd: 0, payments_count: 0, avg_days_to_payout: null, last_payment_at: null },
@@ -108,6 +108,18 @@ const list: Opportunity[] = [
     reward_model: 'one_time', certainty: 'fixed', reward_estimate_usd: 5000, effort_hours_estimate: 80, min_payout: 0, payout_cycle: 'after_judging', payout_days_estimate: 60,
     skills_required: ['web_dev'], requirements: ['Public GitHub repo with license', 'Demo video under 3 minutes', 'Meaningful use of PayPal + AI'], deadline: '2026-11-12',
     legitimacy: { score: 95, notes: 'Devpost-managed hackathon; prizes paid by Devpost (PayPal available)', scored_by: 'seed', scored_at: now, mode: 'seed' }, confidence: 0.8,
+  }),
+  seed('overpowered:jam-1', 'overpowered-jam', 'Overpowered Studios Game Jam #1', 'Overpowered Studios (individual)', 'contest', 'https://itch.io/jam/overpowered-studios-game-jam-1', {
+    reward_model: 'one_time', certainty: 'fixed', reward_estimate_usd: 415, effort_hours_estimate: 30, min_payout: 0, payout_cycle: 'after_results', payout_days_estimate: 30,
+    skills_required: ['game_dev'], requirements: ['48-hour jam, Oct 9–11 (IST)', 'Submit on itch.io', 'Prizes paid in cash via PayPal'], deadline: '2026-10-11',
+    eligibility_verified: false, eligibility_note: 'rules not found in provided text — no country/age clause on the jam page',
+    findings: [
+      { code: 'prize_not_locked', severity: 'warning', message: 'Prize amounts are stated as a target to be confirmed before the jam starts.', evidence: 'jam page: "prize pool is a target amount and will be locked before start"' },
+      { code: 'eligibility_missing', severity: 'warning', message: 'No eligibility (country / age) clause on the page; ask on the host Discord.', evidence: 'jam page has no rules section' },
+      { code: 'first_edition', severity: 'caution', message: 'First edition ("#1") run by an individual; no record of previous payouts.', evidence: 'title "Game Jam #1"; host profile is a personal account' },
+      { code: 'individual_host', severity: 'caution', message: 'Host is an individual studio account, not a registered company.', evidence: 'itch.io host profile' },
+    ],
+    legitimacy: { score: 62, notes: 'Real jam page on itch.io with PayPal cash prizes, but first edition by an individual with an unlocked prize pool', scored_by: 'seed', scored_at: now, mode: 'seed' }, confidence: 0.7,
   }),
   seed('shady:crypto-tasks', 'other', 'EasyPayDaily Crypto Micro Tasks', 'EasyPayDaily', 'microtask', 'https://example.com/easypaydaily', {
     reward_model: 'per_task', reward_estimate_usd: 50, effort_hours_estimate: 0.2, min_payout: 500, payout_cycle: 'unspecified', payout_days_estimate: 90,
