@@ -72,7 +72,10 @@ export function routeOne(
 ): RoutedOpportunity {
   const exclusions: ExclusionReason[] = [];
   const warnings: string[] = [];
-  if (o.eligibility_verified === false) warnings.push('eligibility_unverified');
+  // Rules-gated categories only: for marketplaces the country check above is the eligibility check.
+  const rulesGated = o.category === 'contest' || o.category === 'referral' || o.category === 'affiliate';
+  const eligUnverified = rulesGated && o.eligibility_verified === false;
+  if (eligUnverified) warnings.push('eligibility_unverified');
   const findings = o.findings ?? [];
   for (const f of findings) if (f.severity === 'warning') warnings.push(`finding:${f.code}`);
   // Any warning-level payment-risk finding: treat the money as speculative, whatever the offer claims.
@@ -110,7 +113,7 @@ export function routeOne(
   const score =
     expected_hourly *
     CERTAINTY_WEIGHT[effective_certainty] *
-    (o.eligibility_verified === false ? 1 : deadlineUrgency(o.deadline, now)) *
+    (eligUnverified ? 1 : deadlineUrgency(o.deadline, now)) *
     (o.legitimacy.score / 100) *
     timeDiscount(o.payout_days_estimate) *
     observedBoost(o, exec, now);
