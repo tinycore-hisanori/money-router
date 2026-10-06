@@ -9,13 +9,13 @@ export default function Sources({ tick }: { tick: number }) {
   const [last, setLast] = useState<any>(null);
   const [local, setLocal] = useState(0);
   const [msg, setMsg] = useState('');
+  const [radarBusy, setRadarBusy] = useState(false);
   const reload = () => {
     api.status().then(setStatus);
     api.candidates().then(setCands).catch(() => setCands([]));
   };
   useEffect(reload, [tick, local]);
-  const crawl = status?.crawl;
-  if (!crawl) return null;
+  const crawl = status?.crawl ?? { sources: {}, totals: {} };
 
   const discover = async () => {
     setBusy(true);
@@ -36,7 +36,6 @@ export default function Sources({ tick }: { tick: number }) {
       setMsg(e instanceof ApiError && e.status === 403 ? t('guard.adminOnly') : String(e.message ?? e));
     }
   };
-  const [radarBusy, setRadarBusy] = useState(false);
   const radar = async () => {
     setRadarBusy(true);
     setMsg('');

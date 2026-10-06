@@ -18,6 +18,12 @@ export default function App() {
   const [, setLangTick] = useState(0);
   const [needsProfile, setNeedsProfile] = useState(false);
   const [booted, setBooted] = useState(false);
+  // Re-fetch whenever the tab regains focus (e.g. after a crawl finished in another terminal).
+  useEffect(() => {
+    const onVis = () => { if (document.visibilityState === 'visible') refresh(); };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, []);
   useEffect(() => {
     api.status().then(setStatus).catch(() => setStatus(null));
     api.profile()
@@ -75,7 +81,7 @@ export default function App() {
           </button>
         </div>
       </header>
-      <main>
+      <main key={`${page}:${tick}`}>
         {page === 'dashboard' && <Dashboard tick={tick} onChange={refresh} onSetup={needsProfile ? () => setPage('profile') : undefined} />}
         {page === 'opportunities' && <Opportunities tick={tick} onChange={refresh} />}
         {page === 'sources' && <Sources tick={tick} />}
