@@ -88,8 +88,8 @@ export default function OpportunityPanel({
         </div>
       )}
       <p className="muted" style={{ fontSize: 12 }}>
-        <b style={{ color: o.eligibility_verified === false ? 'var(--danger)' : 'var(--text)' }}>{t('brief.eligibility')}</b>{' '}
-        {o.eligibility_verified === false ? t('warn.eligibility_unverified') + ' — ' : ''}{o.eligibility_note}
+        <b style={{ color: routed.warnings.includes('eligibility_unverified') ? 'var(--danger)' : 'var(--text)' }}>{t('brief.eligibility')}</b>{' '}
+        {routed.warnings.includes('eligibility_unverified') ? t('warn.eligibility_unverified') + ' — ' : ''}{o.eligibility_note}
       </p>
       <p className="muted" style={{ fontSize: 12 }}>
         <b style={{ color: 'var(--text)' }}>{t('brief.legit')} {o.legitimacy.score}</b> ({o.legitimacy.scored_by}, {o.legitimacy.mode})<br />
