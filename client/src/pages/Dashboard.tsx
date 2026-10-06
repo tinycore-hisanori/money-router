@@ -128,6 +128,28 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
           </div>
         ))}
       </div>
+      {!!plan?.backlog?.length && (
+        <div className="card">
+          <h3 style={{ margin: '0 0 6px' }}>{t('dash.backlog')}</h3>
+          {plan.backlog.map((i) => (
+            <div
+              className="plan-item clickable"
+              key={i.opportunity_id}
+              style={{ padding: '8px 8px' }}
+              title={t('dash.clickHint')}
+              onClick={() => { const r = routed.find((x) => x.opportunity.id === i.opportunity_id); if (r) setSelected(r); }}
+            >
+              <div>
+                <h4 style={{ fontSize: 14 }}>
+                  {i.name} <span className={`pill ${i.certainty === 'fixed' ? 'ok' : i.certainty === 'per_task' ? 'warn' : ''}`}>{t(`cert.${i.certainty}` as Key)}</span>
+                </h4>
+                <p>{i.why} · {t('dash.hours', { h: i.hours })}</p>
+              </div>
+              <div className="usd" style={{ fontSize: 15 }}>${i.expected_usd}</div>
+            </div>
+          ))}
+        </div>
+      )}
       {selected && <OpportunityPanel routed={selected} lang={lang} onLang={setLangState} onClose={() => setSelected(null)} />}
     </div>
   );

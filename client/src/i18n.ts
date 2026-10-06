@@ -29,6 +29,7 @@ const dict = {
   'dash.empty': { ja: '該当する案件がありません。プロフィール（国・スキル・時間）を見直してください。', en: 'No eligible opportunities. Update your profile (country, skills, hours).' },
   'dash.firstStep': { ja: '最初の一歩:', en: 'First step:' },
   'dash.hours': { ja: '今週 {h}h', en: '{h}h this week' },
+  'dash.backlog': { ja: '次の候補（今週の時間枠に入らなかった分）', en: 'Next in line (did not fit this week\'s hours)' },
   'dash.whyNot': { ja: '除外理由の内訳（全案件）', en: 'Why opportunities were excluded' },
   'excl.deadline_passed': { ja: '締切超過', en: 'Deadline passed' },
   'warn.eligibility_unverified': { ja: '参加資格 未確認（規約を確認）', en: 'Eligibility unverified (check official rules)' },

@@ -135,26 +135,42 @@ export function buildWeeklyPlan(
   execution: Record<string, ExecutionStatus>,
 ): WeeklyPlan {
   const items: WeeklyPlanItem[] = [];
+  const backlog: WeeklyPlanItem[] = [];
   let hours = 0;
+  const now = Date.now();
   for (const r of routed) {
     if (!r.eligible) continue;
     const ex = execution[r.opportunity.id];
     if (ex === 'skipped' || ex === 'paid') continue;
     const o = r.opportunity;
-    const slot = Math.min(o.effort_hours_estimate || 1, profile.hours_per_week - hours);
-    if (slot <= 0) break;
-    const expected = o.reward_model === 'rev_share' ? o.reward_estimate_usd / 4 : r.expected_hourly * slot;
-    items.push({
+    // Deadline-driven work (contests etc.) is spread over the weeks left until the deadline,
+    // so one big hackathon doesn't swallow the whole weekly budget.
+    let effort = o.effort_hours_estimate || 1;
+    if (o.deadline) {
+      const weeksLeft = Math.max(1, Math.ceil((new Date(o.deadline).getTime() - now) / (7 * 86400e3)));
+      effort = Math.max(1, Math.ceil(effort / weeksLeft));
+    }
+    // No single item may take more than half the weekly budget: keep the plan a portfolio, not one bet.
+    effort = Math.min(effort, Math.max(1, Math.floor(profile.hours_per_week / 2)));
+    const remaining = profile.hours_per_week - hours;
+    const slot = Math.min(effort, Math.max(remaining, 0));
+    const hoursFor = slot > 0 ? slot : effort;
+    const expected = o.reward_model === 'rev_share' ? o.reward_estimate_usd / 4 : r.expected_hourly * hoursFor;
+    const item: WeeklyPlanItem = {
       opportunity_id: o.id,
       name: o.name,
       certainty: r.effective_certainty,
-      hours: slot,
+      hours: Math.round(hoursFor * 10) / 10,
       expected_usd: Math.round(expected * 100) / 100,
       first_step: o.requirements[0] ? `Check: ${o.requirements[0]}` : `Sign up at ${o.url}`,
       why: `~$${r.expected_hourly.toFixed(0)}/h, pays in ~${o.payout_days_estimate}d, legitimacy ${o.legitimacy.score}`,
-    });
+    };
+    if (slot <= 0) {
+      if (backlog.length < 15) backlog.push(item);
+      continue;
+    }
+    items.push(item);
     hours += slot;
-    if (hours >= profile.hours_per_week) break;
   }
   const sum = (xs: WeeklyPlanItem[]) => Math.round(xs.reduce((s, i) => s + i.expected_usd, 0) * 100) / 100;
   return {
@@ -165,6 +181,7 @@ export function buildWeeklyPlan(
     certain_usd: sum(items.filter((i) => i.certainty !== 'speculative')),
     speculative_usd: sum(items.filter((i) => i.certainty === 'speculative')),
     items,
+    backlog,
     summary: '',
   };
 }

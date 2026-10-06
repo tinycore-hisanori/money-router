@@ -184,6 +184,8 @@ export interface WeeklyPlan {
   certain_usd: number;
   speculative_usd: number;
   items: WeeklyPlanItem[];
+  /** Eligible items that did not fit this week's hour budget (next in line, by score). */
+  backlog: WeeklyPlanItem[];
   summary: string;
 }
 
