@@ -1,7 +1,7 @@
 {
   "name": "money-router",
   "version": "1.0.0-alpha.1",
-  "description": "AI-curated global earning opportunities, paid out via PayPal. Discover, route, and verify with real PayPal transactions.",
+  "description": "Money Router — an AI radar for PayPal-payable work, worldwide. Collect, vet, route, verify.",
   "private": true,
   "type": "module",
   "license": "MIT",

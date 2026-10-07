@@ -1,6 +1,6 @@
-# Money Router
+# Money Router — an AI radar for PayPal-payable work, worldwide
 
-**AI-curated global earning opportunities, paid out via PayPal — discovered, routed to you, and verified against your real PayPal transactions.**
+**Collects money-making opportunities from all over the world, has AI vet them (legitimacy, eligibility, payment risk), routes the best ones to you, and verifies the result against your real PayPal transactions.**
 
 > Entry for the [PayPal AI Hackathon](https://paypalaihackathon.devpost.com/) (Devpost, 2026). Status: **alpha** — skeleton with mock data; live crawler, PayPal sync and invoicing are wired but need credentials.
 

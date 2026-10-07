@@ -47,6 +47,7 @@ export default function App() {
       <header>
         <h1>
           Money <span>Router</span>
+          <small className="tagline">{t('hdr.tagline')}</small>
         </h1>
         <nav>
           {(['dashboard', 'opportunities', 'sources', 'profile', 'payments'] as Page[]).map((p) => (

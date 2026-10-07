@@ -53,6 +53,7 @@ const dict = {
   'opp.legend': { ja: '* = 暫定スコア（差分審査またはseed）。正当性の数字にカーソルを当てると審査メモ。', en: '* = provisional score (diff audit or seed). Hover legitimacy for the auditor\'s notes.' },
   'opp.crawl': { ja: '今すぐ巡回', en: 'Run crawler now' },
   'opp.crawling': { ja: '巡回中…', en: 'Crawling…' },
+  'hdr.tagline': { ja: 'an AI radar for PayPal-payable work, worldwide', en: 'an AI radar for PayPal-payable work, worldwide' },
   'opp.brief': { ja: '要約', en: 'Brief' },
   'dash.clickHint': { ja: 'クリックで要約と詳細', en: 'Click for brief & details' },
   'opp.briefTitle': { ja: 'あなたの言語でAI要約', en: 'AI brief in your language' },

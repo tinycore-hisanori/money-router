@@ -1,5 +1,5 @@
 # Money Router v1.0 仕様書
-## AI-curated global earning opportunities, paid out via PayPal
+## Money Router — an AI radar for PayPal-payable work, worldwide
 
 - 作成日: 2026-10-03
 - 応募先: PayPal AI Hackathon (Devpost) — 締切 2026-11-12 12:00 PST（JST 11/13 05:00）
