@@ -15,6 +15,8 @@ services:
         value: /opt/render/project/src/data/runtime
       - key: PAYPAL_ENV
         value: sandbox
+      - key: CRAWL_DAYS
+        value: "1"
       - key: CRAWLER_MODE
         value: live
       - key: ANTHROPIC_API_KEY

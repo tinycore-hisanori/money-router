@@ -104,7 +104,7 @@ npm run seed:payments   # Payouts API: simulated platform payments into the rece
 npm run build && npm start   # serves API + built SPA from one process
 ```
 
-`render.yaml` deploys this as a single Render web service with a persistent disk; the crawler runs in-process daily at `CRAWL_HOUR_UTC`.
+`render.yaml` deploys this as a single Render web service with a persistent disk; the crawler runs in-process at `CRAWL_HOUR_UTC` on the weekdays in `CRAWL_DAYS` (empty = daily; `render.yaml` sets Mondays only to keep the demo cheap).
 
 ## Repository layout
 

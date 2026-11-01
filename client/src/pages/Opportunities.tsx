@@ -4,6 +4,7 @@ import type { ColDef } from 'ag-grid-community';
 import type { ExecutionStatus } from '@shared/types';
 import { api, type Routed } from '../api';
 import OpportunityPanel from '../components/OpportunityPanel';
+import Stars from '../components/Stars';
 import { t, type Key } from '../i18n';
 
 const EXEC: (ExecutionStatus | '')[] = ['', 'todo', 'applied', 'active', 'paid', 'skipped'];
@@ -45,6 +46,13 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
         valueGetter: (p) => p.data?.opportunity.certainty,
         width: 120,
         cellRenderer: (p: any) => <span className={`pill ${p.value === 'fixed' ? 'ok' : p.value === 'per_task' ? 'warn' : ''}`}>{t(`cert.${p.value}` as Key)}</span>,
+      },
+      {
+        headerName: t('col.stars'),
+        width: 150,
+        valueGetter: (p) => (p.data ? p.data.stars.ease * 10 + p.data.stars.payoff : 0),
+        headerTooltip: t('stars.legend'),
+        cellRenderer: (p: any) => <Stars stars={p.data.stars} compact />,
       },
       {
         headerName: t('col.risk'),

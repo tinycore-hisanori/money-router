@@ -162,6 +162,8 @@ export interface RoutedOpportunity {
   effective_certainty: Certainty;
   expected_hourly: number;
   score: number;
+  /** 1-5 star ratings for humans: ease = how little effort/friction to get paid; payoff = how much money, how surely. */
+  stars: { ease: number; payoff: number };
   explanation?: string;
 }
 
@@ -173,6 +175,7 @@ export interface WeeklyPlanItem {
   expected_usd: number;
   first_step: string;
   why: string;
+  stars?: { ease: number; payoff: number };
 }
 
 export interface WeeklyPlan {

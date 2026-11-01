@@ -52,6 +52,8 @@ export const config = {
   crawler: {
     mode: (process.env.CRAWLER_MODE ?? 'mock') as 'mock' | 'live',
     hourUtc: process.env.CRAWL_HOUR_UTC === '' || process.env.CRAWL_HOUR_UTC === undefined ? null : Number(process.env.CRAWL_HOUR_UTC),
+    /** UTC weekdays (0=Sun..6) on which the scheduled crawl runs; empty = every day. e.g. "1" = Mondays only */
+    days: (process.env.CRAWL_DAYS ?? '').split(',').map((x) => x.trim()).filter(Boolean).map(Number).filter((n) => n >= 0 && n <= 6),
     token: process.env.CRAWL_TOKEN ?? '',
     /** UTC weekday (0=Sun) to run Event Radar after the daily crawl; null = manual only */
     radarDow: process.env.RADAR_DOW === '' || process.env.RADAR_DOW === undefined ? null : Number(process.env.RADAR_DOW),

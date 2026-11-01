@@ -1,4 +1,5 @@
 import type {
+  Certainty,
   ExclusionReason,
   ExecutionStatus,
   Opportunity,
@@ -118,7 +119,33 @@ export function routeOne(
     timeDiscount(o.payout_days_estimate) *
     observedBoost(o, exec, now);
 
-  return { opportunity: o, eligible: exclusions.length === 0, exclusions, warnings, effective_certainty, expected_hourly, score };
+  const stars = rateStars(o, { effective_certainty, expected_hourly, warnings });
+  return { opportunity: o, eligible: exclusions.length === 0, exclusions, warnings, effective_certainty, expected_hourly, score, stars };
+}
+
+/** Map a 0..1 value to 1..5 stars. */
+function toStars(v: number): number {
+  return Math.max(1, Math.min(5, Math.round(1 + Math.max(0, Math.min(1, v)) * 4)));
+}
+
+/**
+ * Ease (楽): small effort per unit, few requirements/skills, quick & low-threshold payout, no deadline pressure.
+ * Payoff (お得): expected $/h discounted by certainty, legitimacy and payout delay — i.e. money you can actually count on.
+ */
+export function rateStars(o: Opportunity, r: { effective_certainty: Certainty; expected_hourly: number; warnings: string[] }): { ease: number; payoff: number } {
+  const effort = o.effort_hours_estimate || 1;
+  const easeEffort = effort <= 1 ? 1 : effort <= 4 ? 0.8 : effort <= 10 ? 0.55 : effort <= 40 ? 0.3 : 0.1;
+  const easeReq = Math.max(0, 1 - 0.15 * ((o.requirements?.length ?? 0) + (o.skills_required?.length ?? 0)));
+  const easeDays = o.payout_days_estimate <= 7 ? 1 : o.payout_days_estimate <= 30 ? 0.7 : o.payout_days_estimate <= 60 ? 0.45 : 0.2;
+  const easeMin = o.min_payout <= 0 ? 1 : o.min_payout <= 20 ? 0.8 : o.min_payout <= 100 ? 0.5 : 0.25;
+  const easeDeadline = o.deadline ? 0.6 : 1;
+  const easeWarn = r.warnings.length ? 0.7 : 1;
+  const ease = (easeEffort * 0.4 + easeReq * 0.2 + easeDays * 0.2 + easeMin * 0.2) * easeDeadline * easeWarn;
+
+  const hourlyNorm = Math.log10(1 + Math.max(0, r.expected_hourly)) / Math.log10(1 + 100); // $0→0, $100/h→1
+  const sizeNorm = Math.log10(1 + Math.max(0, o.reward_estimate_usd)) / Math.log10(1 + 1000); // $0→0, $1000→1 (a big prize is worth more than a big hourly)
+  const payoff = (hourlyNorm * 0.6 + Math.min(1, sizeNorm) * 0.4) * CERTAINTY_WEIGHT[r.effective_certainty] * (o.legitimacy.score / 100) * timeDiscount(o.payout_days_estimate) ** 0.5;
+  return { ease: toStars(ease), payoff: toStars(payoff) };
 }
 
 export function routeAll(
@@ -167,6 +194,7 @@ export function buildWeeklyPlan(
       expected_usd: Math.round(expected * 100) / 100,
       first_step: o.requirements[0] ? `Check: ${o.requirements[0]}` : `Sign up at ${o.url}`,
       why: `~$${r.expected_hourly.toFixed(0)}/h, pays in ~${o.payout_days_estimate}d, legitimacy ${o.legitimacy.score}`,
+      stars: r.stars,
     };
     if (slot <= 0) {
       if (backlog.length < 15) backlog.push(item);

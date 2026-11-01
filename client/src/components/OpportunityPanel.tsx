@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { LocalizedSummary } from '@shared/types';
 import { api, type Routed } from '../api';
 import { t } from '../i18n';
+import Stars from './Stars';
 
 const LANGS = ['ja', 'en', 'es', 'pt', 'de', 'fr', 'ko', 'zh'];
 
@@ -63,6 +64,7 @@ export default function OpportunityPanel({
         </select>
         <button className="ghost" style={{ padding: '2px 8px' }} onClick={onClose}>×</button>
       </div>
+      <p style={{ margin: '0 0 8px' }} title={t('stars.legend')}><Stars stars={routed.stars} /></p>
       {busy && <p className="muted">{t('brief.writing')}</p>}
       {brief && (
         <>

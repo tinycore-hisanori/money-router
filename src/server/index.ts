@@ -26,6 +26,7 @@ if (config.crawler.hourUtc !== null) {
     const now = new Date();
     const day = now.toISOString().slice(0, 10);
     if (now.getUTCHours() !== config.crawler.hourUtc || lastDay === day) return;
+    if (config.crawler.days.length && !config.crawler.days.includes(now.getUTCDay())) return;
     lastDay = day;
     try {
       const { runCrawl } = await import('../crawler/index.js');

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { WeeklyPlan } from '@shared/types';
 import { api, type Routed } from '../api';
 import OpportunityPanel from '../components/OpportunityPanel';
+import Stars from '../components/Stars';
 import { t, type Key } from '../i18n';
 
 export default function Dashboard({ tick, onChange, onSetup }: { tick: number; onChange: () => void; onSetup?: () => void }) {
@@ -65,7 +66,7 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
       <div className="card">
         <div className="toolbar">
           <h3 style={{ margin: 0 }}>{t('dash.thisWeek')}</h3>
-          <span className="muted">{plan?.summary}</span>
+          <span className="muted" title={t('stars.legend')}>{plan?.summary}</span>
           <div className="spacer" />
           <button className="ghost" onClick={explain} disabled={busy}>
             {busy ? t('dash.thinking') : t('dash.explain')}
@@ -118,6 +119,7 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
                   </p>
                 ) : null;
               })()}
+              <p><Stars stars={i.stars} /></p>
               <p>{i.why}</p>
               <p>
                 <b style={{ color: 'var(--text)' }}>{t('dash.firstStep')}</b> {i.first_step}
@@ -143,7 +145,7 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
                 <h4 style={{ fontSize: 14 }}>
                   {i.name} <span className={`pill ${i.certainty === 'fixed' ? 'ok' : i.certainty === 'per_task' ? 'warn' : ''}`}>{t(`cert.${i.certainty}` as Key)}</span>
                 </h4>
-                <p>{i.why} · {t('dash.hours', { h: i.hours })}</p>
+                <p><Stars stars={i.stars} compact /> {i.why} · {t('dash.hours', { h: i.hours })}</p>
               </div>
               <div className="usd" style={{ fontSize: 15 }}>${i.expected_usd}</div>
             </div>
