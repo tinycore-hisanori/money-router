@@ -31,9 +31,10 @@ async function writeJson(file: string, data: unknown): Promise<void> {
 const runtime = (name: string) => path.join(config.dataDir, name);
 const seed = (name: string) => path.join(config.seedDir, name);
 
+// Hosted demo can start with a different default (e.g. DEFAULT_COUNTRY=US DEFAULT_LANGUAGE=en) so judges see a full dashboard.
 const DEFAULT_PROFILE: UserProfile = {
-  country: 'JP',
-  language: 'ja',
+  country: (process.env.DEFAULT_COUNTRY || 'JP').toUpperCase(),
+  language: (process.env.DEFAULT_LANGUAGE || 'ja').toLowerCase(),
   skills: [],
   hours_per_week: 10,
   existing_accounts: [],

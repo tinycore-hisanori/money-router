@@ -15,11 +15,27 @@ services:
         value: /opt/render/project/src/data/runtime
       - key: PAYPAL_ENV
         value: sandbox
+      - key: CRAWL_HOUR_UTC
+        value: "3"
       - key: CRAWL_DAYS
         value: "1"
+      - key: RADAR_DOW
+        value: "1"
+      - key: LOCALES
+        value: en,ja
+      - key: DEFAULT_COUNTRY
+        value: US
+      - key: DEFAULT_LANGUAGE
+        value: en
       - key: CRAWLER_MODE
         value: live
       - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: BRAVE_SEARCH_API_KEY
+        sync: false
+      - key: PAYPAL_SEED_CLIENT_ID
+        sync: false
+      - key: PAYPAL_SEED_CLIENT_SECRET
         sync: false
       - key: PAYPAL_CLIENT_ID
         sync: false
@@ -45,5 +61,7 @@ services:
         value: claude-opus-5-5
       - key: MODEL_EXPLAIN
         value: claude-opus-5-5
+      - key: MODEL_LOCALIZE
+        value: claude-sonnet-5-5
       - key: AUDIT_SCHEDULE
         value: mon:claude-fable-5-1:full,thu:claude-opus-5-5:full
