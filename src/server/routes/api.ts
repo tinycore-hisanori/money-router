@@ -6,6 +6,7 @@ import { createInvoiceDraft, getInvoice, listIncomingTransactions, paypalAvailab
 import { llmAvailable } from '../lib/llm.js';
 import { config } from '../lib/config.js';
 import { canCurate, consume, isAdmin, remaining, tierOf } from '../lib/guard.js';
+import { getJob, runningJobs, startJob } from '../lib/jobs.js';
 import type { ExecutionStatus, Opportunity, Payment, UserProfile } from '../../shared/types.js';
 
 export const api = new Hono();
@@ -26,6 +27,7 @@ api.get('/status', async (c) => {
     demo: { discovery: await remaining(c, 'discovery'), briefs: await remaining(c, 'briefs'), crawls: await remaining(c, 'crawls') },
     models: config.models,
     audit_schedule: config.auditSchedule,
+    running: runningJobs(),
   });
 });
 
@@ -152,7 +154,14 @@ api.post('/crawl', async (c) => {
   const denied = await consume(c, 'crawls');
   if (denied) return c.json(denied, 429);
   const { runCrawl } = await import('../../crawler/index.js');
-  return c.json(await runCrawl());
+  if (c.req.query('wait') === '1') return c.json(await runCrawl());
+  return c.json(startJob('crawl', runCrawl), 202);
+});
+
+// ---- job polling (long-running actions return 202 + job; UI polls here)
+api.get('/jobs/:id', (c) => {
+  const j = getJob(c.req.param('id'));
+  return j ? c.json(j) : c.json({ error: 'not found' }, 404);
 });
 
 // ---- on-demand localized brief for one opportunity (for languages not pre-generated)
@@ -177,13 +186,14 @@ api.post('/discover', async (c) => {
   if (denied) return c.json(denied, 429);
   const { runDiscovery } = await import('../../crawler/discover.js');
   const max = Number(c.req.query('max') ?? 12);
-  return c.json(await runDiscovery({ maxQueries: max }));
+  return c.json(startJob('discover', () => runDiscovery({ maxQueries: max })), 202);
 });
 api.post('/radar', async (c) => {
   const denied = await consume(c, 'discovery');
   if (denied) return c.json(denied, 429);
   const { runRadar } = await import('../../crawler/radar.js');
-  return c.json(await runRadar({ maxQueries: Number(c.req.query('max') ?? 10) }));
+  const max = Number(c.req.query('max') ?? 10);
+  return c.json(startJob('radar', () => runRadar({ maxQueries: max })), 202);
 });
 api.get('/candidates', async (c) => c.json(await store.getCandidates()));
 api.post('/candidates/:id/approve', async (c) => {

@@ -24,6 +24,19 @@ async function j<T>(url: string, init?: RequestInit): Promise<T> {
 
 export type Routed = RoutedOpportunity & { execution: ExecutionStatus | null };
 
+interface Job { id: string; kind: string; status: 'running' | 'done' | 'error'; result: any; error: string | null }
+
+/** Start a long-running server job and poll until it finishes (survives proxy timeouts). */
+async function runJob(start: () => Promise<Job>): Promise<any> {
+  let job = await start();
+  while (job.status === 'running') {
+    await new Promise((r) => setTimeout(r, 3000));
+    job = await j<Job>(`/api/jobs/${encodeURIComponent(job.id)}`);
+  }
+  if (job.status === 'error') throw new ApiError(500, { error: job.error });
+  return job.result;
+}
+
 export const api = {
   status: () => j<any>('/api/status'),
   route: () => j<Routed[]>('/api/route'),
@@ -36,9 +49,9 @@ export const api = {
   sync: () => j<{ fetched: number; total: number; matched: number }>('/api/paypal/sync', { method: 'POST' }),
   setMatch: (tx: string, status: 'confirmed' | 'rejected', opportunity_id?: string | null) =>
     j<Payment>('/api/payments/' + encodeURIComponent(tx), { method: 'PUT', body: JSON.stringify({ status, opportunity_id }) }),
-  crawl: () => j<any>('/api/crawl', { method: 'POST' }),
-  discover: (max = 12) => j<any>(`/api/discover?max=${max}`, { method: 'POST' }),
-  radar: (max = 10) => j<any>(`/api/radar?max=${max}`, { method: 'POST' }),
+  crawl: () => runJob(() => j<Job>('/api/crawl', { method: 'POST' })),
+  discover: (max = 12) => runJob(() => j<Job>(`/api/discover?max=${max}`, { method: 'POST' })),
+  radar: (max = 10) => runJob(() => j<Job>(`/api/radar?max=${max}`, { method: 'POST' })),
   candidates: () => j<any[]>('/api/candidates'),
   approve: (id: string) => j<any>(`/api/candidates/${encodeURIComponent(id)}/approve`, { method: 'POST' }),
   reject: (id: string) => j<any>(`/api/candidates/${encodeURIComponent(id)}/reject`, { method: 'POST' }),
