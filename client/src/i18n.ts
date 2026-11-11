@@ -58,6 +58,7 @@ const dict = {
   'stars.payoff': { ja: 'お得', en: 'Payoff' },
   'stars.legend': { ja: '楽＝手間・待ち・条件の少なさ／お得＝当てにできる時給（確実性・正当性込み）', en: 'Easy = little effort, waiting or friction / Payoff = $/h you can count on (certainty, legitimacy)' },
   'col.stars': { ja: 'おすすめ', en: 'Rating' },
+  'col.period': { ja: '期間', en: 'Period' },
   'opp.brief': { ja: '要約', en: 'Brief' },
   'dash.clickHint': { ja: 'クリックで要約と詳細', en: 'Click for brief & details' },
   'opp.briefTitle': { ja: 'あなたの言語でAI要約', en: 'AI brief in your language' },

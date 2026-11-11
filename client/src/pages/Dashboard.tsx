@@ -120,6 +120,10 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
                 ) : null;
               })()}
               <p><Stars stars={i.stars} /></p>
+              {(() => {
+                const o = routed.find((x) => x.opportunity.id === i.opportunity_id)?.opportunity;
+                return o?.deadline ? <p style={{ color: 'var(--accent-2)' }}>⏰ {t('col.deadline')} {o.deadline}{o.period ? `（${o.period}）` : ''}</p> : null;
+              })()}
               <p>{i.why}</p>
               <p>
                 <b style={{ color: 'var(--text)' }}>{t('dash.firstStep')}</b> {i.first_step}

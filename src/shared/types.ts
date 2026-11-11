@@ -88,6 +88,10 @@ export interface Opportunity {
   requirements: string[];
   /** ISO date when applications/submissions close (contests, hackathons, limited promos). null = open-ended. */
   deadline: string | null;
+  /** ISO date when the event / submission window opens (contests), null when not stated. */
+  starts?: string | null;
+  /** Human-readable period as stated by the source, e.g. "Sep 24 - Nov 18, 2026" or "48h jam, Dec 5-7". */
+  period?: string | null;
   /** True only when eligibility (countries / residency / age) was read from official rules or terms. */
   eligibility_verified: boolean;
   /** Quoted or paraphrased eligibility clause, or why it could not be verified. */

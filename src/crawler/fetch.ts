@@ -10,6 +10,22 @@ export interface PageResult {
   via: 'direct' | 'search_page' | 'search_snippets';
 }
 
+const MONTHS: Record<string, number> = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+/**
+ * Parse listing-style date ranges ("Sep 24 - Nov 18, 2026", "Nov 10 - 18, 2026", "Dec 5, 2026 - Jan 9, 2027")
+ * into ISO {starts, deadline}. Returns null when the text is not such a range.
+ */
+export function parseDateRange(text: string): { starts: string; deadline: string } | null {
+  const m = text.match(/([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2})(?:,\s*(\d{4}))?\s*[-–—]\s*(?:([A-Za-z]{3})[a-z]*\.?\s+)?(\d{1,2}),?\s*(\d{4})/);
+  if (!m) return null;
+  const [, m1, d1, y1, m2, d2, y2] = m;
+  const mo1 = MONTHS[m1.toLowerCase()], mo2 = m2 ? MONTHS[m2.toLowerCase()] : mo1;
+  if (!mo1 || !mo2) return null;
+  const iso = (y: string, mo: number, d: string) => `${y}-${String(mo).padStart(2, '0')}-${d.padStart(2, '0')}`;
+  const endY = y2, startY = y1 ?? (mo1 > mo2 ? String(Number(y2) - 1) : y2);
+  return { starts: iso(startY, mo1, d1), deadline: iso(endY, mo2, d2) };
+}
+
 /** Turn a JSON listing into compact "key: value" lines (one block per item, shallow fields only). */
 export function jsonToLines(raw: string): string {
   let j: any;
@@ -24,7 +40,12 @@ export function jsonToLines(raw: string): string {
   };
   return items
     .slice(0, 15)
-    .map((it, i) => `## item ${i + 1}\n` + Object.entries(it).filter(([k]) => KEEP.test(k)).map(([k, v]) => `${k}: ${flat(v)}`).filter((l) => !l.endsWith(': ')).join('\n'))
+    .map((it, i) => {
+      const lines = Object.entries(it).filter(([k]) => KEEP.test(k)).map(([k, v]) => `${k}: ${flat(v)}`).filter((l) => !l.endsWith(': '));
+      const range = parseDateRange(flat(it.submission_period_dates ?? it.dates ?? it.period ?? ''));
+      if (range) lines.push(`starts: ${range.starts}`, `deadline: ${range.deadline}`);
+      return `## item ${i + 1}\n` + lines.join('\n');
+    })
     .join('\n\n');
 }
 

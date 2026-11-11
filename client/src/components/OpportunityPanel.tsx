@@ -101,7 +101,7 @@ export default function OpportunityPanel({
         <p className="muted" style={{ fontSize: 12 }}><b style={{ color: 'var(--accent-2)' }}>{t('brief.notForYou')}</b> {routed.exclusions.map((e) => e.detail).join('; ')}</p>
       )}
       <p className="muted" style={{ fontSize: 12 }}>
-        {t('col.category')}: {o.category} · {t('col.certainty')}: {t(`cert.${o.certainty}` as any)} · {t('col.hourly')}: ${routed.expected_hourly.toFixed(0)} · {t('col.minPayout')}: ${o.min_payout} · {t('col.days')}: {o.payout_days_estimate}{o.deadline ? ` · ${t('col.deadline')}: ${o.deadline}` : ''}
+        {t('col.category')}: {o.category} · {t('col.certainty')}: {t(`cert.${o.certainty}` as any)} · {t('col.hourly')}: ${routed.expected_hourly.toFixed(0)} · {t('col.minPayout')}: ${o.min_payout} · {t('col.days')}: {o.payout_days_estimate}{o.deadline ? ` · ${t('col.deadline')}: ${o.deadline}` : ''}{o.period ? ` · ${t('col.period')}: ${o.period}` : o.starts ? ` · ${t('col.period')}: ${o.starts} → ${o.deadline ?? '?'}` : ''}
       </p>
       <p className="muted" style={{ fontSize: 12 }}><a href={o.url} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>{o.url} ↗</a></p>
     </div>

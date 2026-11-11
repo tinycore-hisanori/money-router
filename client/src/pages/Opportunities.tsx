@@ -81,6 +81,7 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
       {
         headerName: t('col.deadline'),
         valueGetter: (p) => p.data?.opportunity.deadline,
+        tooltipValueGetter: (p) => p.data?.opportunity.period ?? (p.data?.opportunity.starts ? `${p.data.opportunity.starts} → ${p.data.opportunity.deadline}` : ''),
         width: 150,
         cellRenderer: (p: any) => (
           <>

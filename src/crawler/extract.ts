@@ -30,7 +30,9 @@ Rules:
   no_payout_history (caution): no evidence that past winners were paid (new host, no prior events).
   payout_complaints (warning): the COMPLAINT SEARCH section below contains credible reports of non-payment for this host.
   Use severity exactly as listed. Leave findings empty for established platforms with documented payouts.
-- deadline: ISO date (YYYY-MM-DD) when submissions/applications close, for contests, hackathons, jams and limited-time promos; null when open-ended. Never invent a date.
+- deadline: ISO date (YYYY-MM-DD) when submissions/applications close, for contests, hackathons, jams and limited-time promos; null when open-ended. Never invent a date. If the text already has a "deadline:" line, copy it exactly.
+- starts: ISO date when the event / submission window opens (copy a "starts:" line when present), else null.
+- period: the event or submission period exactly as the source states it (e.g. "Sep 24 - Nov 18, 2026", "48-hour jam, Dec 5-7"), null when not stated.
 - certainty: "fixed" when a defined action yields a defined amount (sign-up bonus, referral bonus, fixed bounty, promo, contest/hackathon prize with a stated amount); "per_task" when each completed task pays a known amount but tasks must be obtained (user tests, transcription, labeling, gigs); "speculative" when income depends on sales or traffic (revenue share, marketplace sales).
 - reward_estimate_usd: for per_task = typical payment per task; for rev_share = realistic monthly income for a small creator; for hourly = hourly rate.
 - effort_hours_estimate: hours per unit of reward (per task, or per month of upkeep for rev_share).
@@ -46,7 +48,7 @@ Hint for this source: ${source.parse_hint ?? 'none'}${source.paypal_confirmed ? 
           type: 'array',
           items: {
             type: 'object',
-            required: ['name', 'provider', 'category', 'url', 'payout_methods', 'payout_currency', 'min_payout', 'payout_cycle', 'payout_days_estimate', 'reward_model', 'certainty', 'reward_estimate_usd', 'effort_hours_estimate', 'skills_required', 'countries_allowed', 'countries_blocked', 'requirements', 'deadline', 'eligibility_verified', 'eligibility_note', 'findings', 'confidence'],
+            required: ['name', 'provider', 'category', 'url', 'payout_methods', 'payout_currency', 'min_payout', 'payout_cycle', 'payout_days_estimate', 'reward_model', 'certainty', 'reward_estimate_usd', 'effort_hours_estimate', 'skills_required', 'countries_allowed', 'countries_blocked', 'requirements', 'deadline', 'starts', 'period', 'eligibility_verified', 'eligibility_note', 'findings', 'confidence'],
             properties: {
               name: { type: 'string' },
               provider: { type: 'string' },
@@ -66,6 +68,8 @@ Hint for this source: ${source.parse_hint ?? 'none'}${source.paypal_confirmed ? 
               countries_blocked: { type: 'array', items: { type: 'string' } },
               requirements: { type: 'array', items: { type: 'string' } },
               deadline: { type: ['string', 'null'] },
+              starts: { type: ['string', 'null'] },
+              period: { type: ['string', 'null'] },
               eligibility_verified: { type: 'boolean' },
               eligibility_note: { type: 'string' },
               findings: {
