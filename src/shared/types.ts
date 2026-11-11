@@ -111,6 +111,8 @@ export interface Source {
   parse_hint?: string;
   trust_baseline: number;
   enabled: boolean;
+  /** Why a registered source is switched off (kept in the registry for reuse in non-PayPal products). */
+  disabled_reason?: string;
   /** Set when a real user has verified that this source pays via PayPal; the extractor must not reject it for a missing mention. */
   paypal_confirmed?: boolean;
 }

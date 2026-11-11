@@ -362,7 +362,8 @@
     "category": "contest",
     "parse_hint": "Japanese public-contest listing site (登竜門/公募ガイド). Keep game/app/IT contests with cash prizes; note whether prize payment via PayPal is possible for overseas-run contests.",
     "trust_baseline": 70,
-    "enabled": true
+    "enabled": false,
+    "disabled_reason": "PayPal不可: 国内・銀行振込（懸賞金ハンターweb向け）"
   },
   {
     "id": "overpowered-jam",
@@ -434,7 +435,8 @@
     "category": "contest",
     "parse_hint": "Japanese contest portal. Keep game/app/IT/design contests with cash prizes; most pay by bank transfer — only keep if PayPal or international payout is stated. Many are student-only: mark eligibility.",
     "trust_baseline": 70,
-    "enabled": true
+    "enabled": false,
+    "disabled_reason": "PayPal不可: 国内・銀行振込（懸賞金ハンターweb向け）"
   },
   {
     "id": "koubo-jp",
@@ -443,7 +445,8 @@
     "category": "contest",
     "parse_hint": "Japanese contest portal. Keep cash-prize game/app/IT contests; payout is usually bank transfer — keep only when PayPal is possible.",
     "trust_baseline": 70,
-    "enabled": true
+    "enabled": false,
+    "disabled_reason": "PayPal不可: 国内・銀行振込（懸賞金ハンターweb向け）"
   },
   {
     "id": "devgrantsdaily",
@@ -452,7 +455,8 @@
     "category": "contest",
     "parse_hint": "Developer grants and bounties digest. Extract program, amount, deadline, payout method (crypto-only programs are not PayPal: reject).",
     "trust_baseline": 65,
-    "enabled": true
+    "enabled": false,
+    "disabled_reason": "PayPal不可: 主に暗号資産グラント（懸賞金ハンターweb向け）"
   },
   {
     "id": "ggj-news",
@@ -470,7 +474,8 @@
     "category": "contest",
     "parse_hint": "Japanese indie game news; pick contest announcements with cash prizes and their deadlines.",
     "trust_baseline": 65,
-    "enabled": true
+    "enabled": false,
+    "disabled_reason": "PayPal不可: 国内告知のみ（懸賞金ハンターweb向け）"
   },
   {
     "id": "unreal-forums",
@@ -488,7 +493,8 @@
     "category": "contest",
     "parse_hint": "Yearly (Sep-Nov). Extract division, deadline, prize, eligibility; payout likely bank transfer — note if PayPal not stated.",
     "trust_baseline": 85,
-    "enabled": true
+    "enabled": false,
+    "disabled_reason": "PayPal不可: 国内・銀行振込（懸賞金ハンターweb向け）"
   },
   {
     "id": "lolipop-deploy-now",
@@ -497,7 +503,8 @@
     "category": "contest",
     "parse_hint": "Monthly awards plus grand prize. Extract deadlines, prizes, payout method.",
     "trust_baseline": 85,
-    "enabled": true
+    "enabled": false,
+    "disabled_reason": "PayPal不可: 国内・銀行振込（懸賞金ハンターweb向け）"
   },
   {
     "id": "gmo-robot-hand",
@@ -506,7 +513,8 @@
     "category": "contest",
     "parse_hint": "Robot hand contest, first edition. Extract deadline, prize, eligibility, payout method.",
     "trust_baseline": 80,
-    "enabled": true
+    "enabled": false,
+    "disabled_reason": "PayPal不可: 国内・銀行振込（懸賞金ハンターweb向け）"
   },
   {
     "id": "decentraland-creator",
@@ -515,7 +523,8 @@
     "category": "contest",
     "parse_hint": "Ongoing creator grants reviewed weekly. Payout is often in crypto (MANA/USDC) — reject unless PayPal/fiat is stated.",
     "trust_baseline": 65,
-    "enabled": true
+    "enabled": false,
+    "disabled_reason": "PayPal不可: 暗号資産払い（懸賞金ハンターweb向け）"
   },
   {
     "id": "caff-innovation",
@@ -533,6 +542,7 @@
     "category": "contest",
     "parse_hint": "One-off contest. Extract deadline, prize, eligibility, payout method.",
     "trust_baseline": 90,
-    "enabled": true
+    "enabled": false,
+    "disabled_reason": "PayPal不可: 国内・銀行振込（懸賞金ハンターweb向け）"
   }
 ]
