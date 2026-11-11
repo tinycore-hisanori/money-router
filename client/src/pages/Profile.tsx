@@ -87,7 +87,7 @@ export default function Profile({ onChange, onboarding }: { onChange: () => void
         <div className="k" style={{ marginBottom: 10, color: 'var(--muted)', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.6 }}>{t('q.title')}</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 8 }}>
           {SKILL_QUESTIONS.map((s) => (
-            <label key={s} style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '8px 10px', border: '1px solid var(--line)', borderRadius: 8, cursor: 'pointer', background: p.skills.includes(s) ? '#1d2a24' : 'transparent' }}>
+            <label key={s} style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '8px 10px', border: '1px solid var(--line)', borderRadius: 8, cursor: 'pointer', background: p.skills.includes(s) ? 'var(--accent-soft)' : 'transparent' }}>
               <input type="checkbox" checked={p.skills.includes(s)} onChange={(e) => toggle(s, e.target.checked)} />
               <span>{t(`q.${s}` as Key)}</span>
             </label>

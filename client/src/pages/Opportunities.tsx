@@ -6,7 +6,9 @@ import { api, type Routed } from '../api';
 import OpportunityPanel from '../components/OpportunityPanel';
 import Stars from '../components/Stars';
 import { t, type Key } from '../i18n';
-import { daysColor, daysLabel } from '../dates';
+import { daysColor, daysLabel, daysLeft } from '../dates';
+import { catColor, catLabel } from '../cats';
+import { Count } from './Dashboard';
 
 const EXEC: (ExecutionStatus | '')[] = ['', 'todo', 'applied', 'active', 'submitted', 'paid', 'won', 'lost', 'skipped'];
 
@@ -16,6 +18,10 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
   const [crawling, setCrawling] = useState(false);
   const [selected, setSelected] = useState<Routed | null>(null);
   const [lang, setLang] = useState('ja');
+  const [view, setView] = useState<'list' | 'table'>('list');
+  const [q, setQ] = useState('');
+  const [cat, setCat] = useState('');
+  const [sort, setSort] = useState<'score' | 'deadline' | 'hourly' | 'ease' | 'payoff'>('score');
 
   useEffect(() => {
     api.profile().then((p) => setLang(p.language || 'ja')).catch(() => {});
@@ -25,7 +31,23 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
     api.route().then(setRows);
   }, [tick]);
 
-  const data = useMemo(() => (onlyEligible ? rows.filter((r) => r.eligible) : rows), [rows, onlyEligible]);
+  const cats = useMemo(() => [...new Set(rows.map((r) => r.opportunity.category))].sort(), [rows]);
+  const data = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    const list = rows.filter((r) =>
+      (!onlyEligible || r.eligible) &&
+      (!cat || r.opportunity.category === cat) &&
+      (!needle || `${r.opportunity.name} ${r.opportunity.provider}`.toLowerCase().includes(needle)));
+    const far = (r: Routed) => { const n = daysLeft(r.opportunity.deadline); return n == null || n < 0 ? 1e6 : n; };
+    const by: Record<typeof sort, (a: Routed, b: Routed) => number> = {
+      score: (a, b) => b.score - a.score,
+      deadline: (a, b) => far(a) - far(b) || b.score - a.score,
+      hourly: (a, b) => b.expected_hourly - a.expected_hourly,
+      ease: (a, b) => b.stars.ease - a.stars.ease || b.score - a.score,
+      payoff: (a, b) => b.stars.payoff - a.stars.payoff || b.score - a.score,
+    };
+    return [...list].sort(by[sort]);
+  }, [rows, onlyEligible, q, cat, sort]);
 
   const cols = useMemo<ColDef<Routed>[]>(
     () => [
@@ -41,7 +63,7 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
         ),
       },
       { headerName: t('col.opportunity'), valueGetter: (p) => p.data?.opportunity.name, flex: 2, minWidth: 220, cellRenderer: (p: any) => <a href={p.data.opportunity.url} target="_blank" rel="noreferrer" style={{ color: 'inherit' }} title={t('opp.openPage')}>{p.value} ↗</a> },
-      { headerName: t('col.category'), valueGetter: (p) => p.data?.opportunity.category, width: 130 },
+      { headerName: t('col.category'), valueGetter: (p) => catLabel(p.data?.opportunity.category), width: 140 },
       {
         headerName: t('col.certainty'),
         valueGetter: (p) => p.data?.opportunity.certainty,
@@ -50,10 +72,10 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
       },
       {
         headerName: t('col.stars'),
-        width: 150,
+        width: 220,
         valueGetter: (p) => (p.data ? p.data.stars.ease * 10 + p.data.stars.payoff : 0),
         headerTooltip: t('stars.legend'),
-        cellRenderer: (p: any) => <Stars stars={p.data.stars} compact />,
+        cellRenderer: (p: any) => <Stars stars={p.data.stars} />,
       },
       {
         headerName: t('col.risk'),
@@ -147,24 +169,83 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
     }
   };
 
+  const row = (r: Routed) => {
+    const o = r.opportunity;
+    const fs = o.findings ?? [];
+    const w = fs.filter((f) => f.severity === 'warning').length;
+    const c = fs.filter((f) => f.severity === 'caution').length;
+    const where = o.countries_allowed.length ? o.countries_allowed.slice(0, 4).join(' ') + (o.countries_allowed.length > 4 ? ' …' : '') : t('opp.worldwide');
+    return (
+      <div className={`orow ${r.eligible ? '' : 'out'}`} key={o.id} style={{ ['--c' as any]: catColor(o.category) }} onClick={() => setSelected(r)}>
+        <div className="orow-bar" />
+        <div className="orow-main">
+          <h4>{o.name}</h4>
+          <div className="chips">
+            <span className="cat">{catLabel(o.category)}</span>
+            <span className={`pill ${r.effective_certainty === 'fixed' ? 'ok' : r.effective_certainty === 'per_task' ? 'warn' : ''}`}>{t(`cert.${r.effective_certainty}` as Key)}</span>
+            <span className="pill">{where}</span>
+            {w > 0 && <span className="pill bad">⚠ {w}</span>}
+            {c > 0 && <span className="pill warn">△ {c}</span>}
+            {r.warnings.includes('eligibility_unverified') && <span className="pill bad">{t('warn.eligibility_unverified')}</span>}
+            {r.execution && <span className="pill ok">{t(`st.${r.execution}` as Key)}</span>}
+            {o.observed.total_received_usd > 0 && <span className="pill ok">PayPal ${o.observed.total_received_usd.toFixed(2)}</span>}
+          </div>
+          {!r.eligible && <p className="why">{r.exclusions.map((e) => e.detail).join(' / ')}</p>}
+          {r.note?.idea && <p className="muted" style={{ margin: 0 }}>{t('note.idea')}: {r.note.idea}</p>}
+        </div>
+        <div className="orow-stars"><Stars stars={r.stars} /></div>
+        <div className="orow-money">
+          <b>${r.expected_hourly.toFixed(0)}</b><span style={{ display: 'inline' }}>{t('opp.perHour')}</span>
+          <span>{t('panel.reward')} ${o.reward_estimate_usd.toLocaleString()}</span>
+        </div>
+        <div className="orow-count">{o.deadline ? <Count iso={o.deadline} /> : <span className="muted">—</span>}</div>
+      </div>
+    );
+  };
+
   return (
     <div className="grid">
-      <div className="toolbar">
-        <button className={onlyEligible ? 'primary' : 'ghost'} onClick={() => setOnlyEligible(true)}>{t('opp.forYou')}</button>
-        <button className={!onlyEligible ? 'primary' : 'ghost'} onClick={() => setOnlyEligible(false)}>{t('opp.all')}</button>
-        <span className="muted">{t('opp.legend')}</span>
-        <div className="spacer" />
+      <div className="filters">
+        <div className="seg" role="group">
+          <button aria-pressed={onlyEligible} onClick={() => setOnlyEligible(true)}>{t('opp.forYou')}</button>
+          <button aria-pressed={!onlyEligible} onClick={() => setOnlyEligible(false)}>{t('opp.all')}</button>
+        </div>
+        <input className="input search" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('opp.search')} aria-label={t('opp.search')} />
+        <select className="input" value={cat} onChange={(e) => setCat(e.target.value)} aria-label={t('col.category')}>
+          <option value="">{t('opp.allCats')}</option>
+          {cats.map((c) => <option key={c} value={c}>{catLabel(c)}</option>)}
+        </select>
+        <select className="input" value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} aria-label="sort">
+          {(['score', 'deadline', 'hourly', 'ease', 'payoff'] as const).map((k) => <option key={k} value={k}>{t(`opp.sort.${k}` as Key)}</option>)}
+        </select>
+        <div className="seg" role="group">
+          <button aria-pressed={view === 'list'} onClick={() => setView('list')}>{t('opp.view.list')}</button>
+          <button aria-pressed={view === 'table'} onClick={() => setView('table')}>{t('opp.view.table')}</button>
+        </div>
+        <span className="muted">{t('opp.count', { n: data.length })}</span>
+        <span className="spacer" />
         <button className="ghost" onClick={crawl} disabled={crawling}>{crawling ? t('opp.crawling') : t('opp.crawl')}</button>
       </div>
-      <div className="ag-theme-money" style={{ height: 'calc(100vh - 180px)', minHeight: 400 }}>
-        <AgGridReact<Routed>
-          rowData={data}
-          columnDefs={cols}
-          defaultColDef={{ sortable: true, filter: true, resizable: true }}
-          tooltipShowDelay={300}
-          animateRows
-        />
-      </div>
+      {view === 'list' && (
+        <div className="olist">
+          {data.map(row)}
+          {!data.length && <div className="card muted">{t('opp.noResults')}</div>}
+        </div>
+      )}
+      {view === 'table' && (
+        <>
+          <span className="muted">{t('opp.legend')}</span>
+          <div className="ag-theme-money" style={{ height: 'calc(100vh - 220px)', minHeight: 400 }}>
+            <AgGridReact<Routed>
+              rowData={data}
+              columnDefs={cols}
+              defaultColDef={{ sortable: true, filter: true, resizable: true }}
+              tooltipShowDelay={300}
+              animateRows
+            />
+          </div>
+        </>
+      )}
       {selected && <OpportunityPanel routed={selected} lang={lang} onLang={setLang} onClose={() => setSelected(null)} onChange={onChange} />}
     </div>
   );

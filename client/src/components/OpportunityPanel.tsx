@@ -4,6 +4,7 @@ import { api, type Routed } from '../api';
 import { t } from '../i18n';
 import Stars from './Stars';
 import { daysColor, daysLabel } from '../dates';
+import { catColor, catLabel } from '../cats';
 import type { ExecutionStatus } from '@shared/types';
 
 const EXEC: ExecutionStatus[] = ['todo', 'applied', 'active', 'submitted', 'paid', 'won', 'lost', 'skipped'];
@@ -77,79 +78,108 @@ export default function OpportunityPanel({
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
+  const fs = o.findings ?? [];
+  const hasWarn = fs.some((f) => f.severity === 'warning');
+  const where = o.countries_allowed.length ? o.countries_allowed.join(' ') : t('opp.worldwide');
+  const dirty = idea !== (routed.note?.idea ?? '') || note !== (routed.note?.note ?? '');
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
-    <div className="card modal" style={style} onClick={(e) => e.stopPropagation()}>
-      <div className="toolbar">
-        <h3 style={{ margin: 0, fontSize: 15 }}>{o.name}</h3>
-        <div className="spacer" />
-        <select value={lang} onChange={(e) => onLang(e.target.value)} style={{ background: 'transparent', color: 'inherit', border: '1px solid var(--line)', borderRadius: 4 }}>
-          {LANGS.map((l) => <option key={l} value={l}>{l}</option>)}
-        </select>
-        <button className="ghost" style={{ padding: '2px 8px' }} onClick={onClose}>×</button>
-      </div>
-      <p style={{ margin: '0 0 8px', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }} title={t('stars.legend')}>
-        <Stars stars={routed.stars} />
-        {o.deadline && <b style={{ color: daysColor(o.deadline) }}>⏰ {o.deadline} · {daysLabel(o.deadline)}</b>}
-        {(o.result_date || o.result_note) && <span className="muted" style={{ fontSize: 12 }}>🏁 {t('result.on')} {o.result_date ?? ''} {o.result_note ?? ''}</span>}
-        <span className="spacer" />
-        <select value={exec} onChange={(e) => setStatus(e.target.value as ExecutionStatus | '')} style={{ background: 'transparent', color: 'inherit', border: '1px solid var(--line)', borderRadius: 4 }}>
-          <option value="">{t('st.' as any)}</option>
-          {EXEC.map((s) => <option key={s} value={s}>{t(`st.${s}` as any)}</option>)}
-        </select>
-      </p>
-      {busy && <p className="muted">{t('brief.writing')}</p>}
-      {brief && (
-        <>
-          <p>{brief.summary}</p>
-          <ol style={{ paddingLeft: 18 }}>{brief.how_to.map((h, i) => <li key={i} style={{ marginBottom: 4 }}>{h}</li>)}</ol>
-          <p style={{ color: 'var(--accent)' }}>{brief.payout}</p>
-          <p className="muted" style={{ fontSize: 12 }}>{t('brief.by')}{brief.generated_by}</p>
-        </>
-      )}
-      {!brief && !busy && <p className="muted">{err || t('brief.none')}</p>}
-      <div style={{ display: 'grid', gap: 6, margin: '8px 0' }}>
-        <label className="muted" style={{ fontSize: 12 }}>{t('note.idea')}
-          <textarea value={idea} onChange={(e) => setIdea(e.target.value)} rows={2} style={{ width: '100%', display: 'block', background: 'var(--bg)', color: 'inherit', border: '1px solid var(--line)', borderRadius: 4, padding: 6, font: 'inherit' }} />
-        </label>
-        <label className="muted" style={{ fontSize: 12 }}>{t('note.note')}
-          <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} style={{ width: '100%', display: 'block', background: 'var(--bg)', color: 'inherit', border: '1px solid var(--line)', borderRadius: 4, padding: 6, font: 'inherit' }} />
-        </label>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button className="ghost" onClick={saveNote} disabled={idea === (routed.note?.idea ?? '') && note === (routed.note?.note ?? '')}>{t('note.save')}</button>
-          <span className="muted" style={{ fontSize: 12 }}>{noteMsg}</span>
+      <div className="modal" style={{ ['--c' as any]: catColor(o.category), ...style }} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={o.name}>
+        <div className="modal-head">
+          <div className="row1">
+            <span className="cat">{catLabel(o.category)}</span>
+            <span className={`pill ${routed.effective_certainty === 'fixed' ? 'ok' : routed.effective_certainty === 'per_task' ? 'warn' : ''}`}>{t(`cert.${routed.effective_certainty}` as any)}</span>
+            <span className="muted">{o.provider}</span>
+            <span className="spacer" />
+            <select className="input" value={lang} onChange={(e) => onLang(e.target.value)} style={{ padding: '3px 6px' }} aria-label="language">
+              {LANGS.map((l) => <option key={l} value={l}>{l}</option>)}
+            </select>
+            <button className="icon-btn" onClick={onClose} aria-label="close">✕</button>
+          </div>
+          <h3>{o.name}</h3>
+          <Stars stars={routed.stars} />
+        </div>
+
+        <div className="modal-body">
+          <div className="facts">
+            <div className="fact"><div className="k">{t('panel.reward')}</div><div className="v">${o.reward_estimate_usd.toLocaleString()}</div></div>
+            <div className="fact"><div className="k">{t('panel.hourly')}</div><div className="v">${routed.expected_hourly.toFixed(0)}<small>{t('opp.perHour')}</small></div></div>
+            {o.deadline && <div className="fact"><div className="k">{t('col.deadline')}</div><div className="v" style={{ color: daysColor(o.deadline) }}>{o.deadline.slice(5).replace('-', '/')} <small style={{ color: 'inherit' }}>{daysLabel(o.deadline)}</small></div></div>}
+            {(o.result_date || o.result_note) && <div className="fact"><div className="k">{t('result.on')}</div><div className="v">{o.result_date ? o.result_date.slice(5).replace('-', '/') : ''} <small>{o.result_note ?? ''}</small></div></div>}
+            <div className="fact"><div className="k">{t('panel.payout')}</div><div className="v">{t('panel.days', { n: o.payout_days_estimate })}</div></div>
+            <div className="fact"><div className="k">{t('panel.min')}</div><div className="v">${o.min_payout}</div></div>
+            <div className="fact"><div className="k">{t('panel.where')}</div><div className="v" style={{ fontSize: 14 }}>{where}</div></div>
+          </div>
+          {o.period && <p className="muted" style={{ margin: '-8px 0 0' }}>{t('col.period')}: {o.period}</p>}
+
+          <div className="brief">
+            {busy && <p className="muted">{t('brief.writing')}</p>}
+            {brief && (
+              <>
+                <p>{brief.summary}</p>
+                <ol>{brief.how_to.map((h, i) => <li key={i}>{h}</li>)}</ol>
+                <p className="pay" style={{ marginTop: 8 }}>{brief.payout}</p>
+              </>
+            )}
+            {!brief && !busy && <p className="muted">{err || t('brief.none')}</p>}
+          </div>
+
+          {fs.length > 0 && (
+            <div className={`box risk ${hasWarn ? 'bad' : ''}`}>
+              <h5>{t('find.title')}</h5>
+              <ul>
+                {fs.map((f, i) => (
+                  <li key={i} className={f.severity === 'warning' ? 'w' : f.severity === 'caution' ? 'c' : ''} title={f.evidence}>
+                    {f.severity === 'warning' ? '⚠' : f.severity === 'caution' ? '△' : 'ⓘ'} {brief?.findings?.[i] ?? f.message}
+                  </li>
+                ))}
+              </ul>
+              {routed.effective_certainty !== o.certainty && <p style={{ margin: '6px 0 0' }}>{t('find.demoted')}</p>}
+            </div>
+          )}
+
+          {routed.exclusions.length > 0 && (
+            <div className="box risk"><h5>{t('brief.notForYou')}</h5>{routed.exclusions.map((e) => e.detail).join(' / ')}</div>
+          )}
+
+          <div className="box">
+            <h5 style={{ color: routed.warnings.includes('eligibility_unverified') ? 'var(--danger)' : undefined }}>
+              {t('brief.eligibility')}{routed.warnings.includes('eligibility_unverified') ? ` — ${t('warn.eligibility_unverified')}` : ''}
+            </h5>
+            {o.eligibility_note}
+          </div>
+
+          <div className="box">
+            <h5>{t('brief.legit')} <span className="num">{o.legitimacy.score}</span> / 100</h5>
+            <div className="meter"><i style={{ width: `${o.legitimacy.score}%`, background: o.legitimacy.score >= 85 ? 'var(--accent)' : o.legitimacy.score >= 60 ? 'var(--accent-2)' : 'var(--danger)' }} /></div>
+            {o.legitimacy.notes}
+            <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>{o.legitimacy.scored_by} / {o.legitimacy.mode}{brief ? ` / ${t('brief.by')}${brief.generated_by}` : ''}</div>
+          </div>
+
+          <div className="memo">
+            <h5 style={{ margin: 0, fontFamily: 'var(--f-body)', fontSize: 13 }}>{t('panel.memo')}</h5>
+            <label>{t('note.idea')}<textarea value={idea} onChange={(e) => setIdea(e.target.value)} rows={2} /></label>
+            <label>{t('note.note')}<textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} /></label>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button className="ghost" onClick={saveNote} disabled={!dirty}>{t('note.save')}</button>
+              <span className="muted">{noteMsg}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal-foot">
+          <label className="muted" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {t('col.status')}
+            <select className="input" value={exec} onChange={(e) => setStatus(e.target.value as ExecutionStatus | '')} style={{ padding: '5px 8px' }}>
+              <option value="">{t('st.' as any)}</option>
+              {EXEC.map((s) => <option key={s} value={s}>{t(`st.${s}` as any)}</option>)}
+            </select>
+          </label>
+          <span className="spacer" />
+          <a href={o.url} target="_blank" rel="noreferrer"><button className="primary">{t('panel.open')}</button></a>
         </div>
       </div>
-      <hr style={{ border: 0, borderTop: '1px solid var(--line)' }} />
-      {(o.findings ?? []).length > 0 && (
-        <div style={{ fontSize: 12, marginBottom: 8 }}>
-          <b>{t('find.title')}</b>
-          <ul style={{ margin: '4px 0', paddingLeft: 18 }}>
-            {o.findings.map((f, i) => (
-              <li key={i} style={{ color: f.severity === 'warning' ? 'var(--danger)' : f.severity === 'caution' ? 'var(--accent-2)' : 'var(--muted)' }} title={f.evidence}>
-                {f.severity === 'warning' ? '⚠' : f.severity === 'caution' ? '△' : 'ⓘ'} {brief?.findings?.[i] ?? f.message}
-              </li>
-            ))}
-          </ul>
-          {routed.effective_certainty !== o.certainty && <p className="muted" style={{ margin: 0 }}>{t('find.demoted')}</p>}
-        </div>
-      )}
-      <p className="muted" style={{ fontSize: 12 }}>
-        <b style={{ color: routed.warnings.includes('eligibility_unverified') ? 'var(--danger)' : 'var(--text)' }}>{t('brief.eligibility')}</b>{' '}
-        {routed.warnings.includes('eligibility_unverified') ? t('warn.eligibility_unverified') + ' — ' : ''}{o.eligibility_note}
-      </p>
-      <p className="muted" style={{ fontSize: 12 }}>
-        <b style={{ color: 'var(--text)' }}>{t('brief.legit')} {o.legitimacy.score}</b> ({o.legitimacy.scored_by}, {o.legitimacy.mode})<br />
-        {o.legitimacy.notes}
-      </p>
-      {routed.exclusions.length > 0 && (
-        <p className="muted" style={{ fontSize: 12 }}><b style={{ color: 'var(--accent-2)' }}>{t('brief.notForYou')}</b> {routed.exclusions.map((e) => e.detail).join('; ')}</p>
-      )}
-      <p className="muted" style={{ fontSize: 12 }}>
-        {t('col.category')}: {o.category} · {t('col.certainty')}: {t(`cert.${o.certainty}` as any)} · {t('col.hourly')}: ${routed.expected_hourly.toFixed(0)} · {t('col.minPayout')}: ${o.min_payout} · {t('col.days')}: {o.payout_days_estimate}{o.deadline ? ` · ${t('col.deadline')}: ${o.deadline}` : ''}{o.period ? ` · ${t('col.period')}: ${o.period}` : o.starts ? ` · ${t('col.period')}: ${o.starts} → ${o.deadline ?? '?'}` : ''}
-      </p>
-      <p className="muted" style={{ fontSize: 12 }}><a href={o.url} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>{o.url} ↗</a></p>
-    </div>
     </div>
   );
 }

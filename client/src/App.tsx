@@ -44,11 +44,8 @@ export default function App() {
 
   return (
     <>
-      <header>
-        <h1>
-          Money <span>Router</span>
-          <small className="tagline">{t('hdr.tagline')}{status?.version ? <span className="ver" title={`built ${status.version.built_at}`}> · v{status.version.version} ({status.version.commit})</span> : null}</small>
-        </h1>
+      <header className="top">
+        <div className="brand"><span className="brand-mark"><i /><i /></span>Money Router</div>
         <nav>
           {(['dashboard', 'opportunities', 'sources', 'profile', 'payments'] as Page[]).map((p) => (
             <button key={p} className={page === p ? 'active' : ''} onClick={() => setPage(p)}>
@@ -56,20 +53,14 @@ export default function App() {
             </button>
           ))}
         </nav>
-        <div className="caps">
-          <span>
-            {t('hdr.ai')} <b className={caps.llm ? '' : 'off'}>{caps.llm ? t('hdr.on') : t('hdr.off')}</b>
-          </span>
-          <span>
-            PayPal <b className={caps.paypal ? '' : 'off'}>{caps.paypal ? 'sandbox' : t('hdr.off')}</b>
-          </span>
-          <span>
-            {t('hdr.crawl')} <b>{crawl?.last_run ? new Date(crawl.last_run).toLocaleString() : t('hdr.never')}</b>
-            {crawl?.audit_model ? ` · ${crawl.audit_model}/${crawl.audit_mode}` : ''}
+        <div className="top-right">
+          <span className={`dot ${caps.llm ? '' : 'off'}`}>{t('hdr.ai')}</span>
+          <span className={`dot ${caps.paypal ? '' : 'off'}`}>PayPal{caps.paypal ? ' sandbox' : ''}</span>
+          <span title={crawl?.audit_model ? `${crawl.audit_model} / ${crawl.audit_mode}` : ''}>
+            {t('hdr.crawl')} {crawl?.last_run ? new Date(crawl.last_run).toLocaleString(undefined, { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : t('hdr.never')}
           </span>
           <button
-            className="ghost"
-            style={{ padding: '2px 8px', fontSize: 12, color: status?.tier && status.tier !== 'public' ? 'var(--accent)' : 'var(--muted)' }}
+            className={`icon-btn ${status?.tier && status.tier !== 'public' ? 'on' : ''}`}
             title={t('guard.keyHint')}
             onClick={() => {
               const v = window.prompt(t('guard.keyPrompt'), adminToken.get());
@@ -80,6 +71,19 @@ export default function App() {
           >
             {status?.tier === 'admin' ? `🔑 ${t('guard.admin')}` : status?.tier === 'judge' ? `🔑 ${t('guard.judge')}` : '🔑'}
           </button>
+          <button
+            className="icon-btn"
+            title={t('theme.toggle')}
+            aria-label={t('theme.toggle')}
+            onClick={() => {
+              const el = document.documentElement;
+              const dark = el.dataset.theme ? el.dataset.theme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+              el.dataset.theme = dark ? 'light' : 'dark';
+              try { localStorage.setItem('mr-theme', el.dataset.theme); } catch { /* private mode */ }
+            }}
+          >
+            ☀ / ☾
+          </button>
         </div>
       </header>
       <main key={`${page}:${tick}`}>
@@ -89,6 +93,10 @@ export default function App() {
         {page === 'profile' && <Profile onChange={refresh} onboarding={needsProfile} />}
         {page === 'payments' && <Payments tick={tick} onChange={refresh} />}
       </main>
+      <footer className="foot">
+        <span>Money Router — {t('hdr.tagline')}</span>
+        {status?.version && <span title={`built ${status.version.built_at}`}>v{status.version.version} ({status.version.commit})</span>}
+      </footer>
     </>
   );
 }
