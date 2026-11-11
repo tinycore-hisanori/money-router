@@ -339,9 +339,9 @@
   {
     "id": "devpost",
     "name": "Devpost Hackathons",
-    "url": "https://devpost.com/api/hackathons?status[]=open&status[]=upcoming&order_by=prize-amount&per_page=40",
+    "url": "https://devpost.com/api/hackathons?status[]=open&order_by=prize-amount&per_page=15",
     "category": "contest",
-    "parse_hint": "Devpost JSON API of open/upcoming hackathons sorted by prize. Prizes are paid by Devpost (PayPal available). One opportunity per hackathon with deadline (submission_period_dates), prize_amount and URL. Prize amounts may include non-cash credits; skip student-only, region-only (e.g. India-only) and in-person-only events, or mark eligibility accordingly.",
+    "parse_hint": "Devpost JSON API: the 15 open hackathons with the largest prizes. Prizes are paid by Devpost (PayPal available). One opportunity per hackathon: name=title, url, deadline = end of submission_period_dates (ISO date), reward = prize_amount, category=contest, certainty=fixed. prize_amount may include non-cash credits (prizes_counts.other): say so in findings. Mark invite_only / student-only / region-only / in-person-only in eligibility. Keep each item concise.",
     "trust_baseline": 95,
     "enabled": true,
     "paypal_confirmed": true

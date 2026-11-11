@@ -23,7 +23,7 @@ export function jsonToLines(raw: string): string {
     return String(v).replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
   };
   return items
-    .slice(0, 30)
+    .slice(0, 15)
     .map((it, i) => `## item ${i + 1}\n` + Object.entries(it).filter(([k]) => KEEP.test(k)).map(([k, v]) => `${k}: ${flat(v)}`).filter((l) => !l.endsWith(': ')).join('\n'))
     .join('\n\n');
 }
