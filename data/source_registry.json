@@ -83,7 +83,8 @@
     "url": "https://www.userlytics.com/testers/",
     "category": "user_testing",
     "trust_baseline": 80,
-    "enabled": true
+    "enabled": true,
+    "parse_hint": "Testers accepted from any PayPal-supported country (official help center), but most studies target US/UK demographics: add a caution finding that volume outside US/EU is low."
   },
   {
     "id": "trymata",
@@ -334,7 +335,8 @@
     "url": "https://www.inboxdollars.com/",
     "category": "survey",
     "trust_baseline": 70,
-    "enabled": true
+    "enabled": true,
+    "parse_hint": "US residents only (18+); PayPal cash-out. Set countries_allowed=[US]."
   },
   {
     "id": "devpost",
