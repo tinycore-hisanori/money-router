@@ -33,7 +33,7 @@ export const config = {
   },
   brave: {
     apiKey: process.env.BRAVE_SEARCH_API_KEY ?? '',
-    maxQueriesPerRun: Number(process.env.DISCOVERY_MAX_QUERIES_PER_RUN ?? 50),
+    maxQueriesPerRun: Number(process.env.DISCOVERY_MAX_QUERIES_PER_RUN ?? 150),
   },
   guards: {
     adminToken: process.env.ADMIN_TOKEN ?? '',

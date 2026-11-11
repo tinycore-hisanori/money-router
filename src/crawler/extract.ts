@@ -13,7 +13,7 @@ const CATEGORIES = ['game_portal', 'bug_bounty', 'user_testing', 'survey', 'micr
 export async function extractOpportunities(source: Source, pageText: string, confidenceCap = 1): Promise<{ opportunities: Opportunity[]; rejected_no_paypal: number; rejected: { name: string; reason: string }[] }> {
   const r = await structured<Extracted>({
     model: config.models.extract,
-    maxTokens: 4096,
+    maxTokens: 8192,
     system: `You extract earning opportunities for independent creators from a platform's public page.
 Rules:
 - Only include an opportunity if PayPal is explicitly listed as a payout method. Put anything else in "rejected" with the reason.

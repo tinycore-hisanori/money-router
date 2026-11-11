@@ -44,6 +44,7 @@ export async function structured<T>(call: StructuredCall<T>): Promise<T> {
     .map((b: any) => b.text)
     .join('');
   if (!text) throw new Error(`model returned no text (stop_reason=${j.stop_reason})`);
+  if (j.stop_reason === 'max_tokens') throw new Error(`model output truncated at max_tokens=${body.max_tokens}; reduce input or raise maxTokens`);
   return JSON.parse(text) as T;
 }
 

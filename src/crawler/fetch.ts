@@ -10,6 +10,24 @@ export interface PageResult {
   via: 'direct' | 'search_page' | 'search_snippets';
 }
 
+/** Turn a JSON listing into compact "key: value" lines (one block per item, shallow fields only). */
+export function jsonToLines(raw: string): string {
+  let j: any;
+  try { j = JSON.parse(raw); } catch { return raw; }
+  const items: any[] = Array.isArray(j) ? j : (Object.values(j).find((v) => Array.isArray(v)) as any[]) ?? [j];
+  const KEEP = /^(title|name|url|tagline|description|prize|prize_amount|prizes_counts|submission_period_dates|time_left_to_submission|deadline|ends?_at|end_date|open_state|status|themes|eligibility|location|displayed_location|organization_name|invite_only|eligibility_requirement_invite_only_description|managed_by_devpost_badge)$/i;
+  const flat = (v: any): string => {
+    if (v == null) return '';
+    if (Array.isArray(v)) return v.map(flat).filter(Boolean).join(', ');
+    if (typeof v === 'object') return 'name' in v || 'title' in v || 'location' in v ? flat(v.name ?? v.title ?? v.location) : Object.entries(v).map(([k, x]) => `${k}=${flat(x)}`).join(' ');
+    return String(v).replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  };
+  return items
+    .slice(0, 30)
+    .map((it, i) => `## item ${i + 1}\n` + Object.entries(it).filter(([k]) => KEEP.test(k)).map(([k, v]) => `${k}: ${flat(v)}`).filter((l) => !l.endsWith(': ')).join('\n'))
+    .join('\n\n');
+}
+
 /** Fetch a page and reduce it to readable text (strip scripts/styles/tags). */
 export async function fetchPageText(url: string, maxChars = 40_000): Promise<string> {
   const res = await fetch(url, {
@@ -23,7 +41,10 @@ export async function fetchPageText(url: string, maxChars = 40_000): Promise<str
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const html = await res.text();
-  const text = htmlToText(html).slice(0, maxChars);
+  const ct = res.headers.get('content-type') ?? '';
+  // JSON APIs (e.g. Devpost hackathon list): compact into one line per item so the extractor sees
+  // 20-40 items in a few KB instead of a raw JSON blob that overflows the model's output budget.
+  const text = (ct.includes('json') || /^\s*[\[{]/.test(html) ? jsonToLines(html) : htmlToText(html)).slice(0, maxChars);
   if (text.length < 300) throw new Error('page text too short (bot wall or JS-only page)');
   return text;
 }
