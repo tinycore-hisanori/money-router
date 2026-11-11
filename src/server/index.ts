@@ -3,12 +3,13 @@ import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { logger } from 'hono/logger';
 import { config } from './lib/config.js';
+import VERSION from '../shared/version.json' with { type: 'json' };
 import { api } from './routes/api.js';
 
 const app = new Hono();
 app.use(logger());
 
-app.get('/api/health', (c) => c.json({ ok: true, service: 'money-router', env: config.paypal.env }));
+app.get('/api/health', (c) => c.json({ ok: true, service: 'money-router', env: config.paypal.env, version: VERSION.version, commit: VERSION.commit, built_at: VERSION.built_at }));
 app.route('/api', api);
 
 // SPA (client/dist) — built by `npm run build`

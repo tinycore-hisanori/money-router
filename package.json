@@ -1,6 +1,6 @@
 {
   "name": "money-router",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0",
   "description": "Money Router — an AI radar for PayPal-payable work, worldwide. Collect, vet, route, verify.",
   "private": true,
   "type": "module",
@@ -12,7 +12,7 @@
     "dev": "concurrently -n api,web \"npm run dev:api\" \"npm run dev:web\"",
     "dev:api": "tsx watch src/server/index.ts",
     "dev:web": "npm --prefix client run dev",
-    "build": "npm --prefix client run build && tsc -p tsconfig.json",
+    "build": "npm run stamp && npm --prefix client run build && tsc -p tsconfig.json",
     "start": "node dist/server/index.js",
     "crawl": "tsx src/crawler/cli.ts",
     "discover": "tsx src/crawler/discover-cli.ts",
@@ -20,7 +20,8 @@
     "seed": "tsx scripts/make-seed.ts",
     "seed:payments": "tsx scripts/seed-payments.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit && npm --prefix client run typecheck",
-    "postinstall": "npm --prefix client install"
+    "postinstall": "npm --prefix client install",
+    "stamp": "node scripts/stamp-version.mjs"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",

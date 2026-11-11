@@ -7,6 +7,7 @@ import { llmAvailable } from '../lib/llm.js';
 import { config } from '../lib/config.js';
 import { canCurate, consume, isAdmin, remaining, tierOf } from '../lib/guard.js';
 import { getJob, runningJobs, startJob } from '../lib/jobs.js';
+import VERSION from '../../shared/version.json' with { type: 'json' };
 import type { ExecutionStatus, Opportunity, Payment, UserProfile } from '../../shared/types.js';
 
 export const api = new Hono();
@@ -28,6 +29,7 @@ api.get('/status', async (c) => {
     models: config.models,
     audit_schedule: config.auditSchedule,
     running: runningJobs(),
+    version: VERSION,
   });
 });
 
