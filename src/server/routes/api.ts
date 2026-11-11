@@ -8,7 +8,7 @@ import { config } from '../lib/config.js';
 import { canCurate, consume, isAdmin, remaining, tierOf } from '../lib/guard.js';
 import { getJob, runningJobs, startJob } from '../lib/jobs.js';
 import VERSION from '../../shared/version.json' with { type: 'json' };
-import type { ExecutionStatus, Opportunity, Payment, UserProfile } from '../../shared/types.js';
+import type { ExecutionStatus, Opportunity, OpportunityNote, Payment, UserProfile } from '../../shared/types.js';
 
 export const api = new Hono();
 
@@ -41,8 +41,21 @@ api.get('/opportunities', async (c) => {
 
 // ---- routed view for the current profile
 api.get('/route', async (c) => {
-  const [list, profile, exec] = await Promise.all([store.getOpportunities(), store.getProfile(), store.getExecution()]);
-  return c.json(routeAll(list, profile, exec).map((r) => ({ ...r, execution: exec[r.opportunity.id] ?? null })));
+  const [list, profile, exec, notes] = await Promise.all([store.getOpportunities(), store.getProfile(), store.getExecution(), store.getNotes()]);
+  return c.json(routeAll(list, profile, exec).map((r) => ({ ...r, execution: exec[r.opportunity.id] ?? null, note: notes[r.opportunity.id] ?? null })));
+});
+
+// ---- per-opportunity memo (idea = what to submit, note = free text)
+api.put('/notes/:id', async (c) => {
+  if (!canCurate(c)) return c.json({ error: 'admin_only' }, 403);
+  const id = c.req.param('id');
+  const body = (await c.req.json()) as Partial<OpportunityNote>;
+  const notes = await store.getNotes();
+  const next: OpportunityNote = { idea: (body.idea ?? notes[id]?.idea ?? '').trim(), note: (body.note ?? notes[id]?.note ?? '').trim(), updated_at: new Date().toISOString() };
+  if (!next.idea && !next.note) delete notes[id];
+  else notes[id] = next;
+  await store.saveNotes(notes);
+  return c.json(notes[id] ?? null);
 });
 
 // ---- weekly plan

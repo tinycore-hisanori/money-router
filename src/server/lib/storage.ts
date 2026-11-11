@@ -9,6 +9,7 @@ import type {
   Payment,
   Source,
   UserProfile,
+  OpportunityNote,
 } from '../../shared/types.js';
 
 /** JSON file store with tmp+rename writes (no partial files on crash). */
@@ -81,6 +82,8 @@ export const store = {
   saveProfile: (p: UserProfile) => writeJson(runtime('profile.json'), p),
 
   getExecution: () => readJson<Record<string, ExecutionStatus>>(runtime('execution.json'), {}),
+  getNotes: () => readJson<Record<string, OpportunityNote>>(runtime('notes.json'), {}),
+  saveNotes: (m: Record<string, OpportunityNote>) => writeJson(runtime('notes.json'), m),
   saveExecution: (m: Record<string, ExecutionStatus>) => writeJson(runtime('execution.json'), m),
 
   getPayments: () => readJson<Payment[]>(runtime('payments.json'), []),

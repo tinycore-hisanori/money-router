@@ -1,4 +1,4 @@
-import type { ExecutionStatus, LocalizedSummary, Payment, RoutedOpportunity, UserProfile, WeeklyPlan } from '@shared/types';
+import type { OpportunityNote, ExecutionStatus, LocalizedSummary, Payment, RoutedOpportunity, UserProfile, WeeklyPlan } from '@shared/types';
 
 export const adminToken = {
   get: () => { try { return localStorage.getItem('mr_admin_token') ?? ''; } catch { return ''; } },
@@ -22,7 +22,7 @@ async function j<T>(url: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export type Routed = RoutedOpportunity & { execution: ExecutionStatus | null };
+export type Routed = RoutedOpportunity & { execution: ExecutionStatus | null; note: OpportunityNote | null };
 
 interface Job { id: string; kind: string; status: 'running' | 'done' | 'error'; result: any; error: string | null }
 
@@ -45,6 +45,8 @@ export const api = {
   saveProfile: (p: Partial<UserProfile> & { enrich?: boolean }) => j<UserProfile>('/api/profile', { method: 'PUT', body: JSON.stringify(p) }),
   setExecution: (id: string, status: ExecutionStatus | null) =>
     j('/api/execution/' + encodeURIComponent(id), { method: 'PUT', body: JSON.stringify({ status }) }),
+  setNote: (id: string, note: Partial<OpportunityNote>) =>
+    j<OpportunityNote | null>('/api/notes/' + encodeURIComponent(id), { method: 'PUT', body: JSON.stringify(note) }),
   payments: () => j<Payment[]>('/api/payments'),
   sync: () => j<{ fetched: number; total: number; matched: number }>('/api/paypal/sync', { method: 'POST' }),
   setMatch: (tx: string, status: 'confirmed' | 'rejected', opportunity_id?: string | null) =>

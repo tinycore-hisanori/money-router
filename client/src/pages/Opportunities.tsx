@@ -6,8 +6,9 @@ import { api, type Routed } from '../api';
 import OpportunityPanel from '../components/OpportunityPanel';
 import Stars from '../components/Stars';
 import { t, type Key } from '../i18n';
+import { daysColor, daysLabel } from '../dates';
 
-const EXEC: (ExecutionStatus | '')[] = ['', 'todo', 'applied', 'active', 'paid', 'skipped'];
+const EXEC: (ExecutionStatus | '')[] = ['', 'todo', 'applied', 'active', 'submitted', 'paid', 'won', 'lost', 'skipped'];
 
 export default function Opportunities({ tick, onChange }: { tick: number; onChange: () => void }) {
   const [rows, setRows] = useState<Routed[]>([]);
@@ -86,6 +87,7 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
         cellRenderer: (p: any) => (
           <>
             {p.value ?? '—'}{' '}
+            {p.value && <small style={{ color: daysColor(p.value) }}>{daysLabel(p.value)}</small>}{' '}
             {p.data?.warnings?.includes('eligibility_unverified') && <span className="pill bad" title={t('warn.eligibility_unverified')}>?</span>}
           </>
         ),
@@ -126,7 +128,7 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
             style={{ background: 'transparent', color: 'inherit', border: '1px solid var(--line)', borderRadius: 4 }}
           >
             {EXEC.map((s) => (
-              <option key={s} value={s}>{s || '—'}</option>
+              <option key={s} value={s}>{t(`st.${s}` as Key)}</option>
             ))}
           </select>
         ),
@@ -163,7 +165,7 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
           animateRows
         />
       </div>
-      {selected && <OpportunityPanel routed={selected} lang={lang} onLang={setLang} onClose={() => setSelected(null)} />}
+      {selected && <OpportunityPanel routed={selected} lang={lang} onLang={setLang} onClose={() => setSelected(null)} onChange={onChange} />}
     </div>
   );
 }

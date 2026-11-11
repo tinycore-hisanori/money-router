@@ -57,7 +57,7 @@ export function observedBoost(o: Opportunity, exec: ExecutionStatus | undefined,
   const obs = o.observed;
   if (obs.payments_count > 0) return Math.min(1.5, 1 + 0.1 * obs.payments_count);
   // Recommended and acted on, but no money yet past the expected window -> penalty
-  if (exec === 'active' || exec === 'applied') {
+  if (exec === 'active' || exec === 'applied' || exec === 'submitted') {
     const expected = o.payout_days_estimate;
     const since = (now.getTime() - new Date(o.last_checked).getTime()) / 86_400_000;
     if (since > expected * 1.5) return 0.7;
@@ -171,7 +171,7 @@ export function buildWeeklyPlan(
   for (const r of routed) {
     if (!r.eligible) continue;
     const ex = execution[r.opportunity.id];
-    if (ex === 'skipped' || ex === 'paid') continue;
+    if (ex === 'skipped' || ex === 'paid' || ex === 'submitted' || ex === 'won' || ex === 'lost') continue;
     const o = r.opportunity;
     // Deadline-driven work (contests etc.) is spread over the weeks left until the deadline,
     // so one big hackathon doesn't swallow the whole weekly budget.

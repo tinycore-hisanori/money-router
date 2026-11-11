@@ -20,7 +20,16 @@ export type RewardModel = 'per_task' | 'rev_share' | 'bounty' | 'hourly' | 'one_
 /** How certain the payout is once you do the work. fixed > per_task > speculative. */
 export type Certainty = 'fixed' | 'per_task' | 'speculative';
 export type OpportunityStatus = 'active' | 'paused' | 'closed' | 'suspect';
-export type ExecutionStatus = 'todo' | 'applied' | 'active' | 'paid' | 'skipped';
+export type ExecutionStatus = 'todo' | 'applied' | 'active' | 'submitted' | 'paid' | 'won' | 'lost' | 'skipped';
+
+/** Per-opportunity user memo (single-user for now; per-user is a later step). */
+export interface OpportunityNote {
+  /** What you plan to submit / do for it. */
+  idea: string;
+  /** Free-form memo. */
+  note: string;
+  updated_at: string;
+}
 
 export interface LegitimacyScore {
   score: number; // 0-100
@@ -92,6 +101,10 @@ export interface Opportunity {
   starts?: string | null;
   /** Human-readable period as stated by the source, e.g. "Sep 24 - Nov 18, 2026" or "48h jam, Dec 5-7". */
   period?: string | null;
+  /** ISO date when results / winners are announced (contests), null when not stated. */
+  result_date?: string | null;
+  /** Result timing as stated ("late November", "within 30 days of close"), null when not stated. */
+  result_note?: string | null;
   /** True only when eligibility (countries / residency / age) was read from official rules or terms. */
   eligibility_verified: boolean;
   /** Quoted or paraphrased eligibility clause, or why it could not be verified. */

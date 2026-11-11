@@ -3,6 +3,10 @@ import type { LocalizedSummary } from '@shared/types';
 import { api, type Routed } from '../api';
 import { t } from '../i18n';
 import Stars from './Stars';
+import { daysColor, daysLabel } from '../dates';
+import type { ExecutionStatus } from '@shared/types';
+
+const EXEC: ExecutionStatus[] = ['todo', 'applied', 'active', 'submitted', 'paid', 'won', 'lost', 'skipped'];
 
 const LANGS = ['ja', 'en', 'es', 'pt', 'de', 'fr', 'ko', 'zh'];
 
@@ -15,14 +19,34 @@ export default function OpportunityPanel({
   lang,
   onLang,
   onClose,
+  onChange,
   style,
 }: {
   routed: Routed;
   lang: string;
   onLang: (l: string) => void;
   onClose: () => void;
+  onChange?: () => void;
   style?: React.CSSProperties;
 }) {
+  const [idea, setIdea] = useState(routed.note?.idea ?? '');
+  const [note, setNote] = useState(routed.note?.note ?? '');
+  const [noteMsg, setNoteMsg] = useState('');
+  const [exec, setExec] = useState<ExecutionStatus | ''>(routed.execution ?? '');
+  const saveNote = async () => {
+    try {
+      await api.setNote(routed.opportunity.id, { idea, note });
+      setNoteMsg(t('note.saved'));
+      onChange?.();
+    } catch (e: any) {
+      setNoteMsg(e?.status === 403 ? t('note.adminOnly') : String(e?.message ?? e));
+    }
+  };
+  const setStatus = async (v: ExecutionStatus | '') => {
+    setExec(v);
+    await api.setExecution(routed.opportunity.id, (v || null) as ExecutionStatus | null);
+    onChange?.();
+  };
   const [brief, setBrief] = useState<LocalizedSummary | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -64,7 +88,16 @@ export default function OpportunityPanel({
         </select>
         <button className="ghost" style={{ padding: '2px 8px' }} onClick={onClose}>×</button>
       </div>
-      <p style={{ margin: '0 0 8px' }} title={t('stars.legend')}><Stars stars={routed.stars} /></p>
+      <p style={{ margin: '0 0 8px', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }} title={t('stars.legend')}>
+        <Stars stars={routed.stars} />
+        {o.deadline && <b style={{ color: daysColor(o.deadline) }}>⏰ {o.deadline} · {daysLabel(o.deadline)}</b>}
+        {(o.result_date || o.result_note) && <span className="muted" style={{ fontSize: 12 }}>🏁 {t('result.on')} {o.result_date ?? ''} {o.result_note ?? ''}</span>}
+        <span className="spacer" />
+        <select value={exec} onChange={(e) => setStatus(e.target.value as ExecutionStatus | '')} style={{ background: 'transparent', color: 'inherit', border: '1px solid var(--line)', borderRadius: 4 }}>
+          <option value="">{t('st.' as any)}</option>
+          {EXEC.map((s) => <option key={s} value={s}>{t(`st.${s}` as any)}</option>)}
+        </select>
+      </p>
       {busy && <p className="muted">{t('brief.writing')}</p>}
       {brief && (
         <>
@@ -75,6 +108,18 @@ export default function OpportunityPanel({
         </>
       )}
       {!brief && !busy && <p className="muted">{err || t('brief.none')}</p>}
+      <div style={{ display: 'grid', gap: 6, margin: '8px 0' }}>
+        <label className="muted" style={{ fontSize: 12 }}>{t('note.idea')}
+          <textarea value={idea} onChange={(e) => setIdea(e.target.value)} rows={2} style={{ width: '100%', display: 'block', background: 'var(--bg)', color: 'inherit', border: '1px solid var(--line)', borderRadius: 4, padding: 6, font: 'inherit' }} />
+        </label>
+        <label className="muted" style={{ fontSize: 12 }}>{t('note.note')}
+          <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} style={{ width: '100%', display: 'block', background: 'var(--bg)', color: 'inherit', border: '1px solid var(--line)', borderRadius: 4, padding: 6, font: 'inherit' }} />
+        </label>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button className="ghost" onClick={saveNote} disabled={idea === (routed.note?.idea ?? '') && note === (routed.note?.note ?? '')}>{t('note.save')}</button>
+          <span className="muted" style={{ fontSize: 12 }}>{noteMsg}</span>
+        </div>
+      </div>
       <hr style={{ border: 0, borderTop: '1px solid var(--line)' }} />
       {(o.findings ?? []).length > 0 && (
         <div style={{ fontSize: 12, marginBottom: 8 }}>

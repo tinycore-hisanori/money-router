@@ -3,6 +3,7 @@ import type { WeeklyPlan } from '@shared/types';
 import { api, type Routed } from '../api';
 import OpportunityPanel from '../components/OpportunityPanel';
 import Stars from '../components/Stars';
+import { daysColor, daysLabel, daysLeft } from '../dates';
 import { t, type Key } from '../i18n';
 
 export default function Dashboard({ tick, onChange, onSetup }: { tick: number; onChange: () => void; onSetup?: () => void }) {
@@ -122,7 +123,7 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
               <p><Stars stars={i.stars} /></p>
               {(() => {
                 const o = routed.find((x) => x.opportunity.id === i.opportunity_id)?.opportunity;
-                return o?.deadline ? <p style={{ color: 'var(--accent-2)' }}>⏰ {t('col.deadline')} {o.deadline}{o.period ? `（${o.period}）` : ''}</p> : null;
+                return o?.deadline ? <p style={{ color: daysColor(o.deadline) }}>⏰ {t('col.deadline')} {o.deadline} · <b>{daysLabel(o.deadline)}</b>{o.period ? `（${o.period}）` : ''}</p> : null;
               })()}
               <p>{i.why}</p>
               <p>
@@ -156,7 +157,27 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
           ))}
         </div>
       )}
-      {selected && <OpportunityPanel routed={selected} lang={lang} onLang={setLangState} onClose={() => setSelected(null)} />}
+      {(() => {
+        const waiting = routed.filter((r) => r.execution === 'submitted' || r.execution === 'applied');
+        if (!waiting.length) return null;
+        return (
+          <div className="card">
+            <h3 style={{ margin: '0 0 6px' }}>{t('dash.waiting')}</h3>
+            {waiting.map((r) => {
+              const o = r.opportunity; const rd = daysLeft(o.result_date);
+              return (
+                <div className="plan-item clickable" key={o.id} style={{ padding: '8px 8px' }} onClick={() => setSelected(r)}>
+                  <div>
+                    <h4 style={{ fontSize: 14 }}>{o.name} <span className="pill">{t(`st.${r.execution}` as Key)}</span></h4>
+                    <p>🏁 {t('result.on')} {o.result_date ?? ''} {o.result_note ?? ''}{rd != null ? ` · ${rd < 0 ? t('result.maybe') : rd === 0 ? t('days.today') : t('days.left', { n: rd })}` : o.result_date || o.result_note ? '' : ` · ${t('result.wait')}`}{r.note?.idea ? ` · ${t('note.idea')}: ${r.note.idea}` : ''}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
+      {selected && <OpportunityPanel routed={selected} lang={lang} onLang={setLangState} onClose={() => setSelected(null)} onChange={onChange} />}
     </div>
   );
 }
