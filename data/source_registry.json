@@ -339,9 +339,9 @@
   {
     "id": "devpost",
     "name": "Devpost Hackathons",
-    "url": "https://devpost.com/hackathons",
+    "url": "https://devpost.com/api/hackathons?status[]=open&status[]=upcoming&order_by=prize-amount&per_page=40",
     "category": "contest",
-    "parse_hint": "Open online hackathons with cash prizes; prizes are paid by Devpost (PayPal available). Extract each open hackathon with its deadline and prize.",
+    "parse_hint": "Devpost JSON API of open/upcoming hackathons sorted by prize. Prizes are paid by Devpost (PayPal available). One opportunity per hackathon with deadline (submission_period_dates), prize_amount and URL. Prize amounts may include non-cash credits; skip student-only, region-only (e.g. India-only) and in-person-only events, or mark eligibility accordingly.",
     "trust_baseline": 95,
     "enabled": true,
     "paypal_confirmed": true
@@ -371,6 +371,168 @@
     "category": "contest",
     "parse_hint": "Test case for payment-risk findings: first-edition jam by an individual, PayPal cash prizes stated as a target. Extract deadline, prize, eligibility and findings.",
     "trust_baseline": 55,
+    "enabled": true
+  },
+  {
+    "id": "hackster-contests",
+    "name": "Hackster.io Contests",
+    "url": "https://www.hackster.io/contests",
+    "category": "contest",
+    "parse_hint": "Hardware/electronics contests with cash prizes. Extract deadline and prize; note that free-board application deadlines are earlier than the submission deadline. Keep only if cash prize and PayPal payout plausible.",
+    "trust_baseline": 85,
+    "enabled": true
+  },
+  {
+    "id": "lablab-ai",
+    "name": "lablab.ai AI Hackathons",
+    "url": "https://lablab.ai/ai-hackathons",
+    "category": "contest",
+    "parse_hint": "AI hackathons and league matches (weekly/biweekly). Extract deadline and prize; many prizes are credits, keep only cash.",
+    "trust_baseline": 80,
+    "enabled": true
+  },
+  {
+    "id": "cerebral-valley",
+    "name": "Cerebral Valley Events",
+    "url": "https://cerebralvalley.ai/events",
+    "category": "contest",
+    "parse_hint": "Mostly in-person US hackathons; keep only online/global events with cash prizes. Many are selective (application required) — note in eligibility.",
+    "trust_baseline": 80,
+    "enabled": true
+  },
+  {
+    "id": "run-events",
+    "name": "RUN Creator Jams",
+    "url": "https://events.run.world/",
+    "category": "contest",
+    "parse_hint": "Monthly Creator Jam and weekly Editor's Choice on the RUN platform. Extract theme, deadline, prize, payout method.",
+    "trust_baseline": 70,
+    "enabled": true
+  },
+  {
+    "id": "thingiverse-challenges",
+    "name": "Thingiverse Challenges",
+    "url": "https://www.thingiverse.com/challenges",
+    "category": "contest",
+    "parse_hint": "3D design challenges. Keep only cash prizes; flag no-AI rules in eligibility.",
+    "trust_baseline": 80,
+    "enabled": true
+  },
+  {
+    "id": "pcbway-contests",
+    "name": "PCBWay Contests",
+    "url": "https://www.pcbway.com/activity/",
+    "category": "contest",
+    "parse_hint": "PCB design contests, usually yearly. Extract deadline, prize, payout method (PayPal common for PCBWay payouts).",
+    "trust_baseline": 75,
+    "enabled": true
+  },
+  {
+    "id": "jdn-compe",
+    "name": "登竜門（JDN 公募情報）",
+    "url": "https://compe.japandesign.ne.jp/",
+    "category": "contest",
+    "parse_hint": "Japanese contest portal. Keep game/app/IT/design contests with cash prizes; most pay by bank transfer — only keep if PayPal or international payout is stated. Many are student-only: mark eligibility.",
+    "trust_baseline": 70,
+    "enabled": true
+  },
+  {
+    "id": "koubo-jp",
+    "name": "公募ガイド（koubo.jp）",
+    "url": "https://koubo.jp/",
+    "category": "contest",
+    "parse_hint": "Japanese contest portal. Keep cash-prize game/app/IT contests; payout is usually bank transfer — keep only when PayPal is possible.",
+    "trust_baseline": 70,
+    "enabled": true
+  },
+  {
+    "id": "devgrantsdaily",
+    "name": "Dev Grants Daily",
+    "url": "https://devgrantsdaily.com/",
+    "category": "contest",
+    "parse_hint": "Developer grants and bounties digest. Extract program, amount, deadline, payout method (crypto-only programs are not PayPal: reject).",
+    "trust_baseline": 65,
+    "enabled": true
+  },
+  {
+    "id": "ggj-news",
+    "name": "Global Game Jam News",
+    "url": "https://globalgamejam.org/news",
+    "category": "contest",
+    "parse_hint": "Announcements of partner jams (e.g. Zoud GameLab). Extract jam name, deadline, prize if cash.",
+    "trust_baseline": 75,
+    "enabled": true
+  },
+  {
+    "id": "indiegamesjp",
+    "name": "indiegamesjp.dev",
+    "url": "https://indiegamesjp.dev/",
+    "category": "contest",
+    "parse_hint": "Japanese indie game news; pick contest announcements with cash prizes and their deadlines.",
+    "trust_baseline": 65,
+    "enabled": true
+  },
+  {
+    "id": "unreal-forums",
+    "name": "Unreal Engine Forums (events)",
+    "url": "https://forums.unrealengine.com/c/community/events/",
+    "category": "contest",
+    "parse_hint": "Epic-hosted jams (e.g. MegaJam) are announced here. Keep cash-prize events with deadlines.",
+    "trust_baseline": 75,
+    "enabled": true
+  },
+  {
+    "id": "tokyo-esports-festa",
+    "name": "東京eスポーツフェスタ ゲーム開発コンテスト",
+    "url": "https://tokyoesportsfesta.jp/creator_contest/",
+    "category": "contest",
+    "parse_hint": "Yearly (Sep-Nov). Extract division, deadline, prize, eligibility; payout likely bank transfer — note if PayPal not stated.",
+    "trust_baseline": 85,
+    "enabled": true
+  },
+  {
+    "id": "lolipop-deploy-now",
+    "name": "デプロイナウコンテスト by GMOペパボ",
+    "url": "https://lolipop.jp/deploy-now/contest/",
+    "category": "contest",
+    "parse_hint": "Monthly awards plus grand prize. Extract deadlines, prizes, payout method.",
+    "trust_baseline": 85,
+    "enabled": true
+  },
+  {
+    "id": "gmo-robot-hand",
+    "name": "GMOロボットハンドコンテスト",
+    "url": "https://ai-robotics.gmo/lp/gmo-robot-hand-competition/",
+    "category": "contest",
+    "parse_hint": "Robot hand contest, first edition. Extract deadline, prize, eligibility, payout method.",
+    "trust_baseline": 80,
+    "enabled": true
+  },
+  {
+    "id": "decentraland-creator",
+    "name": "Decentraland Creator Success",
+    "url": "https://docs.decentraland.org/creator/studio-onboarding",
+    "category": "contest",
+    "parse_hint": "Ongoing creator grants reviewed weekly. Payout is often in crypto (MANA/USDC) — reject unless PayPal/fiat is stated.",
+    "trust_baseline": 65,
+    "enabled": true
+  },
+  {
+    "id": "caff-innovation",
+    "name": "CAFF Small Farm Innovation Challenge",
+    "url": "https://caff.org/innovation-challenge/",
+    "category": "contest",
+    "parse_hint": "Yearly challenge with cash prizes. Extract deadline, prize, eligibility (may be US/California-only).",
+    "trust_baseline": 75,
+    "enabled": true
+  },
+  {
+    "id": "square-enix-gc",
+    "name": "SQUARE ENIX GAME CONTEST 2026",
+    "url": "https://gc2026.jp.square-enix.com/",
+    "category": "contest",
+    "parse_hint": "One-off contest. Extract deadline, prize, eligibility, payout method.",
+    "trust_baseline": 90,
     "enabled": true
   }
 ]
