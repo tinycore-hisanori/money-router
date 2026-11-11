@@ -92,6 +92,7 @@ const dict = {
   'opp.view.table': { ja: '表', en: 'Table' },
   'opp.count': { ja: '{n} 件', en: '{n} results' },
   'opp.worldwide': { ja: '全世界', en: 'Worldwide' },
+  'opp.whereUnknown': { ja: '対象国の記載なし', en: 'Countries not stated' },
   'opp.perHour': { ja: '/時', en: '/h' },
   'opp.noResults': { ja: '条件に合う案件がありません。絞り込みをゆるめてください。', en: 'Nothing matches. Loosen the filters.' },
   'panel.reward': { ja: '報酬の目安', en: 'Typical reward' },

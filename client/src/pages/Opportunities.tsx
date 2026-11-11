@@ -174,7 +174,7 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
     const fs = o.findings ?? [];
     const w = fs.filter((f) => f.severity === 'warning').length;
     const c = fs.filter((f) => f.severity === 'caution').length;
-    const where = o.countries_allowed.length ? o.countries_allowed.slice(0, 4).join(' ') + (o.countries_allowed.length > 4 ? ' …' : '') : t('opp.worldwide');
+    const where = o.countries_allowed.length ? o.countries_allowed.slice(0, 4).join(' ') + (o.countries_allowed.length > 4 ? ' …' : '') : o.worldwide_stated ? t('opp.worldwide') : t('opp.whereUnknown');
     return (
       <div className={`orow ${r.eligible ? '' : 'out'}`} key={o.id} style={{ ['--c' as any]: catColor(o.category) }} onClick={() => setSelected(r)}>
         <div className="orow-bar" />

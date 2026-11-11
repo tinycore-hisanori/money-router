@@ -80,7 +80,7 @@ export default function OpportunityPanel({
 
   const fs = o.findings ?? [];
   const hasWarn = fs.some((f) => f.severity === 'warning');
-  const where = o.countries_allowed.length ? o.countries_allowed.join(' ') : t('opp.worldwide');
+  const where = o.countries_allowed.length ? o.countries_allowed.join(' ') : o.worldwide_stated ? t('opp.worldwide') : t('opp.whereUnknown');
   const dirty = idea !== (routed.note?.idea ?? '') || note !== (routed.note?.note ?? '');
 
   return (

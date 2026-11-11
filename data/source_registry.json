@@ -84,7 +84,7 @@
     "category": "user_testing",
     "trust_baseline": 80,
     "enabled": true,
-    "parse_hint": "Testers accepted from any PayPal-supported country (official help center), but most studies target US/UK demographics: add a caution finding that volume outside US/EU is low."
+    "parse_hint": "Official help center: \"If your country supports PayPal, you should have no trouble participating\" (PayPal is the only payment method) → worldwide_stated=true. Most studies target specific demographics (often US/UK/EU), so add a caution finding that test volume outside those markets is low. $10-$50 per study, paid every 15 days."
   },
   {
     "id": "trymata",

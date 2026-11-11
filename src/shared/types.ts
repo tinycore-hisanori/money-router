@@ -94,6 +94,8 @@ export interface Opportunity {
   skills_required: string[];
   countries_allowed: string[]; // ISO2, empty = worldwide
   countries_blocked: string[];
+  /** True only when the source explicitly says it is open worldwide / to any country. Empty countries_allowed without this = not stated. */
+  worldwide_stated?: boolean;
   requirements: string[];
   /** ISO date when applications/submissions close (contests, hackathons, limited promos). null = open-ended. */
   deadline: string | null;

@@ -19,6 +19,7 @@ Rules:
 - Only include an opportunity if PayPal is explicitly listed as a payout method. Put anything else in "rejected" with the reason.
 - Numbers must come from the page. If a value is not on the page, use your best conservative estimate and lower "confidence".
 - countries_allowed/blocked are ISO2 codes. Fill them from ANY explicit statement in the text — official rules, terms, FAQ, or the page body ("US residents only", "available in the United States, Canada and the UK", "we pay contributors in 150+ countries" = worldwide, "not available in India"). A well-known platform's documented country list counts. Leave empty only when the text says nothing about countries or says it is worldwide. Never guess from the site's language or currency.
+- worldwide_stated: true ONLY when the text explicitly says anyone / any country / worldwide can take part (e.g. "if your country supports PayPal you can participate", "open to participants worldwide"). False when the text is silent about countries — silence is NOT worldwide.
 - skills_required are snake_case tokens (html5_game_dev, web_dev, security, writing, design, audio, video, 3d, data, english). Include "english" ONLY when the work itself requires producing or speaking English (transcription, tutoring, English copywriting, voice tests) — not merely because the site is written in English. Leave skills_required empty when anyone can do it.
 - ELIGIBILITY IS CRITICAL. Contests, hackathons and promos often restrict by country of residence, age, or tax status in their Official Rules / Terms. Read any rules/terms text included below. Set eligibility_verified=true ONLY if you found an explicit eligibility clause, and quote it in eligibility_note. If the rules are not in the text, set eligibility_verified=false and eligibility_note="rules not found in provided text" — but still fill countries_allowed/blocked from any explicit statement elsewhere in the text (see above); eligibility_verified only says whether it came from official rules/terms.
 - countries_allowed: when the rules list eligible countries, fill ISO2 codes. countries_blocked: when the rules exclude countries (e.g. "void where prohibited", sanctioned countries, "residents of X not eligible").
@@ -49,7 +50,7 @@ Hint for this source: ${source.parse_hint ?? 'none'}${source.paypal_confirmed ? 
           type: 'array',
           items: {
             type: 'object',
-            required: ['name', 'provider', 'category', 'url', 'payout_methods', 'payout_currency', 'min_payout', 'payout_cycle', 'payout_days_estimate', 'reward_model', 'certainty', 'reward_estimate_usd', 'effort_hours_estimate', 'skills_required', 'countries_allowed', 'countries_blocked', 'requirements', 'deadline', 'starts', 'period', 'result_date', 'result_note', 'eligibility_verified', 'eligibility_note', 'findings', 'confidence'],
+            required: ['name', 'provider', 'category', 'url', 'payout_methods', 'payout_currency', 'min_payout', 'payout_cycle', 'payout_days_estimate', 'reward_model', 'certainty', 'reward_estimate_usd', 'effort_hours_estimate', 'skills_required', 'countries_allowed', 'countries_blocked', 'worldwide_stated', 'requirements', 'deadline', 'starts', 'period', 'result_date', 'result_note', 'eligibility_verified', 'eligibility_note', 'findings', 'confidence'],
             properties: {
               name: { type: 'string' },
               provider: { type: 'string' },
@@ -68,6 +69,7 @@ Hint for this source: ${source.parse_hint ?? 'none'}${source.paypal_confirmed ? 
               countries_allowed: { type: 'array', items: { type: 'string' } },
               countries_blocked: { type: 'array', items: { type: 'string' } },
               requirements: { type: 'array', items: { type: 'string' } },
+              worldwide_stated: { type: 'boolean' },
               deadline: { type: ['string', 'null'] },
               starts: { type: ['string', 'null'] },
               period: { type: ['string', 'null'] },
