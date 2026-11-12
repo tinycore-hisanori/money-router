@@ -6,7 +6,7 @@ import { store } from '../server/lib/storage.js';
 import { llmAvailable } from '../server/lib/llm.js';
 import { acquireSourceText } from './fetch.js';
 import { braveQueriesUsed, resetBraveBudget } from './search.js';
-import { extractOpportunities } from './extract.js';
+import { extractOpportunities, normUrl } from './extract.js';
 import { auditOpportunity } from './audit.js';
 import { localizeOpportunity } from './localize.js';
 import type { CrawlStatus, Opportunity, Source } from '../shared/types.js';
@@ -17,6 +17,11 @@ export async function runCrawl(): Promise<CrawlStatus> {
   const sources = (await store.getSources()).filter((s) => s.enabled);
   const existing = await store.getOpportunities();
   const hashes = await store.getPageHashes();
+  // User state keyed by opportunity id: must follow an opportunity when the crawler re-keys it.
+  const exec = await store.getExecution();
+  const notes = await store.getNotes();
+  const payments = await store.getPayments();
+  let stateMoved = false;
   const status: CrawlStatus = {
     last_run: started.toISOString(),
     mode: config.crawler.mode,
@@ -61,9 +66,27 @@ export async function runCrawl(): Promise<CrawlStatus> {
         // Live data supersedes seed/mock rows and stale rows for this source. Rows with verified
         // payments are kept but marked closed so their history survives.
         const keep = new Set(fromSource.map((o) => o.id));
+        const claimed = new Set<string>();
         for (const old of existing.filter((o) => o.source_id === s.id && !keep.has(o.id))) {
-          if (old.observed.payments_count > 0) byId.set(old.id, { ...old, status: 'closed' });
-          else byId.delete(old.id);
+          const hasState = !!exec[old.id] || !!notes[old.id] || old.observed.payments_count > 0;
+          if (!hasState) { byId.delete(old.id); continue; }
+          // Same opportunity under a new id (reworded name)? Move the user's state onto it.
+          const free = fromSource.filter((n) => !claimed.has(n.id) && !exec[n.id] && !notes[n.id]);
+          const succ = successor(old, free, fromSource.length);
+          if (succ) {
+            claimed.add(succ.id);
+            if (exec[old.id]) { exec[succ.id] = exec[old.id]; delete exec[old.id]; }
+            if (notes[old.id]) { notes[succ.id] = notes[old.id]; delete notes[old.id]; }
+            for (const p of payments) if (p.matched_opportunity_id === old.id) p.matched_opportunity_id = succ.id;
+            const i = fromSource.findIndex((n) => n.id === succ.id);
+            if (old.observed.payments_count > 0 && fromSource[i].observed.payments_count === 0) fromSource[i] = { ...fromSource[i], observed: old.observed };
+            byId.delete(old.id);
+            stateMoved = true;
+            console.log(`[crawl] ${s.id}: kept your status/notes: ${old.id} -> ${succ.id}`);
+          } else {
+            // Gone from the source (e.g. a closed hackathon) but you picked / submitted / were paid for it: keep it.
+            byId.set(old.id, { ...old, status: 'closed' });
+          }
         }
       } else if (fromSource.some((o) => o.legitimacy.mode !== 'seed')) {
         // Unchanged page but leftover seed rows from before the first live run: drop them.
@@ -101,8 +124,27 @@ export async function runCrawl(): Promise<CrawlStatus> {
     }
   }
 
+  if (stateMoved) await Promise.all([store.saveExecution(exec), store.saveNotes(notes), store.savePayments(payments)]);
   await finish([...byId.values()], status, hashes);
   return status;
+}
+
+/** Find the re-keyed version of an opportunity: same URL, the only item of a one-item source, or a close name. */
+export function successor(old: Opportunity, candidates: Opportunity[], sourceSize: number): Opportunity | undefined {
+  const u = normUrl(old.url);
+  const byUrl = candidates.filter((n) => normUrl(n.url) === u);
+  if (byUrl.length === 1) return byUrl[0];
+  if (sourceSize === 1 && candidates.length === 1) return candidates[0];
+  const tok = (x: string) => new Set(x.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 2));
+  const a = tok(old.name);
+  let best: Opportunity | undefined, bestScore = 0;
+  for (const n of byUrl.length ? byUrl : candidates) {
+    const b = tok(n.name);
+    const inter = [...a].filter((w) => b.has(w)).length;
+    const score = inter / Math.max(1, new Set([...a, ...b]).size);
+    if (score > bestScore) { bestScore = score; best = n; }
+  }
+  return bestScore >= 0.5 ? best : undefined;
 }
 
 function mergeWithExisting(fresh: Opportunity, prev: Opportunity | undefined, now: string): Opportunity {

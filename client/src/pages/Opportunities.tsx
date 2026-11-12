@@ -269,7 +269,7 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
           </div>
         </>
       )}
-      {selected && <OpportunityPanel routed={selected} lang={lang} onLang={setLang} onClose={() => setSelected(null)} onChange={onChange} />}
+      {selected && <OpportunityPanel routed={selected} lang={lang} onLang={setLang} onClose={() => setSelected(null)} onChange={() => api.route().then(setRows)} />}
     </div>
   );
 }

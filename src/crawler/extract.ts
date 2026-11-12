@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { config } from '../server/lib/config.js';
 import { structured } from '../server/lib/llm.js';
 import type { Opportunity, Source } from '../shared/types.js';
@@ -99,12 +100,17 @@ Hint for this source: ${source.parse_hint ?? 'none'}${source.paypal_confirmed ? 
   });
 
   const now = new Date().toISOString();
-  const opportunities: Opportunity[] = r.opportunities
-    .filter((o) => o.payout_methods.some((m) => /paypal/i.test(m)))
+  const kept = r.opportunities.filter((o) => o.payout_methods.some((m) => /paypal/i.test(m)));
+  // Stable ids: an item with its own URL (e.g. one hackathon in a listing) is keyed by that URL, so a
+  // reworded name on the next crawl does not orphan the user's picks and notes. Otherwise fall back to the name.
+  const urlCount = new Map<string, number>();
+  for (const o of kept) urlCount.set(normUrl(o.url), (urlCount.get(normUrl(o.url)) ?? 0) + 1);
+  const ownUrl = (o: { url: string }) => urlCount.get(normUrl(o.url)) === 1 && normUrl(o.url) !== normUrl(source.url);
+  const opportunities: Opportunity[] = kept
     .map((o, i) => ({
       ...o,
       confidence: Math.min(o.confidence, confidenceCap),
-      id: `${source.id}:${slug(o.name)}${i ? `-${i}` : ''}`,
+      id: ownUrl(o) ? `${source.id}:u-${crypto.createHash('sha1').update(normUrl(o.url)).digest('hex').slice(0, 10)}` : `${source.id}:${slug(o.name)}${i ? `-${i}` : ''}`,
       source_id: source.id,
       legitimacy: { score: source.trust_baseline, notes: 'not yet audited', scored_by: 'baseline', scored_at: now, mode: 'seed' },
       status: 'active',
@@ -117,5 +123,10 @@ Hint for this source: ${source.parse_hint ?? 'none'}${source.paypal_confirmed ? 
   ];
   return { opportunities, rejected_no_paypal: rejected.length, rejected };
 }
+
+/** Normalise a URL for identity: lower-case host, no query/hash, no trailing slash. */
+export const normUrl = (u: string) => {
+  try { const x = new URL(u); return `${x.host.toLowerCase()}${x.pathname.replace(/\/+$/, '')}`; } catch { return (u || '').toLowerCase().replace(/[?#].*$/, '').replace(/\/+$/, ''); }
+};
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);

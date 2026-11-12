@@ -27,6 +27,10 @@ const onRow = (fn: () => void) => (e: React.MouseEvent) => {
 };
 
 const PICKED: ExecutionStatus[] = ['active', 'todo', 'applied'];
+/** Contests are submitted and judged; everything else is work that gets paid once done. */
+const isContest = (r?: Routed) => r?.opportunity.category === 'contest';
+/** Status label that fits the kind of opportunity ("submitted" means "work done, awaiting payout" for non-contests). */
+export const stLabel = (r: Routed) => (r.execution === 'submitted' && !isContest(r) ? t('st.submitted_work') : t(`st.${r.execution ?? ''}` as Key));
 const STATUSES: ExecutionStatus[] = ['todo', 'applied', 'active', 'submitted', 'paid', 'won', 'lost', 'skipped'];
 
 /**
@@ -88,6 +92,7 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
   const won = routed.filter((r) => r.execution === 'won');
   const paidList = routed.filter((r) => r.execution === 'paid');
   const lostCount = routed.filter((r) => r.execution === 'lost').length;
+  const stopped = routed.filter((r) => r.execution === 'skipped' || r.execution === 'lost');
   const received = paidList.reduce((s2, r) => s2 + r.opportunity.observed.total_received_usd, 0);
   const suggestions = [...(plan?.items ?? []), ...(plan?.backlog ?? [])].filter((i) => !byId(i.opportunity_id)?.execution);
   const observed = routed.reduce((s, r) => s + r.opportunity.observed.total_received_usd, 0);
@@ -120,7 +125,8 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
       setSyncMsg(e?.status === 403 ? t('note.adminOnly') : String(e?.body?.error ?? e?.message ?? e));
     } finally { setSyncing(false); }
   };
-  const cnt = (k: string) => routed.filter((r) => r.execution === k).length;
+  // A paid contest is a win too: count it in "won".
+  const cnt = (k: string) => routed.filter((r) => r.execution === k || (k === 'won' && r.execution === 'paid' && isContest(r))).length;
   const nextDeadline = mine.find((r) => { const n = daysLeft(r.opportunity.deadline); return n != null && n >= 0; });
   const nextResult = results
     .filter((r) => { const n = daysLeft(r.opportunity.result_date); return n != null && n >= 0; })
@@ -160,6 +166,7 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
             <span className={`pill ${cert === 'fixed' ? 'ok' : cert === 'per_task' ? 'warn' : ''}`}>{t(`cert.${cert}` as Key)}</span>
             {n != null && n >= 0 && <span className={`pill ${n <= 7 ? 'bad' : n <= 21 ? 'warn' : ''}`}>{t('col.deadline')} {o!.deadline} / {n === 0 ? t('days.today') : t('days.left', { n })}</span>}
             {n != null && n < 0 && <span className="pill">{t('days.past')} {o!.deadline}</span>}
+            {o?.status === 'closed' && <span className="pill">{t('flow.closed')}</span>}
             {r?.warnings?.includes('eligibility_unverified') && <span className="pill bad">{t('warn.eligibility_unverified')}</span>}
             {r?.warnings?.filter((w) => w.startsWith('skill_gap:')).map((w) => <span key={w} className="pill warn">{t('warn.skill_gap', { s: w.slice(10) })}</span>)}
             <Stars stars={i.stars ?? r?.stars} />
@@ -178,7 +185,8 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
             </p>
           )}
           <div className="stop-act">
-            {picked && <button className="ghost" onClick={() => setStatus(i.opportunity_id, 'submitted')}>{t('board.done')}</button>}
+            {picked && <button className="ghost" onClick={() => setStatus(i.opportunity_id, 'submitted')}>{isContest(r) ? t('flow.submitContest') : t('flow.submitWork')}</button>}
+            {picked && <button className="ghost" onClick={() => setStatus(i.opportunity_id, 'skipped')}>{t('flow.giveUp')}</button>}
             {picked ? (
               <select className="input" value={r?.execution ?? ''} onChange={(e) => setStatus(i.opportunity_id, e.target.value)} aria-label={t('col.status')}>
                 <option value="">{t('st.' as Key)}</option>
@@ -212,7 +220,7 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
         <h2>{hero[0]}<span className="usd">{usd(heroUsd)}</span>{hero[1]}</h2>
         <div className="hero-meta">
           <span><b>{mine.length}</b> {t('board.active')}</span>
-          <span><b>{cnt('submitted') + cnt('won') + cnt('lost') + cnt('paid')}</b> {t('board.joined')}（{t('board.joinedSub', { w: cnt('won'), d: cnt('submitted'), l: cnt('lost') })}）</span>
+          <span><b>{routed.filter((r) => ['submitted', 'won', 'lost', 'paid'].includes(r.execution ?? '')).length}</b> {t('board.joined')}（{t('board.joinedSub', { w: cnt('won'), d: cnt('submitted'), l: cnt('lost') })}）</span>
           {nextDeadline && <span>{t('board.nextDeadline')} <b style={{ color: 'var(--danger)' }}>{inDays(nextDeadline.opportunity.deadline)}</b> {nextDeadline.opportunity.name}</span>}
           {nextResult && <span>{t('board.nextResult')} <b>{inDays(nextResult.opportunity.result_date)}</b> {nextResult.opportunity.name}</span>}
           <span>{t('dash.specShort')} <b>{usd(hasMine ? mineSpec : plan?.speculative_usd ?? 0)}</b></span>
@@ -294,23 +302,35 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
         <div className="side">
           {results.length > 0 && (
             <section className="card">
-              <div className="sec-head"><h3>{t('dash.results')}</h3></div>
+              <div className="sec-head"><h3>{t('flow.waitTitle')}</h3></div>
               <ul className="mini">
                 {results.map((r) => (
                   <li key={r.opportunity.id} onClick={onRow(() => setSelected(r))} style={{ gridTemplateColumns: '58px minmax(0, 1fr)' }}>
-                    <Count iso={r.opportunity.result_date} unit={t('result.on')} />
+                    {isContest(r) ? <Count iso={r.opportunity.result_date} unit={t('result.on')} /> : <div className="count none"><b>$</b><span>{t('flow.waitPay')}</span></div>}
                     <div style={{ minWidth: 0 }}>
                       <div className="t">{r.opportunity.name}</div>
-                      <div className="s">{r.note?.idea || r.opportunity.result_note || r.opportunity.result_date || t('result.wait')}</div>
+                      <div className="s">{stLabel(r)}{r.note?.idea ? ` / ${r.note.idea}` : ''}{isContest(r) && (r.opportunity.result_note || r.opportunity.result_date) ? ` / ${r.opportunity.result_note || r.opportunity.result_date}` : ''}</div>
                       <div className="stop-act" style={{ marginTop: 6 }}>
-                        <button className="primary" onClick={() => setStatus(r.opportunity.id, 'won')}>{t('res.won')}</button>
-                        <button className="ghost" onClick={() => setStatus(r.opportunity.id, 'lost')}>{t('res.lost')}</button>
+                        {isContest(r) ? (
+                          <>
+                            <button className="primary" onClick={() => setStatus(r.opportunity.id, 'won')}>{t('res.won')}</button>
+                            <button className="ghost" onClick={() => setStatus(r.opportunity.id, 'lost')}>{t('res.lost')}</button>
+                          </>
+                        ) : (
+                          <button className="primary" onClick={() => setStatus(r.opportunity.id, 'paid')}>{t('res.paid')}</button>
+                        )}
                         <button className="ghost" onClick={() => setStatus(r.opportunity.id, 'active')}>{t('board.undo')}</button>
                       </div>
                     </div>
                   </li>
                 ))}
               </ul>
+              {results.some((r) => !isContest(r)) && !won.length && (
+                <div className="stop-act" style={{ marginTop: 10, alignItems: 'center' }}>
+                  <button className="ghost" onClick={checkPaypal} disabled={syncing}>{syncing ? t('res.checking') : t('res.checkPaypal')}</button>
+                  <span className="muted">{syncMsg}</span>
+                </div>
+              )}
             </section>
           )}
 
@@ -353,6 +373,28 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
                       <div className="s">{t('st.paid')}{r.opportunity.observed.last_payment_at ? ` / ${r.opportunity.observed.last_payment_at.slice(0, 10)}` : ''}</div>
                     </div>
                     <span className="usd">{r.opportunity.observed.total_received_usd > 0 ? `$${r.opportunity.observed.total_received_usd.toFixed(2)}` : '—'}</span>
+                    {!isContest(r) && r.opportunity.status === 'active' && (
+                      <div className="stop-act" style={{ gridColumn: '1 / -1' }}>
+                        <button className="ghost" onClick={() => setStatus(r.opportunity.id, 'active')}>{t('flow.again')}</button>
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {stopped.length > 0 && (
+            <section className="card">
+              <div className="sec-head"><h3>{t('flow.stoppedTitle')}</h3><p className="muted">{t('flow.stoppedSub')}</p></div>
+              <ul className="mini">
+                {stopped.map((r) => (
+                  <li key={r.opportunity.id} onClick={onRow(() => setSelected(r))} style={{ gridTemplateColumns: 'minmax(0, 1fr) auto' }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div className="t" style={{ color: 'var(--muted)' }}>{r.opportunity.name}</div>
+                      <div className="s">{stLabel(r)}{r.opportunity.deadline ? ` / ${t('col.deadline')} ${r.opportunity.deadline}` : ''}{r.opportunity.status === 'closed' ? ` / ${t('flow.closed')}` : ''}</div>
+                    </div>
+                    <button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={() => setStatus(r.opportunity.id, 'todo')}>{t('flow.revive')}</button>
                   </li>
                 ))}
               </ul>
@@ -420,7 +462,7 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
         </div>
       </div>
 
-      {selected && <OpportunityPanel routed={selected} lang={lang} onLang={setLangState} onClose={() => setSelected(null)} onChange={onChange} />}
+      {selected && <OpportunityPanel routed={selected} lang={lang} onLang={setLangState} onClose={() => setSelected(null)} onChange={load} />}
     </div>
   );
 }
