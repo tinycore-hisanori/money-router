@@ -7,6 +7,11 @@ import VERSION from '../shared/version.json' with { type: 'json' };
 import { api } from './routes/api.js';
 
 const app = new Hono();
+// Errors come back as JSON with the reason (e.g. a PayPal API refusal), not a bare "Internal Server Error".
+app.onError((err, c) => {
+  console.error(`[error] ${c.req.method} ${c.req.path}:`, err);
+  return c.json({ error: String((err as any)?.message ?? err) }, 500);
+});
 app.use(logger());
 
 app.get('/api/health', (c) => c.json({ ok: true, service: 'money-router', env: config.paypal.env, version: VERSION.version, build: VERSION.build, released_at: VERSION.released_at, built_at: VERSION.built_at }));

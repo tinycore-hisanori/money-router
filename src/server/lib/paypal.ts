@@ -51,8 +51,8 @@ export async function listIncomingTransactions(days = 30): Promise<Payment[]> {
   const end = new Date();
   const start = new Date(end.getTime() - Math.min(days, 31) * 86_400_000);
   const qs = new URLSearchParams({
-    start_date: start.toISOString(),
-    end_date: end.toISOString(),
+    start_date: start.toISOString().replace(/\.\d{3}Z$/, 'Z'),
+    end_date: end.toISOString().replace(/\.\d{3}Z$/, 'Z'),
     fields: 'transaction_info,payer_info',
     page_size: '100',
     transaction_status: 'S',
