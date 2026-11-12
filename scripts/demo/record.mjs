@@ -1,6 +1,6 @@
 // Records the Money Router demo: a real browser session against a local copy of the live data,
 // with an on-screen cursor and English captions. Output: video.webm in OUT dir.
-import { chromium } from 'playwright';
+import { chromium } from '/home/claude/money-router/node_modules/playwright/index.mjs';
 
 const BASE = process.env.BASE ?? 'http://localhost:3457';
 const OUT = process.env.OUT ?? '/tmp/claude-0/rec/out';
@@ -26,8 +26,8 @@ await ctx.addInitScript(() => {
   if (document.readyState === 'loading') addEventListener('DOMContentLoaded', boot); else boot();
 });
 import fs from 'node:fs';
-await ctx.route('https://fonts.googleapis.com/**', (r) => r.fulfill({ contentType: 'text/css', body: fs.readFileSync('' + (process.env.FONTS_CSS ?? 'scripts/demo/fonts.css') + '', 'utf8') }));
-await ctx.route('**/__fonts/**', (r) => { const f = '' + (process.env.FONTS_DIR ?? 'node_modules/') + '' + new URL(r.request().url()).pathname.replace('/__fonts/', ''); r.fulfill({ contentType: 'font/woff2', body: fs.readFileSync(f) }); });
+await ctx.route('https://fonts.googleapis.com/**', (r) => r.fulfill({ contentType: 'text/css', body: fs.readFileSync('/tmp/claude-0/rec/fonts.css', 'utf8') }));
+await ctx.route('**/__fonts/**', (r) => { const f = '/tmp/claude-0/rec/fonts/node_modules/' + new URL(r.request().url()).pathname.replace('/__fonts/', ''); r.fulfill({ contentType: 'font/woff2', body: fs.readFileSync(f) }); });
 await ctx.route('https://fonts.gstatic.com/**', (r) => r.abort());
 const p = await ctx.newPage();
 p.on('response', (r) => { if (/\/api\/(paypal|execution)/.test(r.url())) console.log('api', r.status(), r.request().method(), r.url().replace(/^.*\/api/, '')); });
@@ -43,7 +43,12 @@ cdp.on('Page.screencastFrame', async (f) => {
   try { await cdp.send('Page.screencastFrameAck', { sessionId: f.sessionId }); } catch {}
 });
 await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 88, maxWidth: W, maxHeight: H, everyNthFrame: 1 });
+let CLIPS = {}; try { CLIPS = JSON.parse(fs.readFileSync(process.env.CLIPS ?? 'scripts/demo/tts/clips.json', 'utf8')); } catch {} // optional narration timings from tts.py
+const capLog = []; let speechEnd = 0;
 const caption = async (text, ms = 0) => {
+  const now = Date.now() / 1000;
+  if (speechEnd > now) await p.waitForTimeout(Math.round((speechEnd - now) * 1000));
+  if (text && CLIPS[text]) { const t = Date.now() / 1000; capLog.push({ t, file: CLIPS[text].file }); speechEnd = t + CLIPS[text].dur + 0.35; }
   await p.evaluate((t) => { const c = document.getElementById('__cap'); if (!c) return; c.textContent = t; c.style.opacity = t ? '1' : '0'; }, text);
   if (ms) await sleep(ms);
 };
@@ -146,8 +151,10 @@ await click(p.locator('.top-right .icon-btn', { hasText: 'EN' }), 1200);
 await caption('Next: Log In with PayPal and synced accounts.   Money Router — an AI radar for PayPal-payable work, worldwide.', 6000);
 await caption('', 300);
 
+{ const r = speechEnd - Date.now() / 1000; if (r > 0) await sleep(Math.round(r * 1000)); }
 await sleep(600);
 await cdp.send('Page.stopScreencast');
+fs.writeFileSync(OUT + '/captions.json', JSON.stringify(capLog.map((c) => ({ ...c, t: c.t - frames[0] }))));
 // ffmpeg concat list: each frame shown until the next one arrived
 const lines = [];
 for (let i = 0; i < frames.length; i++) {

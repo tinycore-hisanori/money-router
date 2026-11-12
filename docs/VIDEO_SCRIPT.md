@@ -1,21 +1,30 @@
-# Money Router — 3-minute demo video script
+# Money Router — demo video (2:40)
 
-Record in English UI (top right: EN). Screen recording + voice (or captions). Target 2:45, hard limit 3:00.
-Before recording: sign in with a fresh judge key, answer the questionnaire as a US developer (web dev, AI, English, 10 h/week), and run `npm run seed:payments` on the server so PayPal has sandbox transactions.
+Recorded automatically with `scripts/demo/record.mjs` (Playwright + DevTools screencast) against the live crawl data of 2026-11-12. Narration is synthesized (Kokoro TTS, voice `am_michael`) from the same lines as the on-screen captions, and each caption waits until its line has been spoken.
 
-| Time | Screen | Narration (English) | 日本語メモ |
-|---|---|---|---|
-| 0:00–0:15 | Dashboard top: "About $… expected this week" | "Small, legitimate ways to earn online are scattered across hundreds of sites, and most of them won't pay you. Money Router collects them from all over the world, has AI vet them, and routes the ones that pay out to PayPal to you." | 一言で何か |
-| 0:15–0:35 | Sources tab: 52 sources, kept / rejected with reasons | "A crawler reads 50-plus sources — Devpost, itch.io, UserTesting, HackerOne, Upwork — plus a multilingual radar for one-off contests. Claude extracts each opportunity, and anything that can't pay out to PayPal is rejected, with the reason." | 却下理由の列を映す |
-| 0:35–1:05 | Opportunities → click "Overpowered Studios Game Jam #1" | "Each item gets a legitimacy score and, separately, payment-risk findings. This first-edition jam only *targets* its prize pool and states no eligibility rules — so it's demoted to 'if it works out' and kept out of the money you can count on." | 所見（⚠/△）と格下げを映す |
-| 1:05–1:30 | Profile questionnaire → back to Dashboard route | "Your profile — country, skills, hours — filters out what you can't do. The rest is ranked by expected dollars per hour, certainty and legitimacy, with two plain ratings: Easy and Payoff. The dashboard fits a weekly route into your hours." | ★楽／お得 |
-| 1:30–1:55 | Press "+ Pick" on a hackathon and a user-testing job; type "What to submit"; hours bar | "Pick what you'll actually do. Deadlines count down, you note what you'll submit, and the hours bar tells you when you've over-committed." | 自分の案件 |
-| 1:55–2:15 | "✓ Submitted" → "Won"; "Give up" → "Pick again"; Undo bar | "Submit, win, give up, change your mind — every step is one click, and every change can be undone." | 戻せることを見せる |
-| 2:15–2:40 | Payments tab: Sync PayPal → matched rows; Dashboard "Won → Check PayPal" → Paid, Track record | "Then the part that keeps it honest: Money Router reads incoming PayPal transactions and Claude matches each payment to the opportunity it came from. A matched payment marks it paid and feeds real payout history back into the ranking." | PayPal照合が肝 |
-| 2:40–2:55 | Language switch EN ⇄ 日本語; footer | "Everything is localized into the viewer's language. Next: Log In with PayPal and synced accounts. Money Router — an AI radar for PayPal-payable work, worldwide." | 締め |
+The PayPal scene replays the four real sandbox payouts ($142.30, $48.00, $27.00, $19.50 — batch `VDW23CN4GHX8Y`) through `PAYPAL_FIXTURE`, so the recording does not depend on Transaction Search latency. The recording machine had no Claude API key, so payment matching in the video uses the keyword fallback; the live site matches with Claude.
 
-## Recording tips
-- 1280×800 browser window, zoom 100 %, dark or light theme (pick one and keep it).
-- Close the Undo bar before moving to the next scene so it does not cover cards.
-- If a brief is still generating, cut that wait in editing.
-- Upload to YouTube as *Unlisted* or *Public* (Devpost requires a public or unlisted link), title: "Money Router — PayPal AI Hackathon demo".
+| Time | Narration / caption |
+|---|---|
+| 0:01 | Small, legitimate ways to earn online are scattered across hundreds of sites — and many never pay out to you. |
+| 0:08 | Money Router collects them worldwide, has AI vet them, and routes the ones that pay out to PayPal to you. |
+| 0:15 | A crawler reads 50+ sources — Devpost, itch.io, UserTesting, HackerOne, Upwork — plus a multilingual radar for one-off contests. |
+| 0:25 | Claude extracts each opportunity. Anything that cannot pay out to PayPal is rejected — with the reason. |
+| 0:35 | Every item gets a legitimacy score — and, separately, payment-risk findings. |
+| 0:41 | This first-edition jam only "targets" its PayPal prize pool and states no eligibility rules → demoted to "if it works out". |
+| 0:50 | Contest prizes are never counted as money you can count on. |
+| 0:54 | Sign in with your key — each key is its own user, synced across devices. |
+| 0:59 | Tell it where you live, what you can do, and how many hours you have. |
+| 1:09 | Your profile filters out what you cannot do; the rest is ranked by $/hour × certainty × legitimacy, with two plain ratings: Easy and Payoff. |
+| 1:20 | Pick what you will actually do. |
+| 1:41 | Deadlines count down, you note what you will submit, and the hours bar shows when you over-commit. |
+| 1:47 | Submit, finish, give up, change your mind — one click each, and every change can be undone. |
+| 2:00 | Then the part that keeps it honest: read incoming PayPal transactions (sandbox)… |
+| 2:06 | …and match each payment to the opportunity it came from. |
+| 2:13 | The PlaytestCloud payment matched the work you marked done — so it is now Paid, and feeds real payout history back into the ranking. |
+| 2:21 | Win a contest and its prize payout is matched the same way. |
+| 2:25 | Everything is localized into the viewer's language. |
+| 2:31 | Next: Log In with PayPal and synced accounts.   Money Router — an AI radar for PayPal-payable work, worldwide. |
+
+## Upload
+YouTube (unlisted or public), title: "Money Router — AI finds work that pays out to PayPal | PayPal AI Hackathon demo". Thumbnail: `docs/images/thumbnail.png`.
