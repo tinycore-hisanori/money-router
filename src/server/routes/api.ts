@@ -1,11 +1,14 @@
 import { Hono } from 'hono';
-import { store } from '../lib/storage.js';
+import { store, userStore } from '../lib/storage.js';
 import { buildWeeklyPlan, routeAll } from '../lib/route-engine.js';
 import { enrichProfile, explainPlan, matchPayments } from '../lib/ai.js';
 import { createInvoiceDraft, getInvoice, listIncomingTransactions, paypalAvailable, sendInvoice } from '../lib/paypal.js';
 import { llmAvailable } from '../lib/llm.js';
 import { config } from '../lib/config.js';
-import { canCurate, canWrite, consume, isAdmin, remaining, tierOf } from '../lib/guard.js';
+import { canCurate, canWrite, consume, isAdmin, remaining, tierOf, userOf } from '../lib/guard.js';
+
+/** The caller's own profile / picks / notes. */
+const us = (c: any) => userStore(userOf(c));
 import { getJob, runningJobs, startJob } from '../lib/jobs.js';
 import VERSION from '../../shared/version.json' with { type: 'json' };
 import type { ExecutionStatus, Opportunity, OpportunityNote, Payment, UserProfile } from '../../shared/types.js';
@@ -25,6 +28,7 @@ api.get('/status', async (c) => {
     capabilities: { llm: llmAvailable(), paypal: paypalAvailable() },
     admin: isAdmin(c),
     tier: tierOf(c),
+    user: userOf(c),
     can_write: canWrite(c),
     demo: { discovery: await remaining(c, 'discovery'), briefs: await remaining(c, 'briefs'), crawls: await remaining(c, 'crawls') },
     models: config.models,
@@ -36,45 +40,45 @@ api.get('/status', async (c) => {
 
 // ---- opportunities (raw, with execution state merged)
 api.get('/opportunities', async (c) => {
-  const [list, exec] = await Promise.all([store.getOpportunities(), store.getExecution()]);
+  const [list, exec] = await Promise.all([store.getOpportunities(), us(c).getExecution()]);
   return c.json(list.map((o) => ({ ...o, execution: exec[o.id] ?? null })));
 });
 
 // ---- routed view for the current profile
 api.get('/route', async (c) => {
-  const [list, profile, exec, notes] = await Promise.all([store.getOpportunities(), store.getProfile(), store.getExecution(), store.getNotes()]);
+  const [list, profile, exec, notes] = await Promise.all([store.getOpportunities(), us(c).getProfile(), us(c).getExecution(), us(c).getNotes()]);
   return c.json(routeAll(list, profile, exec).map((r) => ({ ...r, execution: exec[r.opportunity.id] ?? null, note: notes[r.opportunity.id] ?? null })));
 });
 
 // ---- per-opportunity memo (idea = what to submit, note = free text)
-api.get('/notes/:id', async (c) => c.json((await store.getNotes())[c.req.param('id')] ?? null));
+api.get('/notes/:id', async (c) => c.json((await us(c).getNotes())[c.req.param('id')] ?? null));
 api.put('/notes/:id', async (c) => {
   if (!canWrite(c)) return c.json({ error: 'key_required' }, 403);
   const id = c.req.param('id');
   const body = (await c.req.json()) as Partial<OpportunityNote>;
-  const notes = await store.getNotes();
+  const notes = await us(c).getNotes();
   const next: OpportunityNote = { idea: (body.idea ?? notes[id]?.idea ?? '').trim(), note: (body.note ?? notes[id]?.note ?? '').trim(), updated_at: new Date().toISOString() };
   if (!next.idea && !next.note) delete notes[id];
   else notes[id] = next;
-  await store.saveNotes(notes);
+  await us(c).saveNotes(notes);
   return c.json(notes[id] ?? null);
 });
 
 // ---- weekly plan
 api.get('/plan', async (c) => {
   const explain = c.req.query('explain') === '1';
-  const [list, profile, exec] = await Promise.all([store.getOpportunities(), store.getProfile(), store.getExecution()]);
+  const [list, profile, exec] = await Promise.all([store.getOpportunities(), us(c).getProfile(), us(c).getExecution()]);
   let plan = buildWeeklyPlan(routeAll(list, profile, exec), profile, exec);
   if (explain) plan = await explainPlan(plan, profile, list);
   return c.json(plan);
 });
 
 // ---- profile
-api.get('/profile', async (c) => c.json(await store.getProfile()));
+api.get('/profile', async (c) => c.json(await us(c).getProfile()));
 api.put('/profile', async (c) => {
   if (!canWrite(c)) return c.json({ error: 'key_required' }, 403);
   const body = (await c.req.json()) as Partial<UserProfile> & { enrich?: boolean };
-  const current = await store.getProfile();
+  const current = await us(c).getProfile();
   let next: UserProfile = {
     ...current,
     ...body,
@@ -84,7 +88,7 @@ api.put('/profile', async (c) => {
   };
   delete (next as any).enrich;
   if (body.enrich) next = await enrichProfile(next);
-  await store.saveProfile(next);
+  await us(c).saveProfile(next);
   return c.json(next);
 });
 
@@ -93,10 +97,10 @@ api.put('/execution/:id', async (c) => {
   if (!canWrite(c)) return c.json({ error: 'key_required' }, 403);
   const id = c.req.param('id');
   const { status } = (await c.req.json()) as { status: ExecutionStatus | null };
-  const exec = await store.getExecution();
+  const exec = await us(c).getExecution();
   if (status) exec[id] = status;
   else delete exec[id];
-  await store.saveExecution(exec);
+  await us(c).saveExecution(exec);
   return c.json({ id, status: exec[id] ?? null });
 });
 
@@ -104,7 +108,7 @@ api.put('/execution/:id', async (c) => {
 api.post('/paypal/sync', async (c) => {
   if (!canWrite(c)) return c.json({ error: 'key_required' }, 403);
   const days = Number(c.req.query('days') ?? 30);
-  const [existing, list, exec] = await Promise.all([store.getPayments(), store.getOpportunities(), store.getExecution()]);
+  const [existing, list, exec] = await Promise.all([store.getPayments(), store.getOpportunities(), us(c).getExecution()]);
   const known = new Map(existing.map((p) => [p.transaction_id, p]));
   const fresh = await listIncomingTransactions(days);
   for (const p of fresh) if (!known.has(p.transaction_id)) known.set(p.transaction_id, p);
@@ -112,7 +116,7 @@ api.post('/paypal/sync', async (c) => {
   const matched = await matchPayments([...known.values()], list, awaiting);
   await store.savePayments(matched);
   await store.saveOpportunities(applyObserved(list, matched));
-  const paid_marked = await markPaid(matched);
+  const paid_marked = await markPaid(c, matched);
   return c.json({ fetched: fresh.length, total: matched.length, matched: matched.filter((p) => p.matched_opportunity_id).length, paid_marked });
 });
 
@@ -131,7 +135,7 @@ api.put('/payments/:tx', async (c) => {
   });
   await store.savePayments(next);
   await store.saveOpportunities(applyObserved(list, next));
-  await markPaid(next);
+  await markPaid(c, next);
   return c.json(next.find((p) => p.transaction_id === tx));
 });
 
@@ -150,15 +154,15 @@ api.post('/paypal/invoice/:id/send', async (c) => {
 api.get('/paypal/invoice/:id', async (c) => c.json(await getInvoice(c.req.param('id'))));
 
 /** A PayPal payment matched to something you won or submitted means it was paid: move it to "paid". */
-async function markPaid(payments: Payment[]): Promise<number> {
-  const exec = await store.getExecution();
+async function markPaid(c: any, payments: Payment[]): Promise<number> {
+  const exec = await us(c).getExecution();
   let n = 0;
   for (const p of payments) {
     const id = p.matched_opportunity_id;
     if (!id || p.match_status === 'rejected') continue;
     if (exec[id] === 'won' || exec[id] === 'submitted') { exec[id] = 'paid'; n++; }
   }
-  if (n) await store.saveExecution(exec);
+  if (n) await us(c).saveExecution(exec);
   return n;
 }
 

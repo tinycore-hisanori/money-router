@@ -38,6 +38,8 @@ export const config = {
   guards: {
     adminToken: process.env.ADMIN_TOKEN ?? '',
     judgeToken: process.env.JUDGE_TOKEN ?? '',
+    /** One key per judge user (judge1, judge2, …). JUDGE_TOKEN alone still works as judge1. */
+    judgeTokens: [...new Set([process.env.JUDGE_TOKEN ?? '', ...(process.env.JUDGE_TOKENS ?? '').split(',')].map((x) => x.trim()).filter(Boolean))],
     public: {
       discovery: Number(process.env.DEMO_DAILY_DISCOVERY ?? 3),
       briefs: Number(process.env.DEMO_DAILY_BRIEFS ?? 50),

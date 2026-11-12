@@ -132,8 +132,8 @@ docs/SPEC_v1.0.md            full specification (Japanese)
 The operator does, so costly actions are guarded:
 
 - **Admin key** (`ADMIN_TOKEN`): entered once in the UI (🔑 in the header) — unlimited Discovery, crawls and briefs; may approve/reject discovered sources.
-- **Judge key** (`JUDGE_TOKEN`, shared privately with hackathon judges): its own daily pool (`JUDGE_DAILY_DISCOVERY=10`, `JUDGE_DAILY_BRIEFS=200`, `JUDGE_DAILY_CRAWLS=5`) and may approve/reject, so the full discover → approve → crawl loop can be exercised.
-- **Public (no key) is view-only** on a hosted demo: everyone sees the same data, so changing the profile, picking opportunities, notes, crawling, Event Radar and PayPal sync need a key. Visitors can still browse everything, generate briefs (`DEMO_DAILY_BRIEFS=50`/day) and run AI Discovery (`DEMO_DAILY_DISCOVERY=3`/day; results wait for approval). Worst-case cost is bounded by these numbers.
+- **Judge keys** (`JUDGE_TOKENS`, comma-separated, shared privately with hackathon judges): **each key is its own user** (judge1, judge2, …) with a separate profile, picks, statuses and notes stored on the server — open the same `?key=` link on a phone and the board is the same. Each judge has its own daily pool (`JUDGE_DAILY_DISCOVERY=10`, `JUDGE_DAILY_BRIEFS=200`, `JUDGE_DAILY_CRAWLS=5`) and may approve/reject, so the full discover → approve → crawl loop can be exercised.
+- **Public (no key) is view-only** on a hosted demo and shows a read-only **demo user** (never the operator's data); so changing the profile, picking opportunities, notes, crawling, Event Radar and PayPal sync need a key. Visitors can still browse everything, generate briefs (`DEMO_DAILY_BRIEFS=50`/day) and run AI Discovery (`DEMO_DAILY_DISCOVERY=3`/day; results wait for approval). Worst-case cost is bounded by these numbers.
 - **One-click unlock**: open the demo with `?key=<JUDGE_TOKEN>` — the key is stored in the browser and removed from the address bar.
 - A local install with no keys configured is fully open.
 

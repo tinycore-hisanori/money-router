@@ -76,7 +76,7 @@ export default function App() {
               refresh();
             }}
           >
-            {status?.tier === 'admin' ? `🔑 ${t('guard.admin')}` : status?.tier === 'judge' ? `🔑 ${t('guard.judge')}` : status?.can_write === false ? `🔑 ${t('guard.viewOnly')}` : '🔑'}
+            {status?.tier === 'admin' ? `🔑 ${t('guard.admin')}` : status?.tier === 'judge' ? `🔑 ${status.user}` : status?.can_write === false ? `🔑 ${t('guard.viewOnly')}` : '🔑'}
           </button>
           <button
             className="icon-btn"

@@ -52,6 +52,39 @@ const EMPTY_STATUS: CrawlStatus = {
   totals: { opportunities: 0, active: 0, rejected_no_paypal: 0 },
 };
 
+/** Profile a new judge/demo user starts with: English, US, no skills yet (judges get the questionnaire). */
+const GUEST_PROFILE: UserProfile = { ...DEFAULT_PROFILE, country: 'US', language: 'en' };
+/** The read-only demo user visitors see: a filled-in profile so the board is not empty. */
+const DEMO_PROFILE: UserProfile = { ...GUEST_PROFILE, skills: ['web_dev', 'ai', 'english', 'writing'], hours_per_week: 10 };
+
+const safeUser = (u: string) => u.replace(/[^a-z0-9_-]/gi, '').slice(0, 32) || 'demo';
+/** Files of one user. "owner" keeps the original top-level files so existing data stays where it is. */
+const userFile = (user: string, name: string) => (user === 'owner' ? runtime(name) : runtime(path.join('users', safeUser(user), name)));
+
+/** Per-user state: profile, picks/status ("execution") and notes. */
+export function userStore(user: string) {
+  const defaultProfile = user === 'owner' ? DEFAULT_PROFILE : user === 'demo' ? DEMO_PROFILE : GUEST_PROFILE;
+  return {
+    user,
+    getProfile: () => readJson<UserProfile>(userFile(user, 'profile.json'), defaultProfile),
+    saveProfile: (p: UserProfile) => writeJson(userFile(user, 'profile.json'), p),
+    getExecution: () => readJson<Record<string, ExecutionStatus>>(userFile(user, 'execution.json'), {}),
+    saveExecution: (m: Record<string, ExecutionStatus>) => writeJson(userFile(user, 'execution.json'), m),
+    getNotes: () => readJson<Record<string, OpportunityNote>>(userFile(user, 'notes.json'), {}),
+    saveNotes: (m: Record<string, OpportunityNote>) => writeJson(userFile(user, 'notes.json'), m),
+  };
+}
+
+/** Every user that has stored state (the crawler moves their state when an opportunity is re-keyed). */
+export async function listUsers(): Promise<string[]> {
+  try {
+    const dirs = await fs.readdir(runtime('users'), { withFileTypes: true });
+    return ['owner', ...dirs.filter((d) => d.isDirectory()).map((d) => d.name)];
+  } catch {
+    return ['owner'];
+  }
+}
+
 export const store = {
   // --- opportunities: runtime copy, falls back to seed data on first run
   async getOpportunities(): Promise<Opportunity[]> {

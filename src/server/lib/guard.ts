@@ -20,11 +20,26 @@ async function load(): Promise<Record<string, number>> {
   }
 }
 
+const tokenOf = (c: Context) => c.req.header('x-admin-token') ?? c.req.query('token') ?? '';
+const keysConfigured = () => !!config.guards.adminToken || config.guards.judgeTokens.length > 0;
+
 export function tierOf(c: Context): Tier {
-  const t = c.req.header('x-admin-token') ?? c.req.query('token') ?? '';
+  const t = tokenOf(c);
   if (config.guards.adminToken && t === config.guards.adminToken) return 'admin';
-  if (config.guards.judgeToken && t === config.guards.judgeToken) return 'judge';
+  if (t && config.guards.judgeTokens.includes(t)) return 'judge';
   return 'public';
+}
+
+/**
+ * Whose data this request reads and writes. Each key is a user with its own profile, picks and notes:
+ * the admin key is "owner" (the original data files), judge keys are judge1…N, and visitors without a key
+ * see the read-only "demo" user. A local install with no keys configured is the owner.
+ */
+export function userOf(c: Context): string {
+  const tier = tierOf(c);
+  if (tier === 'admin' || !keysConfigured()) return 'owner';
+  if (tier === 'judge') return `judge${config.guards.judgeTokens.indexOf(tokenOf(c)) + 1}`;
+  return 'demo';
 }
 export const isAdmin = (c: Context) => tierOf(c) === 'admin';
 /** May change the source registry (approve/reject discoveries). */
@@ -34,7 +49,7 @@ export const canCurate = (c: Context) => tierOf(c) !== 'public';
  * May change shared state (profile, picks, notes) or run jobs that rewrite the opportunity list.
  * On a hosted demo every visitor sees the same data, so this needs a key; a local install with no keys configured stays open.
  */
-export const canWrite = (c: Context) => tierOf(c) !== 'public' || (!config.guards.adminToken && !config.guards.judgeToken);
+export const canWrite = (c: Context) => tierOf(c) !== 'public' || !keysConfigured();
 
 const limitFor = (tier: Tier, kind: Kind) => (tier === 'judge' ? config.guards.judge[kind] : config.guards.public[kind]);
 
@@ -43,7 +58,7 @@ export async function consume(c: Context, kind: Kind): Promise<null | { error: s
   const tier = tierOf(c);
   if (tier === 'admin') return null;
   const limit = limitFor(tier, kind);
-  const key = `${today()}:${tier}:${kind}`;
+  const key = `${today()}:${userOf(c)}:${kind}`;
   const usage = await load();
   const used = usage[key] ?? 0;
   if (used >= limit) return { error: 'demo_limit', remaining: 0, limit };
@@ -59,5 +74,5 @@ export async function remaining(c: Context, kind: Kind): Promise<{ remaining: nu
   if (tier === 'admin') return { remaining: Infinity, limit: Infinity };
   const limit = limitFor(tier, kind);
   const usage = await load();
-  return { remaining: Math.max(0, limit - (usage[`${today()}:${tier}:${kind}`] ?? 0)), limit };
+  return { remaining: Math.max(0, limit - (usage[`${today()}:${userOf(c)}:${kind}`] ?? 0)), limit };
 }

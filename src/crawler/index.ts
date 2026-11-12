@@ -2,7 +2,7 @@
 // Pipeline per source: fetch -> hash diff -> extract (LLM) -> audit (LLM, per AUDIT_SCHEDULE) -> merge.
 import crypto from 'node:crypto';
 import { auditPlanFor, config } from '../server/lib/config.js';
-import { store } from '../server/lib/storage.js';
+import { listUsers, store, userStore } from '../server/lib/storage.js';
 import { llmAvailable } from '../server/lib/llm.js';
 import { acquireSourceText } from './fetch.js';
 import { braveQueriesUsed, resetBraveBudget } from './search.js';
@@ -18,9 +18,10 @@ export async function runCrawl(): Promise<CrawlStatus> {
   const existing = await store.getOpportunities();
   const hashes = await store.getPageHashes();
   // User state keyed by opportunity id: must follow an opportunity when the crawler re-keys it.
-  const exec = await store.getExecution();
-  const notes = await store.getNotes();
+  // Every user's picks/status and notes, so they can follow an opportunity that gets a new id.
+  const users = await Promise.all((await listUsers()).map(async (u) => ({ u, exec: await userStore(u).getExecution(), notes: await userStore(u).getNotes() })));
   const payments = await store.getPayments();
+  const anyState = (id: string) => users.some((x) => x.exec[id] || x.notes[id]);
   let stateMoved = false;
   const status: CrawlStatus = {
     last_run: started.toISOString(),
@@ -68,15 +69,17 @@ export async function runCrawl(): Promise<CrawlStatus> {
         const keep = new Set(fromSource.map((o) => o.id));
         const claimed = new Set<string>();
         for (const old of existing.filter((o) => o.source_id === s.id && !keep.has(o.id))) {
-          const hasState = !!exec[old.id] || !!notes[old.id] || old.observed.payments_count > 0;
+          const hasState = anyState(old.id) || old.observed.payments_count > 0;
           if (!hasState) { byId.delete(old.id); continue; }
-          // Same opportunity under a new id (reworded name)? Move the user's state onto it.
-          const free = fromSource.filter((n) => !claimed.has(n.id) && !exec[n.id] && !notes[n.id]);
+          // Same opportunity under a new id (reworded name)? Move every user's state onto it.
+          const free = fromSource.filter((n) => !claimed.has(n.id) && !anyState(n.id));
           const succ = successor(old, free, fromSource.length);
           if (succ) {
             claimed.add(succ.id);
-            if (exec[old.id]) { exec[succ.id] = exec[old.id]; delete exec[old.id]; }
-            if (notes[old.id]) { notes[succ.id] = notes[old.id]; delete notes[old.id]; }
+            for (const x of users) {
+              if (x.exec[old.id]) { x.exec[succ.id] = x.exec[old.id]; delete x.exec[old.id]; }
+              if (x.notes[old.id]) { x.notes[succ.id] = x.notes[old.id]; delete x.notes[old.id]; }
+            }
             for (const p of payments) if (p.matched_opportunity_id === old.id) p.matched_opportunity_id = succ.id;
             const i = fromSource.findIndex((n) => n.id === succ.id);
             if (old.observed.payments_count > 0 && fromSource[i].observed.payments_count === 0) fromSource[i] = { ...fromSource[i], observed: old.observed };
@@ -124,7 +127,11 @@ export async function runCrawl(): Promise<CrawlStatus> {
     }
   }
 
-  if (stateMoved) await Promise.all([store.saveExecution(exec), store.saveNotes(notes), store.savePayments(payments)]);
+  if (stateMoved)
+    await Promise.all([
+      store.savePayments(payments),
+      ...users.flatMap((x) => [userStore(x.u).saveExecution(x.exec), userStore(x.u).saveNotes(x.notes)]),
+    ]);
   await finish([...byId.values()], status, hashes);
   return status;
 }
