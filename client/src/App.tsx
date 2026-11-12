@@ -102,7 +102,19 @@ export default function App() {
       </header>
       {needKey && (
         <div className="keybar" role="alert">
-          <span>{t('guard.needKey')}</span>
+          <span>🔑 {t('guard.needKey')}</span>
+          <button
+            className="primary"
+            onClick={() => {
+              const v = window.prompt(t('guard.keyPrompt'), adminToken.get());
+              if (v === null) return;
+              adminToken.set(v.trim());
+              setNeedKey(false);
+              refresh();
+            }}
+          >
+            {t('guard.enterKey')}
+          </button>
           <button className="icon-btn" onClick={() => setNeedKey(false)} aria-label="close">✕</button>
         </div>
       )}

@@ -255,7 +255,8 @@ table { border-collapse: collapse; }
 .stop-idea .input { flex: 1; min-width: 0; padding: 4px 8px; border-style: dashed; background: transparent; }
 .stop-act { display: flex; gap: 8px; flex-wrap: wrap; }
 
-.keybar { display: flex; gap: 12px; align-items: center; justify-content: center; padding: 10px 24px; background: var(--accent-2-soft); color: var(--accent-2); font-weight: 500; font-size: 14px; }
+.keybar { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 200; width: min(640px, calc(100vw - 32px)); display: flex; gap: 12px; align-items: center; padding: 14px 18px; border-radius: 14px; background: var(--panel); color: var(--text); border: 2px solid var(--accent-2); box-shadow: 0 20px 50px -12px rgba(0,0,0,.45); font-weight: 500; font-size: 14px; }
+.keybar span { flex: 1; }
 
 .undobar { position: sticky; top: 58px; z-index: 15; display: flex; gap: 12px; align-items: center; padding: 10px 16px; border-radius: 12px; background: var(--route-soft); border: 1px solid var(--route); font-weight: 500; }
 .undobar span { flex: 1; min-width: 0; }

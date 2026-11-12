@@ -267,6 +267,7 @@ const dict = {
   'guard.exhausted': { ja: '本日のデモ枠は使い切りました。デモ動画をご覧いただくか、明日またお試しください。', en: 'Today\'s demo allowance is used up. Please watch the demo video or try again tomorrow.' },
   'guard.adminOnly': { ja: '承認・却下にはアクセスキー（審査員／管理者）が必要です。ヘッダーの🔑から入力してください。', en: 'Approve/reject needs an access key (judge / admin) — enter it via 🔑 in the header.' },
   'guard.needKey': { ja: 'これは見るだけのデモです。プロフィール変更・案件を選ぶ・巡回には、アクセスキーが必要です（右上の🔑から入力）。', en: 'This is a view-only demo. Changing the profile, picking opportunities and crawling need an access key — enter it via 🔑 at the top right.' },
+  'guard.enterKey': { ja: 'キーを入力', en: 'Enter key' },
   'guard.viewOnly': { ja: '閲覧のみ', en: 'view only' },
   'guard.admin': { ja: '管理者', en: 'admin' },
   'guard.judge': { ja: '審査員', en: 'judge' },
