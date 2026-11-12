@@ -104,6 +104,18 @@ const dict = {
   'board.undo': { ja: '対応中に戻す', en: 'Back to in progress' },
   'board.undoBar': { ja: '「{name}」を {st} にしました', en: '"{name}" is now {st}' },
   'board.undoBtn': { ja: '元に戻す', en: 'Undo' },
+  'res.won': { ja: '🏆 入賞した', en: '🏆 Won' },
+  'res.lost': { ja: '落選', en: 'Lost' },
+  'res.paid': { ja: '入金済にする', en: 'Mark as paid' },
+  'res.checkPaypal': { ja: 'PayPalで入金を確認', en: 'Check PayPal' },
+  'res.checking': { ja: '確認中…', en: 'Checking…' },
+  'res.syncDone': { ja: 'PayPal：{m} 件を照合、{p} 件を入金済にしました', en: 'PayPal: matched {m}, marked {p} as paid' },
+  'res.wonTitle': { ja: '入賞・入金待ち', en: 'Won — waiting for payout' },
+  'res.wonSub': { ja: 'PayPalに入金されると自動で「入金済」になります', en: 'Turns "paid" automatically when the PayPal payment arrives' },
+  'res.prize': { ja: '賞金', en: 'Prize' },
+  'res.record': { ja: '実績', en: 'Track record' },
+  'res.recordSum': { ja: '入金済 {p} 件・PayPal受取 {usd}・入賞 {w} 件・落選 {l} 件', en: '{p} paid · {usd} received in PayPal · {w} won · {l} lost' },
+  'res.received': { ja: '受取', en: 'received' },
   'board.done': { ja: '✓ 提出した', en: '✓ Submitted' },
   'board.ideaPh': { ja: '出すもの（何で出すか）を書く', en: 'What will you submit?' },
   'dash.mine': { ja: '自分の案件', en: 'My picks' },
@@ -196,6 +208,9 @@ const dict = {
   'q.title': { ja: 'あなたについて（当てはまるものにチェック）', en: 'About you (check all that apply)' },
   'q.html5_game_dev': { ja: 'HTML5 / ブラウザゲームを作れる', en: 'I can build HTML5 / browser games' },
   'q.game_dev': { ja: 'ゲーム開発ができる（Unity / Godot / Unreal など）', en: 'I make games (Unity / Godot / Unreal…)' },
+  'q.ai': { ja: 'AI（LLM・画像生成など）を使ったものを作れる', en: 'I can build things with AI (LLMs, image generation…)' },
+  'q.electronics': { ja: '電子工作・組み込み・IoT ができる', en: 'I can do electronics / embedded / IoT' },
+  'warn.skill_gap': { ja: '足りないスキル: {s}', en: 'Skill gap: {s}' },
   'q.web_dev': { ja: 'Webサイト・Webアプリを作れる', en: 'I can build websites / web apps' },
   'q.mobile_dev': { ja: 'スマホアプリを作れる', en: 'I can build mobile apps' },
   'q.security': { ja: 'セキュリティ診断・脆弱性探しができる', en: 'I can do security testing / find vulnerabilities' },
@@ -284,6 +299,11 @@ export const setLang = (l: string) => {
   current = l === 'ja' ? 'ja' : 'en';
 };
 export const getLang = () => current;
+/** Viewer's own UI language (stored in this browser), overriding the profile language. */
+export const viewerLang = (): Lang | null => { try { const v = localStorage.getItem('mr-lang'); return v === 'ja' || v === 'en' ? v : null; } catch { return null; } };
+export const setViewerLang = (l: Lang) => { try { localStorage.setItem('mr-lang', l); } catch { /* private mode */ } };
+/** The language to show: the viewer's choice, else the profile's. */
+export const uiLang = (profileLang?: string) => viewerLang() ?? (profileLang === 'en' ? 'en' : profileLang ? (profileLang as Lang) : 'ja');
 
 export function t(key: Key, vars?: Record<string, string | number>): string {
   let s: string = (dict[key] as any)[current] ?? (dict[key] as any).en ?? key;

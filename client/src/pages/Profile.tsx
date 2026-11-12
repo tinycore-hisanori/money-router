@@ -3,7 +3,7 @@ import type { UserProfile } from '@shared/types';
 import { api } from '../api';
 import { t, type Key } from '../i18n';
 
-const SKILL_QUESTIONS = ['html5_game_dev', 'game_dev', 'web_dev', 'mobile_dev', 'security', 'design', '3d', 'audio', 'video', 'writing', 'english', 'japanese', 'data', 'teaching'] as const;
+const SKILL_QUESTIONS = ['html5_game_dev', 'game_dev', 'web_dev', 'mobile_dev', 'ai', 'electronics', 'security', 'design', '3d', 'audio', 'video', 'writing', 'english', 'japanese', 'data', 'teaching'] as const;
 const COUNTRIES: [string, string][] = [['JP', '日本 / Japan'], ['US', 'United States'], ['GB', 'United Kingdom'], ['CA', 'Canada'], ['AU', 'Australia'], ['DE', 'Germany'], ['FR', 'France'], ['ES', 'Spain'], ['IT', 'Italy'], ['NL', 'Netherlands'], ['BR', 'Brazil'], ['MX', 'Mexico'], ['IN', 'India'], ['ID', 'Indonesia'], ['PH', 'Philippines'], ['KR', 'Korea'], ['TW', 'Taiwan'], ['SG', 'Singapore'], ['NG', 'Nigeria'], ['ZA', 'South Africa']];
 const LANGS: [string, string][] = [['ja', '日本語'], ['en', 'English'], ['es', 'Español'], ['pt', 'Português'], ['de', 'Deutsch'], ['fr', 'Français'], ['ko', '한국어'], ['zh', '中文']];
 const HOURS = [2, 5, 10, 15, 20, 30, 40];

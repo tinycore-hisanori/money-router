@@ -104,14 +104,16 @@ api.put('/execution/:id', async (c) => {
 api.post('/paypal/sync', async (c) => {
   if (!canWrite(c)) return c.json({ error: 'key_required' }, 403);
   const days = Number(c.req.query('days') ?? 30);
-  const [existing, list] = await Promise.all([store.getPayments(), store.getOpportunities()]);
+  const [existing, list, exec] = await Promise.all([store.getPayments(), store.getOpportunities(), store.getExecution()]);
   const known = new Map(existing.map((p) => [p.transaction_id, p]));
   const fresh = await listIncomingTransactions(days);
   for (const p of fresh) if (!known.has(p.transaction_id)) known.set(p.transaction_id, p);
-  const matched = await matchPayments([...known.values()], list);
+  const awaiting = new Set(Object.entries(exec).filter(([, s]) => s === 'won' || s === 'submitted').map(([id]) => id));
+  const matched = await matchPayments([...known.values()], list, awaiting);
   await store.savePayments(matched);
   await store.saveOpportunities(applyObserved(list, matched));
-  return c.json({ fetched: fresh.length, total: matched.length, matched: matched.filter((p) => p.matched_opportunity_id).length });
+  const paid_marked = await markPaid(matched);
+  return c.json({ fetched: fresh.length, total: matched.length, matched: matched.filter((p) => p.matched_opportunity_id).length, paid_marked });
 });
 
 api.get('/payments', async (c) => c.json(await store.getPayments()));
@@ -129,6 +131,7 @@ api.put('/payments/:tx', async (c) => {
   });
   await store.savePayments(next);
   await store.saveOpportunities(applyObserved(list, next));
+  await markPaid(next);
   return c.json(next.find((p) => p.transaction_id === tx));
 });
 
@@ -145,6 +148,19 @@ api.post('/paypal/invoice/:id/send', async (c) => {
   return c.json({ ok: true });
 });
 api.get('/paypal/invoice/:id', async (c) => c.json(await getInvoice(c.req.param('id'))));
+
+/** A PayPal payment matched to something you won or submitted means it was paid: move it to "paid". */
+async function markPaid(payments: Payment[]): Promise<number> {
+  const exec = await store.getExecution();
+  let n = 0;
+  for (const p of payments) {
+    const id = p.matched_opportunity_id;
+    if (!id || p.match_status === 'rejected') continue;
+    if (exec[id] === 'won' || exec[id] === 'submitted') { exec[id] = 'paid'; n++; }
+  }
+  if (n) await store.saveExecution(exec);
+  return n;
+}
 
 /** Recompute observed stats from confirmed/auto matches. */
 function applyObserved(list: Opportunity[], payments: Payment[]): Opportunity[] {

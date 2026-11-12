@@ -260,3 +260,5 @@ table { border-collapse: collapse; }
 .undobar { position: sticky; top: 58px; z-index: 15; display: flex; gap: 12px; align-items: center; padding: 10px 16px; border-radius: 12px; background: var(--route-soft); border: 1px solid var(--route); font-weight: 500; }
 .undobar span { flex: 1; min-width: 0; }
 .undobar .primary { padding: 6px 14px; }
+
+.wonbox { border-color: var(--accent); background: linear-gradient(var(--accent-soft), var(--panel) 60%); }

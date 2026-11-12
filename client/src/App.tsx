@@ -5,7 +5,7 @@ import Opportunities from './pages/Opportunities';
 import Profile from './pages/Profile';
 import Payments from './pages/Payments';
 import Sources from './pages/Sources';
-import { setLang, t, type Key } from './i18n';
+import { getLang, setLang, setViewerLang, t, uiLang, type Key } from './i18n';
 
 type Page = 'dashboard' | 'opportunities' | 'sources' | 'profile' | 'payments';
 
@@ -34,7 +34,7 @@ export default function App() {
     api.status().then(setStatus).catch(() => setStatus(null));
     api.profile()
       .then((p) => {
-        setLang(p.language || 'ja');
+        setLang(uiLang(p.language));
         setLangTick((x) => x + 1);
         const empty = p.skills.length === 0 && !p.free_text;
         setNeedsProfile(empty);
@@ -77,6 +77,13 @@ export default function App() {
             }}
           >
             {status?.tier === 'admin' ? `🔑 ${t('guard.admin')}` : status?.tier === 'judge' ? `🔑 ${t('guard.judge')}` : status?.can_write === false ? `🔑 ${t('guard.viewOnly')}` : '🔑'}
+          </button>
+          <button
+            className="icon-btn"
+            title="日本語 / English"
+            onClick={() => { const next = getLang() === 'ja' ? 'en' : 'ja'; setViewerLang(next); setLang(next); refresh(); }}
+          >
+            {getLang() === 'ja' ? 'EN' : '日本語'}
           </button>
           <button
             className="icon-btn"

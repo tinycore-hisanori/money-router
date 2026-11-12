@@ -28,6 +28,19 @@ const SKILL_ALIASES: Record<string, string[]> = {
   audio: ['music', 'sound_design'],
   video: ['video_editing', 'motion_graphics'],
   '3d': ['blender', 'modeling'],
+  // "Build with AI" hackathons: any developer qualifies (the AI part is the tool, not a prerequisite)
+  ai: ['web_dev', 'mobile_dev', 'game_dev', 'html5_game_dev', 'data', 'machine_learning', 'llm'],
+  machine_learning: ['ai', 'data'],
+  translation: ['japanese', 'english', 'localization'],
+  localization: ['japanese', 'english', 'translation'],
+  transcription: ['english', 'japanese'],
+  javascript: ['web_dev', 'html5_game_dev'],
+  typescript: ['web_dev', 'html5_game_dev'],
+  programming: ['web_dev', 'mobile_dev', 'game_dev', 'html5_game_dev'],
+  software_development: ['web_dev', 'mobile_dev', 'game_dev', 'html5_game_dev'],
+  iot: ['electronics', 'embedded'],
+  embedded: ['electronics', 'iot'],
+  ui: ['design', 'web_dev'],
 };
 
 function hasSkill(user: string[], required: string): boolean {
@@ -95,8 +108,11 @@ export function routeOne(
   if (o.countries_blocked.includes(profile.country))
     exclusions.push({ code: 'country', detail: `blocked in ${profile.country}` });
 
+  // Exclude only when none of the required skills match; a partial match stays eligible with a "skill gap" note.
   const missing = o.skills_required.filter((s) => !hasSkill(profile.skills, s));
-  if (missing.length) exclusions.push({ code: 'skills', detail: `missing: ${missing.join(', ')}` });
+  const partial = missing.length > 0 && missing.length < o.skills_required.length;
+  if (missing.length && !partial) exclusions.push({ code: 'skills', detail: `missing: ${missing.join(', ')}` });
+  if (partial) warnings.push(`skill_gap:${missing.join(',')}`);
 
   if (o.legitimacy.score < LEGITIMACY_THRESHOLD)
     exclusions.push({ code: 'legitimacy', detail: `score ${o.legitimacy.score} < ${LEGITIMACY_THRESHOLD}` });

@@ -5,7 +5,7 @@ import OpportunityPanel from '../components/OpportunityPanel';
 import Stars from '../components/Stars';
 import { catColor, catLabel } from '../cats';
 import { daysLeft } from '../dates';
-import { t, type Key } from '../i18n';
+import { t, uiLang, type Key } from '../i18n';
 
 /** Countdown box: days to a date, coloured by urgency. */
 export function Count({ iso, unit }: { iso?: string | null; unit?: string }) {
@@ -41,12 +41,14 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
   const [selected, setSelected] = useState<Routed | null>(null);
   const [memo, setMemo] = useState('');
   const [memoState, setMemoState] = useState('');
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState('');
   const [undo, setUndo] = useState<{ id: string; name: string; prev: string; next: string } | null>(null);
 
   const load = () => { api.plan().then(setPlan); api.route().then(setRouted); };
   useEffect(() => {
     load();
-    api.profile().then((p) => setLangState(p.language || 'ja')).catch(() => {});
+    api.profile().then((p) => setLangState(uiLang(p.language))).catch(() => {});
     api.getNote('_board').then((n) => setMemo(n?.note ?? '')).catch(() => {});
   }, [tick]);
 
@@ -83,6 +85,10 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
   const mineCertain = mineItems.filter((x) => x.r.effective_certainty !== 'speculative').reduce((s, x) => s + x.i.expected_usd, 0);
   const mineSpec = mineItems.filter((x) => x.r.effective_certainty === 'speculative').reduce((s, x) => s + x.i.expected_usd, 0);
   const results = routed.filter((r) => r.execution === 'submitted');
+  const won = routed.filter((r) => r.execution === 'won');
+  const paidList = routed.filter((r) => r.execution === 'paid');
+  const lostCount = routed.filter((r) => r.execution === 'lost').length;
+  const received = paidList.reduce((s2, r) => s2 + r.opportunity.observed.total_received_usd, 0);
   const suggestions = [...(plan?.items ?? []), ...(plan?.backlog ?? [])].filter((i) => !byId(i.opportunity_id)?.execution);
   const observed = routed.reduce((s, r) => s + r.opportunity.observed.total_received_usd, 0);
   const eligible = routed.filter((r) => r.eligible);
@@ -103,6 +109,16 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
     if (idea === (r.note?.idea ?? '')) return;
     try { await api.setNote(r.opportunity.id, { idea, note: r.note?.note ?? '' }); load(); }
     catch (e: any) { setMemoState(e?.status === 403 ? t('note.adminOnly') : String(e?.message ?? e)); }
+  };
+  const checkPaypal = async () => {
+    setSyncing(true); setSyncMsg('');
+    try {
+      const r = await api.sync() as any;
+      setSyncMsg(t('res.syncDone', { m: r.matched ?? 0, p: r.paid_marked ?? 0 }));
+      load();
+    } catch (e: any) {
+      setSyncMsg(e?.status === 403 ? t('note.adminOnly') : String(e?.body?.error ?? e?.message ?? e));
+    } finally { setSyncing(false); }
   };
   const cnt = (k: string) => routed.filter((r) => r.execution === k).length;
   const nextDeadline = mine.find((r) => { const n = daysLeft(r.opportunity.deadline); return n != null && n >= 0; });
@@ -145,6 +161,7 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
             {n != null && n >= 0 && <span className={`pill ${n <= 7 ? 'bad' : n <= 21 ? 'warn' : ''}`}>{t('col.deadline')} {o!.deadline} / {n === 0 ? t('days.today') : t('days.left', { n })}</span>}
             {n != null && n < 0 && <span className="pill">{t('days.past')} {o!.deadline}</span>}
             {r?.warnings?.includes('eligibility_unverified') && <span className="pill bad">{t('warn.eligibility_unverified')}</span>}
+            {r?.warnings?.filter((w) => w.startsWith('skill_gap:')).map((w) => <span key={w} className="pill warn">{t('warn.skill_gap', { s: w.slice(10) })}</span>)}
             <Stars stars={i.stars ?? r?.stars} />
           </div>
           {picked && r && (
@@ -286,13 +303,56 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
                       <div className="t">{r.opportunity.name}</div>
                       <div className="s">{r.note?.idea || r.opportunity.result_note || r.opportunity.result_date || t('result.wait')}</div>
                       <div className="stop-act" style={{ marginTop: 6 }}>
+                        <button className="primary" onClick={() => setStatus(r.opportunity.id, 'won')}>{t('res.won')}</button>
+                        <button className="ghost" onClick={() => setStatus(r.opportunity.id, 'lost')}>{t('res.lost')}</button>
                         <button className="ghost" onClick={() => setStatus(r.opportunity.id, 'active')}>{t('board.undo')}</button>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {won.length > 0 && (
+            <section className="card wonbox">
+              <div className="sec-head"><h3>{t('res.wonTitle')}</h3><p className="muted">{t('res.wonSub')}</p></div>
+              <ul className="mini">
+                {won.map((r) => (
+                  <li key={r.opportunity.id} onClick={onRow(() => setSelected(r))} style={{ gridTemplateColumns: 'minmax(0, 1fr) auto' }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div className="t">🏆 {r.opportunity.name}</div>
+                      <div className="s">{t('res.prize')} {usd(r.opportunity.reward_estimate_usd)}{r.note?.note ? ` / ${r.note.note}` : ''}</div>
+                      <div className="stop-act" style={{ marginTop: 6 }}>
+                        <button className="ghost" onClick={() => setStatus(r.opportunity.id, 'paid')}>{t('res.paid')}</button>
                         <select className="input" value={r.execution ?? ''} onChange={(e) => setStatus(r.opportunity.id, e.target.value)} aria-label={t('col.status')}>
-                          <option value="">{t('st.' as Key)}</option>
                           {STATUSES.map((x) => <option key={x} value={x}>{t(`st.${x}` as Key)}</option>)}
                         </select>
                       </div>
                     </div>
+                    <span className="usd">{usd(r.opportunity.reward_estimate_usd)}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="stop-act" style={{ marginTop: 10, alignItems: 'center' }}>
+                <button className="primary" onClick={checkPaypal} disabled={syncing}>{syncing ? t('res.checking') : t('res.checkPaypal')}</button>
+                <span className="muted">{syncMsg}</span>
+              </div>
+            </section>
+          )}
+
+          {(paidList.length > 0 || lostCount > 0) && (
+            <section className="card">
+              <div className="sec-head"><h3>{t('res.record')}</h3></div>
+              <p className="muted" style={{ margin: '0 0 8px' }}>{t('res.recordSum', { p: paidList.length, usd: `$${received.toFixed(2)}`, w: cnt('won'), l: lostCount })}</p>
+              <ul className="mini">
+                {paidList.map((r) => (
+                  <li key={r.opportunity.id} onClick={onRow(() => setSelected(r))} style={{ gridTemplateColumns: 'minmax(0, 1fr) auto' }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div className="t">{r.opportunity.name}</div>
+                      <div className="s">{t('st.paid')}{r.opportunity.observed.last_payment_at ? ` / ${r.opportunity.observed.last_payment_at.slice(0, 10)}` : ''}</div>
+                    </div>
+                    <span className="usd">{r.opportunity.observed.total_received_usd > 0 ? `$${r.opportunity.observed.total_received_usd.toFixed(2)}` : '—'}</span>
                   </li>
                 ))}
               </ul>

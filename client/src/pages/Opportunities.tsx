@@ -5,7 +5,7 @@ import type { ExecutionStatus } from '@shared/types';
 import { api, type Routed } from '../api';
 import OpportunityPanel from '../components/OpportunityPanel';
 import Stars from '../components/Stars';
-import { t, type Key } from '../i18n';
+import { t, uiLang, type Key } from '../i18n';
 import { daysColor, daysLabel, daysLeft } from '../dates';
 import { catColor, catLabel } from '../cats';
 import { Count } from './Dashboard';
@@ -25,7 +25,7 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
   const [sort, setSort] = useState<'score' | 'deadline' | 'hourly' | 'ease' | 'payoff'>('score');
 
   useEffect(() => {
-    api.profile().then((p) => setLang(p.language || 'ja')).catch(() => {});
+    api.profile().then((p) => setLang(uiLang(p.language))).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -195,6 +195,7 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
             {w > 0 && <span className="pill bad">⚠ {w}</span>}
             {c > 0 && <span className="pill warn">△ {c}</span>}
             {r.warnings.includes('eligibility_unverified') && <span className="pill bad">{t('warn.eligibility_unverified')}</span>}
+            {r.warnings.filter((w) => w.startsWith('skill_gap:')).map((w) => <span key={w} className="pill warn">{t('warn.skill_gap', { s: w.slice(10) })}</span>)}
             {o.observed.total_received_usd > 0 && <span className="pill ok">PayPal ${o.observed.total_received_usd.toFixed(2)}</span>}
           </div>
           {!r.eligible && <p className="why">{r.exclusions.map((e) => e.detail).join(' / ')}</p>}

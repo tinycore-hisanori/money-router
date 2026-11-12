@@ -22,7 +22,8 @@ async function j<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, { ...init, headers: { ...headers, ...(init?.headers as any) } });
   if (!res.ok) {
     let body: any = null;
-    try { body = await res.json(); } catch { body = { error: await res.text() }; }
+    const raw = await res.text();
+    try { body = JSON.parse(raw); } catch { body = { error: raw || res.statusText }; }
     // Shared-state writes need an access key on the hosted demo: tell the shell so it can show how to unlock.
     if (res.status === 403 && body?.error === 'key_required') window.dispatchEvent(new Event('mr-need-key'));
     throw new ApiError(res.status, body);

@@ -4,17 +4,17 @@ import { llmAvailable, structured, text } from './llm.js';
 import type { Opportunity, Payment, UserProfile, WeeklyPlan } from '../../shared/types.js';
 
 /** Match incoming PayPal payments to opportunities. Falls back to heuristics without an API key. */
-export async function matchPayments(payments: Payment[], opportunities: Opportunity[]): Promise<Payment[]> {
+export async function matchPayments(payments: Payment[], opportunities: Opportunity[], awaiting: Set<string> = new Set()): Promise<Payment[]> {
   const pending = payments.filter((p) => p.match_status === 'unmatched');
   if (!pending.length) return payments;
 
   if (!llmAvailable()) return payments.map((p) => (p.match_status === 'unmatched' ? heuristicMatch(p, opportunities) : p));
 
-  const catalog = opportunities.map((o) => ({ id: o.id, name: o.name, provider: o.provider, url: o.url }));
+  const catalog = opportunities.map((o) => ({ id: o.id, name: o.name, provider: o.provider, url: o.url, ...(awaiting.has(o.id) ? { awaiting_payout: true } : {}) }));
   const result = await structured<{ matches: { transaction_id: string; opportunity_id: string | null; confidence: number; reason: string }[] }>({
     model: config.models.match,
     system:
-      'You reconcile incoming PayPal payments with a catalog of earning platforms. Payer names are often legal entities or payment processors that differ from the brand (e.g. "Maxflow Technologies B.V." pays for CrazyGames). Use payer name, email domain, note and subject. Return null when nothing fits. Confidence is 0-1.',
+      'You reconcile incoming PayPal payments with a catalog of earning platforms. Payer names are often legal entities or payment processors that differ from the brand (e.g. "Maxflow Technologies B.V." pays for CrazyGames). Use payer name, email domain, note and subject. Entries with awaiting_payout=true are prizes the user has won or work they submitted and are waiting to be paid for: prefer them when the payer plausibly fits. Return null when nothing fits. Confidence is 0-1.',
     user: JSON.stringify({ payments: pending.map(({ transaction_id, amount, currency, payer_name, payer_email, note, subject }) => ({ transaction_id, amount, currency, payer_name, payer_email, note, subject })), catalog }),
     toolName: 'report_matches',
     description: 'Report the best opportunity match for each payment.',
