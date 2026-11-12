@@ -7,7 +7,7 @@
 > [PayPal AI Hackathon](https://paypalaihackathon.devpost.com/)（Devpost、2026）応募作。
 
 - **ライブデモ:** https://money-router.kitakuarcade.com （キーなしは閲覧のみ。審査員には Devpost のテスト手順で個人キーを渡す）
-- **デモ動画（2:40）:** Devpost の応募ページを参照
+- **デモ動画（2:40）:** https://youtu.be/ojJBASD8UA4
 - **状態:** v1.0 稼働中 — 62の収集元を Claude で巡回、PayPal サンドボックスの Transaction Search / Invoicing / Payouts が端から端までつながっている
 
 ![Money Router](docs/images/thumbnail.png)

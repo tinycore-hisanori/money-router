@@ -7,7 +7,7 @@
 > Entry for the [PayPal AI Hackathon](https://paypalaihackathon.devpost.com/) (Devpost, 2026).
 
 - **Live demo:** https://money-router.kitakuarcade.com (view-only without a key; judges get personal keys in the Devpost testing instructions)
-- **Demo video (2:40):** see the Devpost entry
+- **Demo video (2:40):** https://youtu.be/ojJBASD8UA4
 - **Status:** v1.0, running live — 62 sources crawled with Claude, PayPal sandbox Transaction Search / Invoicing / Payouts wired end to end
 
 ![Money Router](docs/images/thumbnail.png)

@@ -13,7 +13,7 @@ An AI radar for PayPal-payable work, worldwide
 ## Links
 - Live demo: https://money-router.kitakuarcade.com
 - Code (MIT): https://github.com/tinycore-hisanori/money-router
-- Video: <YouTube URL>
+- Video: https://youtu.be/ojJBASD8UA4
 
 ---
 
