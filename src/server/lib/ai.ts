@@ -54,10 +54,18 @@ export async function matchPayments(payments: Payment[], opportunities: Opportun
 }
 
 function heuristicMatch(p: Payment, opportunities: Opportunity[]): Payment {
-  const hay = `${p.payer_name} ${p.payer_email} ${p.note} ${p.subject}`.toLowerCase();
-  const hit = opportunities.find((o) => hay.includes(o.provider.toLowerCase()) || hay.includes(o.name.toLowerCase()));
-  if (!hit) return p;
-  return { ...p, matched_opportunity_id: hit.id, match_confidence: 0.6, match_reason: 'keyword match (no LLM)', match_status: 'unmatched' };
+  const hay = ` ${p.payer_name} ${p.payer_email} ${p.note} ${p.subject} `.toLowerCase();
+  const esc = (s: string) => s.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // Whole-word provider match ("Rev" must not match "revenue"); longest provider name wins.
+  const cands = opportunities
+    .filter((o) => o.provider && new RegExp(`(^|[^a-z0-9])${esc(o.provider)}([^a-z0-9]|$)`).test(hay))
+    .sort((a, b) => b.provider.length - a.provider.length);
+  if (!cands.length) return p;
+  const provider = cands[0].provider;
+  const same = cands.filter((o) => o.provider === provider);
+  const hit = same.find((o) => o.status !== 'closed') ?? same[0];
+  const sure = same.length === 1;
+  return { ...p, matched_opportunity_id: hit.id, match_confidence: sure ? 0.75 : 0.6, match_reason: `provider "${provider}" named in the payment (keyword match, no LLM)`, match_status: sure ? 'auto' : 'unmatched' };
 }
 
 /** Fill skills / hours from free text. */
