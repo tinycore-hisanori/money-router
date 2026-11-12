@@ -33,11 +33,14 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
   const [busy, setBusy] = useState(false);
   const [lang, setLangState] = useState('ja');
   const [selected, setSelected] = useState<Routed | null>(null);
+  const [memo, setMemo] = useState('');
+  const [memoState, setMemoState] = useState('');
 
   const load = () => { api.plan().then(setPlan); api.route().then(setRouted); };
   useEffect(() => {
     load();
     api.profile().then((p) => setLangState(p.language || 'ja')).catch(() => {});
+    api.getNote('_board').then((n) => setMemo(n?.note ?? '')).catch(() => {});
   }, [tick]);
 
   const byId = (id: string) => routed.find((r) => r.opportunity.id === id);
@@ -76,6 +79,21 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
     .sort((a, b) => a.opportunity.deadline!.localeCompare(b.opportunity.deadline!))
     .slice(0, 5);
 
+  const saveMemo = async () => {
+    try { await api.setNote('_board', { idea: '', note: memo }); setMemoState(t('note.saved')); }
+    catch (e: any) { setMemoState(e?.status === 403 ? t('note.adminOnly') : String(e?.message ?? e)); }
+  };
+  const saveIdea = async (r: Routed, idea: string) => {
+    if (idea === (r.note?.idea ?? '')) return;
+    try { await api.setNote(r.opportunity.id, { idea, note: r.note?.note ?? '' }); load(); }
+    catch (e: any) { setMemoState(e?.status === 403 ? t('note.adminOnly') : String(e?.message ?? e)); }
+  };
+  const cnt = (k: string) => routed.filter((r) => r.execution === k).length;
+  const nextDeadline = mine.find((r) => { const n = daysLeft(r.opportunity.deadline); return n != null && n >= 0; });
+  const nextResult = results
+    .filter((r) => { const n = daysLeft(r.opportunity.result_date); return n != null && n >= 0; })
+    .sort((a, b) => a.opportunity.result_date!.localeCompare(b.opportunity.result_date!))[0];
+  const inDays = (iso?: string | null) => { const n = daysLeft(iso); return n === 0 ? t('board.today') : t('board.inDays', { n: n ?? 0 }); };
   const hasMine = mine.length > 0;
   const budget = plan?.hours_budget ?? 0;
   const over = hasMine && mineHours > budget;
@@ -113,7 +131,12 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
             {r?.warnings?.includes('eligibility_unverified') && <span className="pill bad">{t('warn.eligibility_unverified')}</span>}
             <Stars stars={i.stars ?? r?.stars} />
           </div>
-          {picked && r?.note?.idea && <p className="stop-step"><b>{t('note.idea')}</b>{r.note.idea}</p>}
+          {picked && r && (
+            <label className="stop-idea" onClick={(e) => e.stopPropagation()}>
+              <b>{t('note.idea')}</b>
+              <input className="input" defaultValue={r.note?.idea ?? ''} key={r.note?.updated_at ?? 'new'} placeholder={t('board.ideaPh')} onBlur={(e) => saveIdea(r, e.target.value.trim())} onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }} />
+            </label>
+          )}
           {!picked && loc?.summary && <p className="stop-sum">{loc.summary}</p>}
           <p className="stop-step"><b>{t('dash.firstStep')}</b>{loc?.how_to?.[0] ?? i.first_step}</p>
           {fs.length > 0 && (
@@ -122,6 +145,7 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
             </p>
           )}
           <div className="stop-act" onClick={(e) => e.stopPropagation()}>
+            {picked && <button className="ghost" onClick={() => setStatus(i.opportunity_id, 'submitted')}>{t('board.done')}</button>}
             {picked ? (
               <select className="input" value={r?.execution ?? ''} onChange={(e) => setStatus(i.opportunity_id, e.target.value)} aria-label={t('col.status')}>
                 <option value="">{t('st.' as Key)}</option>
@@ -154,12 +178,19 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
       <section className="hero">
         <h2>{hero[0]}<span className="usd">{usd(heroUsd)}</span>{hero[1]}</h2>
         <div className="hero-meta">
-          <span>{t('dash.mine')} <b>{mine.length}</b></span>
+          <span><b>{mine.length}</b> {t('board.active')}</span>
+          <span><b>{cnt('submitted') + cnt('won') + cnt('lost') + cnt('paid')}</b> {t('board.joined')}（{t('board.joinedSub', { w: cnt('won'), d: cnt('submitted'), l: cnt('lost') })}）</span>
+          {nextDeadline && <span>{t('board.nextDeadline')} <b style={{ color: 'var(--danger)' }}>{inDays(nextDeadline.opportunity.deadline)}</b> {nextDeadline.opportunity.name}</span>}
+          {nextResult && <span>{t('board.nextResult')} <b>{inDays(nextResult.opportunity.result_date)}</b> {nextResult.opportunity.name}</span>}
           <span>{t('dash.specShort')} <b>{usd(hasMine ? mineSpec : plan?.speculative_usd ?? 0)}</b></span>
-          <span>{t('dash.eligible')} <b>{eligible.length}</b> {t('dash.ofOpps', { n: routed.length })}</span>
           <span>{t('dash.paypalVerified')} <b>${observed.toFixed(2)}</b></span>
         </div>
         {plan?.summary && <p className="hero-note">{plan.summary}</p>}
+      </section>
+
+      <section className="card boardmemo">
+        <div className="sec-head" style={{ marginBottom: 6 }}><h3>{t('board.memo')}</h3><span className="spacer" /><span className="muted">{memoState}</span></div>
+        <textarea value={memo} onChange={(e) => { setMemo(e.target.value); setMemoState(''); }} onBlur={saveMemo} rows={2} placeholder={t('board.memoPh')} aria-label={t('board.memo')} />
       </section>
 
       <div className="dash">

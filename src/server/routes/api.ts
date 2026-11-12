@@ -46,6 +46,7 @@ api.get('/route', async (c) => {
 });
 
 // ---- per-opportunity memo (idea = what to submit, note = free text)
+api.get('/notes/:id', async (c) => c.json((await store.getNotes())[c.req.param('id')] ?? null));
 api.put('/notes/:id', async (c) => {
   if (!canCurate(c)) return c.json({ error: 'admin_only' }, 403);
   const id = c.req.param('id');

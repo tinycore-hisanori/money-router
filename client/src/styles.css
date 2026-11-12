@@ -246,3 +246,11 @@ table { border-collapse: collapse; }
 .budget-top b { color: var(--text); font-size: 15px; }
 .stop-act { margin-top: 2px; }
 .stop-act .input, .stop-act button { padding: 5px 10px; font-size: 13px; }
+
+/* board parity with the prize-hunter ledger */
+.boardmemo textarea { width: 100%; display: block; border: 1px solid transparent; border-radius: 9px; padding: 8px 10px; background: var(--panel-2); resize: vertical; }
+.boardmemo textarea:focus { border-color: var(--line); }
+.stop-idea { display: flex; gap: 8px; align-items: center; font-size: 13.5px; }
+.stop-idea b { white-space: nowrap; }
+.stop-idea .input { flex: 1; min-width: 0; padding: 4px 8px; border-style: dashed; background: transparent; }
+.stop-act { display: flex; gap: 8px; flex-wrap: wrap; }

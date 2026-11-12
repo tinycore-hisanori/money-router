@@ -45,6 +45,7 @@ export const api = {
   saveProfile: (p: Partial<UserProfile> & { enrich?: boolean }) => j<UserProfile>('/api/profile', { method: 'PUT', body: JSON.stringify(p) }),
   setExecution: (id: string, status: ExecutionStatus | null) =>
     j('/api/execution/' + encodeURIComponent(id), { method: 'PUT', body: JSON.stringify({ status }) }),
+  getNote: (id: string) => j<OpportunityNote | null>('/api/notes/' + encodeURIComponent(id)),
   setNote: (id: string, note: Partial<OpportunityNote>) =>
     j<OpportunityNote | null>('/api/notes/' + encodeURIComponent(id), { method: 'PUT', body: JSON.stringify(note) }),
   payments: () => j<Payment[]>('/api/payments'),
