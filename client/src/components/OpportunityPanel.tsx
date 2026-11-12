@@ -44,9 +44,15 @@ export default function OpportunityPanel({
     }
   };
   const setStatus = async (v: ExecutionStatus | '') => {
+    const before = exec;
     setExec(v);
-    await api.setExecution(routed.opportunity.id, (v || null) as ExecutionStatus | null);
-    onChange?.();
+    try {
+      await api.setExecution(routed.opportunity.id, (v || null) as ExecutionStatus | null);
+      onChange?.();
+    } catch (e: any) {
+      setExec(before); // not saved: keep showing the real status and say why
+      setNoteMsg(e?.status === 403 ? t('note.adminOnly') : String(e?.message ?? e));
+    }
   };
   const [brief, setBrief] = useState<LocalizedSummary | null>(null);
   const [busy, setBusy] = useState(false);
@@ -176,6 +182,7 @@ export default function OpportunityPanel({
               {EXEC.map((s) => <option key={s} value={s}>{t(`st.${s}` as any)}</option>)}
             </select>
           </label>
+          <span className="muted" style={{ color: 'var(--danger)' }}>{noteMsg && noteMsg !== t('note.saved') ? noteMsg : ''}</span>
           <span className="spacer" />
           <a href={o.url} target="_blank" rel="noreferrer"><button className="primary">{t('panel.open')}</button></a>
         </div>

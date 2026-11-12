@@ -35,6 +35,7 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
   const [selected, setSelected] = useState<Routed | null>(null);
   const [memo, setMemo] = useState('');
   const [memoState, setMemoState] = useState('');
+  const [undo, setUndo] = useState<{ id: string; name: string; prev: string; next: string } | null>(null);
 
   const load = () => { api.plan().then(setPlan); api.route().then(setRouted); };
   useEffect(() => {
@@ -45,10 +46,19 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
 
   const byId = (id: string) => routed.find((r) => r.opportunity.id === id);
   const usd = (n: number) => `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-  const setStatus = async (id: string, v: string) => {
+  const setStatus = async (id: string, v: string, remember = true) => {
+    const cur = routed.find((r) => r.opportunity.id === id);
+    const before = routed;
     setRouted((rs) => rs.map((r) => (r.opportunity.id === id ? { ...r, execution: (v || null) as ExecutionStatus | null } : r)));
-    await api.setExecution(id, (v || null) as ExecutionStatus | null);
-    load();
+    try {
+      await api.setExecution(id, (v || null) as ExecutionStatus | null);
+      // Every saved status change can be undone from the bar at the top of the board.
+      if (remember && cur) setUndo({ id, name: cur.opportunity.name, prev: cur.execution ?? '', next: v });
+      load();
+    } catch {
+      setRouted(before); // the server refused (e.g. no access key): show the real state, never a change that was not saved
+      setUndo(null);
+    }
   };
 
   /** Plan numbers for one opportunity: from the weekly plan when it is in it, else from its own estimate. */
@@ -188,6 +198,14 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
         {plan?.summary && <p className="hero-note">{plan.summary}</p>}
       </section>
 
+      {undo && (
+        <div className="undobar" role="status">
+          <span>{t('board.undoBar', { name: undo.name, st: t(`st.${undo.next}` as Key) })}</span>
+          <button className="primary" onClick={() => { setStatus(undo.id, undo.prev, false); setUndo(null); }}>{t('board.undoBtn')}</button>
+          <button className="icon-btn" onClick={() => setUndo(null)} aria-label="close">✕</button>
+        </div>
+      )}
+
       <section className="card boardmemo">
         <div className="sec-head" style={{ marginBottom: 6 }}><h3>{t('board.memo')}</h3><span className="spacer" /><span className="muted">{memoState}</span></div>
         <textarea value={memo} onChange={(e) => { setMemo(e.target.value); setMemoState(''); }} onBlur={saveMemo} rows={2} placeholder={t('board.memoPh')} aria-label={t('board.memo')} />
@@ -256,13 +274,19 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
               <div className="sec-head"><h3>{t('dash.results')}</h3></div>
               <ul className="mini">
                 {results.map((r) => (
-                  <li key={r.opportunity.id} onClick={() => setSelected(r)}>
+                  <li key={r.opportunity.id} onClick={() => setSelected(r)} style={{ gridTemplateColumns: '58px minmax(0, 1fr)' }}>
                     <Count iso={r.opportunity.result_date} unit={t('result.on')} />
                     <div style={{ minWidth: 0 }}>
                       <div className="t">{r.opportunity.name}</div>
                       <div className="s">{r.note?.idea || r.opportunity.result_note || r.opportunity.result_date || t('result.wait')}</div>
+                      <div className="stop-act" style={{ marginTop: 6 }} onClick={(e) => e.stopPropagation()}>
+                        <button className="ghost" onClick={() => setStatus(r.opportunity.id, 'active')}>{t('board.undo')}</button>
+                        <select className="input" value={r.execution ?? ''} onChange={(e) => setStatus(r.opportunity.id, e.target.value)} aria-label={t('col.status')}>
+                          <option value="">{t('st.' as Key)}</option>
+                          {STATUSES.map((x) => <option key={x} value={x}>{t(`st.${x}` as Key)}</option>)}
+                        </select>
+                      </div>
                     </div>
-                    <span className="usd" style={{ color: 'var(--muted)' }}>{usd(r.opportunity.reward_estimate_usd)}</span>
                   </li>
                 ))}
               </ul>

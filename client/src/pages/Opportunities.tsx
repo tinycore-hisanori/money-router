@@ -171,8 +171,10 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
   };
 
   const setStatus = async (id: string, v: string) => {
+    const before = rows;
     setRows((rs) => rs.map((r) => (r.opportunity.id === id ? { ...r, execution: (v || null) as ExecutionStatus | null } : r)));
-    await api.setExecution(id, (v || null) as ExecutionStatus | null);
+    try { await api.setExecution(id, (v || null) as ExecutionStatus | null); }
+    catch { setRows(before); } // not saved (e.g. no access key): show the real state
   };
 
   const row = (r: Routed) => {
