@@ -184,7 +184,7 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
     const c = fs.filter((f) => f.severity === 'caution').length;
     const where = o.countries_allowed.length ? o.countries_allowed.slice(0, 4).join(' ') + (o.countries_allowed.length > 4 ? ' …' : '') : o.worldwide_stated ? t('opp.worldwide') : t('opp.whereUnknown');
     return (
-      <div className={`orow ${r.eligible ? '' : 'out'}`} key={o.id} style={{ ['--c' as any]: catColor(o.category) }} onClick={() => setSelected(r)}>
+      <div className={`orow ${r.eligible ? '' : 'out'}`} key={o.id} style={{ ['--c' as any]: catColor(o.category) }} onClick={(e) => { if (!(e.target as HTMLElement).closest('button, select, input, a')) setSelected(r); }}>
         <div className="orow-bar" />
         <div className="orow-main">
           <h4>{o.name}</h4>
@@ -206,7 +206,7 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
           <span>{t('panel.reward')} ${o.reward_estimate_usd.toLocaleString()}</span>
         </div>
         <div className="orow-count">{o.deadline ? <Count iso={o.deadline} /> : <span className="muted">—</span>}</div>
-        <div className="orow-act" onClick={(e) => e.stopPropagation()}>
+        <div className="orow-act">
           {r.execution ? (
             <select className="input" value={r.execution} onChange={(e) => setStatus(o.id, e.target.value)} aria-label={t('col.status')}>
               <option value="">{t('st.' as Key)}</option>

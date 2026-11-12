@@ -20,6 +20,12 @@ export function Count({ iso, unit }: { iso?: string | null; unit?: string }) {
   );
 }
 
+/** Run fn for a click on a row, except when the click landed on a control inside it (button, select, input…). */
+const onRow = (fn: () => void) => (e: React.MouseEvent) => {
+  if ((e.target as HTMLElement).closest('button, select, input, textarea, a, option')) return;
+  fn();
+};
+
 const PICKED: ExecutionStatus[] = ['active', 'todo', 'applied'];
 const STATUSES: ExecutionStatus[] = ['todo', 'applied', 'active', 'submitted', 'paid', 'won', 'lost', 'skipped'];
 
@@ -125,7 +131,7 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
     const n = daysLeft(o?.deadline);
     const cert = r?.effective_certainty ?? i.certainty;
     return (
-      <li className="stop" key={i.opportunity_id} style={{ ['--c' as any]: catColor(o?.category) }} onClick={() => r && setSelected(r)} title={t('dash.clickHint')}>
+      <li className="stop" key={i.opportunity_id} style={{ ['--c' as any]: catColor(o?.category) }} onClick={onRow(() => r && setSelected(r))} title={t('dash.clickHint')}>
         <div className="stop-time">{i.hours}h</div>
         <div className="stop-rail" />
         <div className="stop-body">
@@ -142,10 +148,10 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
             <Stars stars={i.stars ?? r?.stars} />
           </div>
           {picked && r && (
-            <label className="stop-idea" onClick={(e) => e.stopPropagation()}>
+            <div className="stop-idea">
               <b>{t('note.idea')}</b>
               <input className="input" defaultValue={r.note?.idea ?? ''} key={r.note?.updated_at ?? 'new'} placeholder={t('board.ideaPh')} onBlur={(e) => saveIdea(r, e.target.value.trim())} onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }} />
-            </label>
+            </div>
           )}
           {!picked && loc?.summary && <p className="stop-sum">{loc.summary}</p>}
           <p className="stop-step"><b>{t('dash.firstStep')}</b>{loc?.how_to?.[0] ?? i.first_step}</p>
@@ -154,7 +160,7 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
               {fs.map((f, k) => `${f.severity === 'warning' ? '⚠' : '△'} ${loc?.findings?.[k] ?? f.message}`).join('　')}
             </p>
           )}
-          <div className="stop-act" onClick={(e) => e.stopPropagation()}>
+          <div className="stop-act">
             {picked && <button className="ghost" onClick={() => setStatus(i.opportunity_id, 'submitted')}>{t('board.done')}</button>}
             {picked ? (
               <select className="input" value={r?.execution ?? ''} onChange={(e) => setStatus(i.opportunity_id, e.target.value)} aria-label={t('col.status')}>
@@ -274,12 +280,12 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
               <div className="sec-head"><h3>{t('dash.results')}</h3></div>
               <ul className="mini">
                 {results.map((r) => (
-                  <li key={r.opportunity.id} onClick={() => setSelected(r)} style={{ gridTemplateColumns: '58px minmax(0, 1fr)' }}>
+                  <li key={r.opportunity.id} onClick={onRow(() => setSelected(r))} style={{ gridTemplateColumns: '58px minmax(0, 1fr)' }}>
                     <Count iso={r.opportunity.result_date} unit={t('result.on')} />
                     <div style={{ minWidth: 0 }}>
                       <div className="t">{r.opportunity.name}</div>
                       <div className="s">{r.note?.idea || r.opportunity.result_note || r.opportunity.result_date || t('result.wait')}</div>
-                      <div className="stop-act" style={{ marginTop: 6 }} onClick={(e) => e.stopPropagation()}>
+                      <div className="stop-act" style={{ marginTop: 6 }}>
                         <button className="ghost" onClick={() => setStatus(r.opportunity.id, 'active')}>{t('board.undo')}</button>
                         <select className="input" value={r.execution ?? ''} onChange={(e) => setStatus(r.opportunity.id, e.target.value)} aria-label={t('col.status')}>
                           <option value="">{t('st.' as Key)}</option>
@@ -300,13 +306,13 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
                 {suggestions.slice(0, 8).map((i) => {
                   const r = byId(i.opportunity_id); const o = r?.opportunity;
                   return (
-                    <li key={i.opportunity_id} onClick={() => r && setSelected(r)} style={{ gridTemplateColumns: 'minmax(0, 1fr) auto auto' }}>
+                    <li key={i.opportunity_id} onClick={onRow(() => r && setSelected(r))} style={{ gridTemplateColumns: 'minmax(0, 1fr) auto auto' }}>
                       <div style={{ minWidth: 0 }}>
                         <div className="t">{i.name}</div>
                         <div className="s"><span className="cat" style={{ ['--c' as any]: catColor(o?.category) }}>{catLabel(o?.category)}</span>　{i.hours}h　{t(`cert.${r?.effective_certainty ?? i.certainty}` as Key)}</div>
                       </div>
                       <span className="usd">{usd(i.expected_usd)}</span>
-                      <button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={(e) => { e.stopPropagation(); setStatus(i.opportunity_id, 'todo'); }}>{t('opp.pick')}</button>
+                      <button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={() => { setStatus(i.opportunity_id, 'todo'); }}>{t('opp.pick')}</button>
                     </li>
                   );
                 })}
@@ -319,13 +325,13 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
             {!closing.length && <p className="muted" style={{ margin: 0 }}>{t('dash.noDeadlines')}</p>}
             <ul className="mini">
               {closing.map((r) => (
-                <li key={r.opportunity.id} onClick={() => setSelected(r)}>
+                <li key={r.opportunity.id} onClick={onRow(() => setSelected(r))}>
                   <Count iso={r.opportunity.deadline} />
                   <div style={{ minWidth: 0 }}>
                     <div className="t">{r.opportunity.name}</div>
                     <div className="s">{r.opportunity.deadline}　{t('panel.reward')} {usd(r.opportunity.reward_estimate_usd)}</div>
                   </div>
-                  <button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={(e) => { e.stopPropagation(); setStatus(r.opportunity.id, 'todo'); }}>{t('opp.pick')}</button>
+                  <button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={() => { setStatus(r.opportunity.id, 'todo'); }}>{t('opp.pick')}</button>
                 </li>
               ))}
             </ul>
@@ -338,13 +344,13 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
                 {plan.backlog.slice(0, 8).map((i) => {
                   const r = byId(i.opportunity_id); const o = r?.opportunity;
                   return (
-                    <li key={i.opportunity_id} onClick={() => r && setSelected(r)} style={{ gridTemplateColumns: 'minmax(0, 1fr) auto auto' }}>
+                    <li key={i.opportunity_id} onClick={onRow(() => r && setSelected(r))} style={{ gridTemplateColumns: 'minmax(0, 1fr) auto auto' }}>
                       <div style={{ minWidth: 0 }}>
                         <div className="t">{i.name}</div>
                         <div className="s"><span className="cat" style={{ ['--c' as any]: catColor(o?.category) }}>{catLabel(o?.category)}</span>　{i.hours}h</div>
                       </div>
                       <span className="usd">{usd(i.expected_usd)}</span>
-                      <button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={(e) => { e.stopPropagation(); setStatus(i.opportunity_id, 'todo'); }}>{t('opp.pick')}</button>
+                      <button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={() => { setStatus(i.opportunity_id, 'todo'); }}>{t('opp.pick')}</button>
                     </li>
                   );
                 })}
