@@ -5,7 +5,7 @@ import { enrichProfile, explainPlan, matchPayments } from '../lib/ai.js';
 import { createInvoiceDraft, getInvoice, listIncomingTransactions, paypalAvailable, sendInvoice } from '../lib/paypal.js';
 import { llmAvailable } from '../lib/llm.js';
 import { config } from '../lib/config.js';
-import { canCurate, consume, isAdmin, remaining, tierOf } from '../lib/guard.js';
+import { canCurate, canWrite, consume, isAdmin, remaining, tierOf } from '../lib/guard.js';
 import { getJob, runningJobs, startJob } from '../lib/jobs.js';
 import VERSION from '../../shared/version.json' with { type: 'json' };
 import type { ExecutionStatus, Opportunity, OpportunityNote, Payment, UserProfile } from '../../shared/types.js';
@@ -25,6 +25,7 @@ api.get('/status', async (c) => {
     capabilities: { llm: llmAvailable(), paypal: paypalAvailable() },
     admin: isAdmin(c),
     tier: tierOf(c),
+    can_write: canWrite(c),
     demo: { discovery: await remaining(c, 'discovery'), briefs: await remaining(c, 'briefs'), crawls: await remaining(c, 'crawls') },
     models: config.models,
     audit_schedule: config.auditSchedule,
@@ -48,7 +49,7 @@ api.get('/route', async (c) => {
 // ---- per-opportunity memo (idea = what to submit, note = free text)
 api.get('/notes/:id', async (c) => c.json((await store.getNotes())[c.req.param('id')] ?? null));
 api.put('/notes/:id', async (c) => {
-  if (!canCurate(c)) return c.json({ error: 'admin_only' }, 403);
+  if (!canWrite(c)) return c.json({ error: 'key_required' }, 403);
   const id = c.req.param('id');
   const body = (await c.req.json()) as Partial<OpportunityNote>;
   const notes = await store.getNotes();
@@ -71,6 +72,7 @@ api.get('/plan', async (c) => {
 // ---- profile
 api.get('/profile', async (c) => c.json(await store.getProfile()));
 api.put('/profile', async (c) => {
+  if (!canWrite(c)) return c.json({ error: 'key_required' }, 403);
   const body = (await c.req.json()) as Partial<UserProfile> & { enrich?: boolean };
   const current = await store.getProfile();
   let next: UserProfile = {
@@ -88,6 +90,7 @@ api.put('/profile', async (c) => {
 
 // ---- execution status per opportunity
 api.put('/execution/:id', async (c) => {
+  if (!canWrite(c)) return c.json({ error: 'key_required' }, 403);
   const id = c.req.param('id');
   const { status } = (await c.req.json()) as { status: ExecutionStatus | null };
   const exec = await store.getExecution();
@@ -99,6 +102,7 @@ api.put('/execution/:id', async (c) => {
 
 // ---- PayPal: sync incoming payments and match to opportunities
 api.post('/paypal/sync', async (c) => {
+  if (!canWrite(c)) return c.json({ error: 'key_required' }, 403);
   const days = Number(c.req.query('days') ?? 30);
   const [existing, list] = await Promise.all([store.getPayments(), store.getOpportunities()]);
   const known = new Map(existing.map((p) => [p.transaction_id, p]));
@@ -114,6 +118,7 @@ api.get('/payments', async (c) => c.json(await store.getPayments()));
 
 // confirm / reject / set a match manually
 api.put('/payments/:tx', async (c) => {
+  if (!canWrite(c)) return c.json({ error: 'key_required' }, 403);
   const tx = c.req.param('tx');
   const { opportunity_id, status } = (await c.req.json()) as { opportunity_id?: string | null; status: 'confirmed' | 'rejected' };
   const [payments, list] = await Promise.all([store.getPayments(), store.getOpportunities()]);
@@ -129,11 +134,13 @@ api.put('/payments/:tx', async (c) => {
 
 // ---- PayPal Invoicing
 api.post('/paypal/invoice', async (c) => {
+  if (!canWrite(c)) return c.json({ error: 'key_required' }, 403);
   const body = await c.req.json();
   const draft = await createInvoiceDraft(body);
   return c.json(draft);
 });
 api.post('/paypal/invoice/:id/send', async (c) => {
+  if (!canWrite(c)) return c.json({ error: 'key_required' }, 403);
   await sendInvoice(c.req.param('id'));
   return c.json({ ok: true });
 });
@@ -166,6 +173,7 @@ function applyObserved(list: Opportunity[], payments: Payment[]): Opportunity[] 
 
 // ---- manual crawl trigger (protected by CRAWL_TOKEN when set)
 api.post('/crawl', async (c) => {
+  if (!canWrite(c)) return c.json({ error: 'key_required' }, 403);
   if (config.crawler.token && c.req.query('token') !== config.crawler.token && !isAdmin(c)) return c.json({ error: 'forbidden' }, 403);
   const denied = await consume(c, 'crawls');
   if (denied) return c.json(denied, 429);
@@ -205,6 +213,7 @@ api.post('/discover', async (c) => {
   return c.json(startJob('discover', () => runDiscovery({ maxQueries: max })), 202);
 });
 api.post('/radar', async (c) => {
+  if (!canWrite(c)) return c.json({ error: 'key_required' }, 403);
   const denied = await consume(c, 'discovery');
   if (denied) return c.json(denied, 429);
   const { runRadar } = await import('../../crawler/radar.js');

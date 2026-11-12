@@ -133,8 +133,9 @@ The operator does, so costly actions are guarded:
 
 - **Admin key** (`ADMIN_TOKEN`): entered once in the UI (🔑 in the header) — unlimited Discovery, crawls and briefs; may approve/reject discovered sources.
 - **Judge key** (`JUDGE_TOKEN`, shared privately with hackathon judges): its own daily pool (`JUDGE_DAILY_DISCOVERY=10`, `JUDGE_DAILY_BRIEFS=200`, `JUDGE_DAILY_CRAWLS=5`) and may approve/reject, so the full discover → approve → crawl loop can be exercised.
-- **Public allowance** per day (`DEMO_DAILY_DISCOVERY=3`, `DEMO_DAILY_BRIEFS=50`, `DEMO_DAILY_CRAWLS=1`): anyone can try a few times; after that the UI points to the demo video. Worst-case cost is bounded by these numbers.
-- Routing, plans, the opportunity grid and PayPal sync cost nothing to view.
+- **Public (no key) is view-only** on a hosted demo: everyone sees the same data, so changing the profile, picking opportunities, notes, crawling, Event Radar and PayPal sync need a key. Visitors can still browse everything, generate briefs (`DEMO_DAILY_BRIEFS=50`/day) and run AI Discovery (`DEMO_DAILY_DISCOVERY=3`/day; results wait for approval). Worst-case cost is bounded by these numbers.
+- **One-click unlock**: open the demo with `?key=<JUDGE_TOKEN>` — the key is stored in the browser and removed from the address bar.
+- A local install with no keys configured is fully open.
 
 In a product, "AI Discovery" is the natural paid tier (e.g. N runs per month); browsing and routing stay free.
 

@@ -9,6 +9,12 @@ export class ApiError extends Error {
   constructor(public status: number, public body: any) { super(body?.error ?? String(status)); }
 }
 
+try {
+  const u = new URL(window.location.href);
+  const k = u.searchParams.get('key');
+  if (k) { adminToken.set(k); u.searchParams.delete('key'); window.history.replaceState(null, '', u.toString()); }
+} catch { /* ignore */ }
+
 async function j<T>(url: string, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   const tok = adminToken.get();
@@ -17,6 +23,8 @@ async function j<T>(url: string, init?: RequestInit): Promise<T> {
   if (!res.ok) {
     let body: any = null;
     try { body = await res.json(); } catch { body = { error: await res.text() }; }
+    // Shared-state writes need an access key on the hosted demo: tell the shell so it can show how to unlock.
+    if (res.status === 403 && body?.error === 'key_required') window.dispatchEvent(new Event('mr-need-key'));
     throw new ApiError(res.status, body);
   }
   return res.json() as Promise<T>;

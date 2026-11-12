@@ -254,3 +254,5 @@ table { border-collapse: collapse; }
 .stop-idea b { white-space: nowrap; }
 .stop-idea .input { flex: 1; min-width: 0; padding: 4px 8px; border-style: dashed; background: transparent; }
 .stop-act { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.keybar { display: flex; gap: 12px; align-items: center; justify-content: center; padding: 10px 24px; background: var(--accent-2-soft); color: var(--accent-2); font-weight: 500; font-size: 14px; }

@@ -18,6 +18,12 @@ export default function App() {
   const [, setLangTick] = useState(0);
   const [needsProfile, setNeedsProfile] = useState(false);
   const [booted, setBooted] = useState(false);
+  const [needKey, setNeedKey] = useState(false);
+  useEffect(() => {
+    const on = () => setNeedKey(true);
+    window.addEventListener('mr-need-key', on);
+    return () => window.removeEventListener('mr-need-key', on);
+  }, []);
   // Re-fetch whenever the tab regains focus (e.g. after a crawl finished in another terminal).
   useEffect(() => {
     const onVis = () => { if (document.visibilityState === 'visible') refresh(); };
@@ -66,10 +72,11 @@ export default function App() {
               const v = window.prompt(t('guard.keyPrompt'), adminToken.get());
               if (v === null) return;
               adminToken.set(v.trim());
+              setNeedKey(false);
               refresh();
             }}
           >
-            {status?.tier === 'admin' ? `🔑 ${t('guard.admin')}` : status?.tier === 'judge' ? `🔑 ${t('guard.judge')}` : '🔑'}
+            {status?.tier === 'admin' ? `🔑 ${t('guard.admin')}` : status?.tier === 'judge' ? `🔑 ${t('guard.judge')}` : status?.can_write === false ? `🔑 ${t('guard.viewOnly')}` : '🔑'}
           </button>
           <button
             className="icon-btn"
@@ -86,6 +93,12 @@ export default function App() {
           </button>
         </div>
       </header>
+      {needKey && (
+        <div className="keybar" role="alert">
+          <span>{t('guard.needKey')}</span>
+          <button className="icon-btn" onClick={() => setNeedKey(false)} aria-label="close">✕</button>
+        </div>
+      )}
       <main key={`${page}:${tick}`}>
         {page === 'dashboard' && <Dashboard tick={tick} onChange={refresh} onSetup={needsProfile ? () => setPage('profile') : undefined} />}
         {page === 'opportunities' && <Opportunities tick={tick} onChange={refresh} />}

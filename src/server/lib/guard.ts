@@ -30,6 +30,12 @@ export const isAdmin = (c: Context) => tierOf(c) === 'admin';
 /** May change the source registry (approve/reject discoveries). */
 export const canCurate = (c: Context) => tierOf(c) !== 'public';
 
+/**
+ * May change shared state (profile, picks, notes) or run jobs that rewrite the opportunity list.
+ * On a hosted demo every visitor sees the same data, so this needs a key; a local install with no keys configured stays open.
+ */
+export const canWrite = (c: Context) => tierOf(c) !== 'public' || (!config.guards.adminToken && !config.guards.judgeToken);
+
 const limitFor = (tier: Tier, kind: Kind) => (tier === 'judge' ? config.guards.judge[kind] : config.guards.public[kind]);
 
 /** Returns null when allowed (and consumes one unit), or a JSON-able refusal. */
