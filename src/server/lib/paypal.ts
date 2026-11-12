@@ -48,6 +48,11 @@ async function api<T>(method: string, path: string, body?: unknown, headers: Rec
  * Note: sandbox data can lag a few minutes; max window per call is 31 days.
  */
 export async function listIncomingTransactions(days = 30): Promise<Payment[]> {
+  // Offline recordings / tests: replay transactions exported from the sandbox instead of calling PayPal.
+  if (process.env.PAYPAL_FIXTURE) {
+    const { readFile } = await import('node:fs/promises');
+    return JSON.parse(await readFile(process.env.PAYPAL_FIXTURE, 'utf8')) as Payment[];
+  }
   const end = new Date();
   const start = new Date(end.getTime() - Math.min(days, 31) * 86_400_000);
   const qs = new URLSearchParams({

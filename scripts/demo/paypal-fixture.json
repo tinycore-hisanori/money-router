@@ -1,0 +1,6 @@
+[
+ {"transaction_id":"5RX01","amount":142.3,"currency":"USD","date":"2026-11-12T14:30:12Z","payer_name":"Money Router Demo Payer","payer_email":"sb-payer@business.example.com","note":"CrazyGames revenue share - September","subject":"Money Router demo payout","matched_opportunity_id":null,"match_confidence":0,"match_status":"unmatched"},
+ {"transaction_id":"5RX02","amount":48.0,"currency":"USD","date":"2026-11-12T14:30:12Z","payer_name":"Money Router Demo Payer","payer_email":"sb-payer@business.example.com","note":"itch.io payout - game template sales","subject":"Money Router demo payout","matched_opportunity_id":null,"match_confidence":0,"match_status":"unmatched"},
+ {"transaction_id":"5RX03","amount":27.0,"currency":"USD","date":"2026-11-12T14:30:12Z","payer_name":"Money Router Demo Payer","payer_email":"sb-payer@business.example.com","note":"PlaytestCloud - 3 playtests","subject":"Money Router demo payout","matched_opportunity_id":null,"match_confidence":0,"match_status":"unmatched"},
+ {"transaction_id":"5RX04","amount":19.5,"currency":"USD","date":"2026-11-12T14:30:12Z","payer_name":"Money Router Demo Payer","payer_email":"sb-payer@business.example.com","note":"Gumroad weekly payout","subject":"Money Router demo payout","matched_opportunity_id":null,"match_confidence":0,"match_status":"unmatched"}
+]
