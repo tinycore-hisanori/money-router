@@ -14,7 +14,8 @@ const EXEC: (ExecutionStatus | '')[] = ['', 'todo', 'applied', 'active', 'submit
 
 export default function Opportunities({ tick, onChange }: { tick: number; onChange: () => void }) {
   const [rows, setRows] = useState<Routed[]>([]);
-  const [onlyEligible, setOnlyEligible] = useState(true);
+  const [scope, setScope] = useState<'foryou' | 'mine' | 'all'>('foryou');
+  const onlyEligible = scope === 'foryou';
   const [crawling, setCrawling] = useState(false);
   const [selected, setSelected] = useState<Routed | null>(null);
   const [lang, setLang] = useState('ja');
@@ -35,7 +36,7 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
   const data = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const list = rows.filter((r) =>
-      (!onlyEligible || r.eligible) &&
+      (scope === 'all' || (scope === 'mine' ? !!r.execution : r.eligible)) &&
       (!cat || r.opportunity.category === cat) &&
       (!needle || `${r.opportunity.name} ${r.opportunity.provider}`.toLowerCase().includes(needle)));
     const far = (r: Routed) => { const n = daysLeft(r.opportunity.deadline); return n == null || n < 0 ? 1e6 : n; };
@@ -47,7 +48,7 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
       payoff: (a, b) => b.stars.payoff - a.stars.payoff || b.score - a.score,
     };
     return [...list].sort(by[sort]);
-  }, [rows, onlyEligible, q, cat, sort]);
+  }, [rows, scope, q, cat, sort]);
 
   const cols = useMemo<ColDef<Routed>[]>(
     () => [
@@ -169,6 +170,11 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
     }
   };
 
+  const setStatus = async (id: string, v: string) => {
+    setRows((rs) => rs.map((r) => (r.opportunity.id === id ? { ...r, execution: (v || null) as ExecutionStatus | null } : r)));
+    await api.setExecution(id, (v || null) as ExecutionStatus | null);
+  };
+
   const row = (r: Routed) => {
     const o = r.opportunity;
     const fs = o.findings ?? [];
@@ -187,7 +193,6 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
             {w > 0 && <span className="pill bad">⚠ {w}</span>}
             {c > 0 && <span className="pill warn">△ {c}</span>}
             {r.warnings.includes('eligibility_unverified') && <span className="pill bad">{t('warn.eligibility_unverified')}</span>}
-            {r.execution && <span className="pill ok">{t(`st.${r.execution}` as Key)}</span>}
             {o.observed.total_received_usd > 0 && <span className="pill ok">PayPal ${o.observed.total_received_usd.toFixed(2)}</span>}
           </div>
           {!r.eligible && <p className="why">{r.exclusions.map((e) => e.detail).join(' / ')}</p>}
@@ -199,6 +204,16 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
           <span>{t('panel.reward')} ${o.reward_estimate_usd.toLocaleString()}</span>
         </div>
         <div className="orow-count">{o.deadline ? <Count iso={o.deadline} /> : <span className="muted">—</span>}</div>
+        <div className="orow-act" onClick={(e) => e.stopPropagation()}>
+          {r.execution ? (
+            <select className="input" value={r.execution} onChange={(e) => setStatus(o.id, e.target.value)} aria-label={t('col.status')}>
+              <option value="">{t('st.' as Key)}</option>
+              {EXEC.filter(Boolean).map((x) => <option key={x} value={x}>{t(`st.${x}` as Key)}</option>)}
+            </select>
+          ) : (
+            <button className="ghost" onClick={() => setStatus(o.id, 'todo')}>{t('opp.pick')}</button>
+          )}
+        </div>
       </div>
     );
   };
@@ -207,8 +222,9 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
     <div className="grid">
       <div className="filters">
         <div className="seg" role="group">
-          <button aria-pressed={onlyEligible} onClick={() => setOnlyEligible(true)}>{t('opp.forYou')}</button>
-          <button aria-pressed={!onlyEligible} onClick={() => setOnlyEligible(false)}>{t('opp.all')}</button>
+          <button aria-pressed={scope === 'foryou'} onClick={() => setScope('foryou')}>{t('opp.forYou')}</button>
+          <button aria-pressed={scope === 'mine'} onClick={() => setScope('mine')}>{t('opp.mine')} {rows.filter((r) => r.execution).length || ''}</button>
+          <button aria-pressed={scope === 'all'} onClick={() => setScope('all')}>{t('opp.all')}</button>
         </div>
         <input className="input search" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('opp.search')} aria-label={t('opp.search')} />
         <select className="input" value={cat} onChange={(e) => setCat(e.target.value)} aria-label={t('col.category')}>
@@ -228,8 +244,12 @@ export default function Opportunities({ tick, onChange }: { tick: number; onChan
       </div>
       {view === 'list' && (
         <div className="olist">
-          {data.map(row)}
-          {!data.length && <div className="card muted">{t('opp.noResults')}</div>}
+          {scope !== 'mine' && data.map(row)}
+          {scope === 'mine' && (['active', 'todo', 'applied', 'submitted', 'won', 'paid', 'lost', 'skipped'] as ExecutionStatus[]).map((st) => {
+            const g = data.filter((r) => r.execution === st);
+            return g.length ? [<h3 key={st} className="group">{t(`st.${st}` as Key)} <span className="muted">{g.length}</span></h3>, ...g.map(row)] : null;
+          })}
+          {!data.length && <div className="card muted">{scope === 'mine' ? t('opp.mineEmpty') : t('opp.noResults')}</div>}
         </div>
       )}
       {view === 'table' && (

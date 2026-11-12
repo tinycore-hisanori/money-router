@@ -45,7 +45,8 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
     .filter((r) => { const n = daysLeft(r.opportunity.deadline); return n != null && n >= 0 && !['submitted', 'won', 'lost', 'skipped', 'paid'].includes(r.execution ?? ''); })
     .sort((a, b) => a.opportunity.deadline!.localeCompare(b.opportunity.deadline!))
     .slice(0, 6);
-  const waiting = routed.filter((r) => r.execution === 'submitted' || r.execution === 'applied');
+  const ORDER = ['active', 'todo', 'applied', 'submitted'];
+  const mine = routed.filter((r) => ORDER.includes(r.execution ?? '')).sort((a, b) => ORDER.indexOf(a.execution!) - ORDER.indexOf(b.execution!));
 
   const explain = async () => {
     setBusy(true);
@@ -77,6 +78,7 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
             <span className={`pill ${i.certainty === 'fixed' ? 'ok' : i.certainty === 'per_task' ? 'warn' : ''}`}>{t(`cert.${i.certainty}` as Key)}</span>
             {n != null && n >= 0 && <span className={`pill ${n <= 7 ? 'bad' : n <= 21 ? 'warn' : ''}`}>{t('col.deadline')} {o!.deadline} / {n === 0 ? t('days.today') : t('days.left', { n })}</span>}
             {r?.warnings?.includes('eligibility_unverified') && <span className="pill bad">{t('warn.eligibility_unverified')}</span>}
+            {r?.execution && <span className="pill ok">{t(`st.${r.execution}` as Key)}</span>}
             <Stars stars={i.stars} />
           </div>
           {loc?.summary && <p className="stop-sum">{loc.summary}</p>}
@@ -155,6 +157,25 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
 
         <div className="side">
           <section className="card">
+            <div className="sec-head"><h3>{t('dash.mine')}</h3><p className="muted">{t('dash.mineSub')}</p></div>
+            {!mine.length && <p className="muted" style={{ margin: 0 }}>{t('dash.mineEmpty')}</p>}
+            <ul className="mini">
+              {mine.map((r) => {
+                const o = r.opportunity; const sub = r.execution === 'submitted';
+                return (
+                  <li key={o.id} onClick={() => setSelected(r)}>
+                    <Count iso={sub ? o.result_date : o.deadline} unit={sub ? t('result.on') : undefined} />
+                    <div style={{ minWidth: 0 }}>
+                      <div className="t">{o.name}</div>
+                      <div className="s">{r.note?.idea || (sub ? o.result_note : o.deadline) || catLabel(o.category)}</div>
+                    </div>
+                    <span className={`pill ${r.execution === 'active' ? 'ok' : r.execution === 'submitted' ? 'warn' : ''}`}>{t(`st.${r.execution}` as Key)}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+          <section className="card">
             <div className="sec-head"><h3>{t('dash.deadlines')}</h3></div>
             {!closing.length && <p className="muted" style={{ margin: 0 }}>{t('dash.noDeadlines')}</p>}
             <ul className="mini">
@@ -170,24 +191,6 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
               ))}
             </ul>
           </section>
-
-          {waiting.length > 0 && (
-            <section className="card">
-              <div className="sec-head"><h3>{t('dash.waiting')}</h3></div>
-              <ul className="mini">
-                {waiting.map((r) => (
-                  <li key={r.opportunity.id} onClick={() => setSelected(r)}>
-                    <Count iso={r.opportunity.result_date} unit={t('result.on')} />
-                    <div style={{ minWidth: 0 }}>
-                      <div className="t">{r.opportunity.name}</div>
-                      <div className="s">{t(`st.${r.execution}` as Key)}{r.opportunity.result_note ? ` / ${r.opportunity.result_note}` : ''}{r.note?.idea ? ` / ${r.note.idea}` : ''}</div>
-                    </div>
-                    <span />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
 
           {!!plan?.backlog?.length && (
             <section className="card">

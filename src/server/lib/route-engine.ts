@@ -171,7 +171,10 @@ export function buildWeeklyPlan(
   const backlog: WeeklyPlanItem[] = [];
   let hours = 0;
   const now = Date.now();
-  for (const r of routed) {
+  // Items the user picked (to do / applied / in progress) lead the route; the rest follow by score.
+  const picked = (r: RoutedOpportunity) => ['active', 'todo', 'applied'].indexOf(execution[r.opportunity.id] ?? '');
+  const ordered = [...routed].sort((a, b) => (picked(a) < 0 ? 9 : picked(a)) - (picked(b) < 0 ? 9 : picked(b)));
+  for (const r of ordered) {
     if (!r.eligible) continue;
     const ex = execution[r.opportunity.id];
     if (ex === 'skipped' || ex === 'paid' || ex === 'submitted' || ex === 'won' || ex === 'lost') continue;

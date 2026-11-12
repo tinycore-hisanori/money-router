@@ -119,7 +119,7 @@ table { border-collapse: collapse; }
 
 /* ---------- dashboard */
 .hero { display: grid; gap: 10px; padding: 6px 2px 2px; }
-.hero h2 { font-size: clamp(26px, 4.2vw, 44px); font-weight: 800; letter-spacing: -0.03em; max-width: 30ch; text-wrap: balance; }
+.hero h2 { font-size: clamp(26px, 4.2vw, 44px); font-weight: 800; letter-spacing: -0.03em; max-width: 36ch; text-wrap: balance; word-break: auto-phrase; }
 .hero h2 .usd { color: var(--accent); font-variant-numeric: tabular-nums; }
 .hero-meta { display: flex; flex-wrap: wrap; gap: 8px 22px; color: var(--muted); font-size: 14px; }
 .hero-meta b { color: var(--text); font-family: var(--f-display); font-variant-numeric: tabular-nums; }
@@ -179,7 +179,7 @@ table { border-collapse: collapse; }
 .filters .input { min-width: 0; }
 .filters .search { flex: 1 1 200px; }
 .olist { display: grid; gap: 8px; }
-.orow { --c: var(--route); display: grid; grid-template-columns: 6px minmax(0, 1fr) 150px 120px 96px; gap: 16px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px 12px 0; cursor: pointer; overflow: hidden; }
+.orow { --c: var(--route); display: grid; grid-template-columns: 6px minmax(0, 1fr) 150px 120px 72px 128px; gap: 16px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px 12px 0; cursor: pointer; overflow: hidden; }
 .orow:hover { border-color: var(--c); box-shadow: var(--shadow); }
 .orow.out { opacity: 0.62; }
 .orow-bar { align-self: stretch; background: var(--c); margin: -12px 0; }
@@ -190,6 +190,9 @@ table { border-collapse: collapse; }
 .orow-money b { font-family: var(--f-display); font-size: 19px; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
 .orow-money span { display: block; font-size: 12px; color: var(--muted); }
 .orow-stars .stars { flex-direction: column; gap: 0; }
+.orow-act .input, .orow-act button { width: 100%; padding: 6px 8px; font-size: 13px; }
+.olist h3.group { font-size: 15px; margin: 12px 2px 0; }
+.olist h3.group:first-child { margin-top: 0; }
 
 /* ---------- detail modal */
 .modal-backdrop { position: fixed; inset: 0; background: rgba(9, 14, 26, 0.55); display: flex; align-items: flex-start; justify-content: center; z-index: 100; padding: 4vh 16px; overflow: auto; }
@@ -231,7 +234,7 @@ table { border-collapse: collapse; }
   main { padding: 16px; }
   .dash { grid-template-columns: 1fr; }
   .orow { grid-template-columns: 6px minmax(0, 1fr) auto; row-gap: 8px; }
-  .orow-stars, .orow-count { grid-column: 2 / -1; }
+  .orow-stars, .orow-count, .orow-act { grid-column: 2 / -1; }
   .orow-stars .stars { flex-direction: row; gap: 12px; }
   .stop { grid-template-columns: 40px 22px minmax(0, 1fr); column-gap: 8px; }
 }
