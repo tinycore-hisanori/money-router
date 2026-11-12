@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { WeeklyPlan, WeeklyPlanItem } from '@shared/types';
+import type { ExecutionStatus, WeeklyPlan, WeeklyPlanItem } from '@shared/types';
 import { api, type Routed } from '../api';
 import OpportunityPanel from '../components/OpportunityPanel';
 import Stars from '../components/Stars';
@@ -20,6 +20,13 @@ export function Count({ iso, unit }: { iso?: string | null; unit?: string }) {
   );
 }
 
+const PICKED: ExecutionStatus[] = ['active', 'todo', 'applied'];
+const STATUSES: ExecutionStatus[] = ['todo', 'applied', 'active', 'submitted', 'paid', 'won', 'lost', 'skipped'];
+
+/**
+ * Dashboard. The main thing is "my picks": what the user decided to do, with deadlines, hours and expected money.
+ * Suggestions (what the router would do with the remaining hours) are secondary.
+ */
 export default function Dashboard({ tick, onChange, onSetup }: { tick: number; onChange: () => void; onSetup?: () => void }) {
   const [plan, setPlan] = useState<WeeklyPlan | null>(null);
   const [routed, setRouted] = useState<Routed[]>([]);
@@ -27,14 +34,37 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
   const [lang, setLangState] = useState('ja');
   const [selected, setSelected] = useState<Routed | null>(null);
 
+  const load = () => { api.plan().then(setPlan); api.route().then(setRouted); };
   useEffect(() => {
-    api.plan().then(setPlan);
-    api.route().then(setRouted);
+    load();
     api.profile().then((p) => setLangState(p.language || 'ja')).catch(() => {});
   }, [tick]);
 
   const byId = (id: string) => routed.find((r) => r.opportunity.id === id);
-  const open = (id: string) => { const r = byId(id); if (r) setSelected(r); };
+  const usd = (n: number) => `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+  const setStatus = async (id: string, v: string) => {
+    setRouted((rs) => rs.map((r) => (r.opportunity.id === id ? { ...r, execution: (v || null) as ExecutionStatus | null } : r)));
+    await api.setExecution(id, (v || null) as ExecutionStatus | null);
+    load();
+  };
+
+  /** Plan numbers for one opportunity: from the weekly plan when it is in it, else from its own estimate. */
+  const itemFor = (r: Routed): WeeklyPlanItem => {
+    const o = r.opportunity;
+    const hit = plan?.items.find((i) => i.opportunity_id === o.id) ?? plan?.backlog?.find((i) => i.opportunity_id === o.id);
+    if (hit) return hit;
+    const hours = Math.max(1, Math.min(o.effort_hours_estimate || 1, Math.floor((plan?.hours_budget ?? 10) / 2)));
+    return { opportunity_id: o.id, name: o.name, certainty: r.effective_certainty, hours, expected_usd: Math.round(r.expected_hourly * hours), first_step: o.requirements[0] ?? '', why: '', stars: r.stars };
+  };
+
+  const far = (r: Routed) => { const n = daysLeft(r.opportunity.deadline); return n == null ? 1e6 : n < 0 ? 5e5 : n; };
+  const mine = routed.filter((r) => PICKED.includes(r.execution as ExecutionStatus)).sort((a, b) => far(a) - far(b));
+  const mineItems = mine.map((r) => ({ r, i: itemFor(r) }));
+  const mineHours = Math.round(mineItems.reduce((s, x) => s + x.i.hours, 0) * 10) / 10;
+  const mineCertain = mineItems.filter((x) => x.r.effective_certainty !== 'speculative').reduce((s, x) => s + x.i.expected_usd, 0);
+  const mineSpec = mineItems.filter((x) => x.r.effective_certainty === 'speculative').reduce((s, x) => s + x.i.expected_usd, 0);
+  const results = routed.filter((r) => r.execution === 'submitted');
+  const suggestions = [...(plan?.items ?? []), ...(plan?.backlog ?? [])].filter((i) => !byId(i.opportunity_id)?.execution);
   const observed = routed.reduce((s, r) => s + r.opportunity.observed.total_received_usd, 0);
   const eligible = routed.filter((r) => r.eligible);
   const exclusionCounts = routed.reduce<Record<string, number>>((m, r) => {
@@ -42,68 +72,92 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
     return m;
   }, {});
   const closing = eligible
-    .filter((r) => { const n = daysLeft(r.opportunity.deadline); return n != null && n >= 0 && !['submitted', 'won', 'lost', 'skipped', 'paid'].includes(r.execution ?? ''); })
+    .filter((r) => { const n = daysLeft(r.opportunity.deadline); return n != null && n >= 0 && !r.execution; })
     .sort((a, b) => a.opportunity.deadline!.localeCompare(b.opportunity.deadline!))
-    .slice(0, 6);
-  const ORDER = ['active', 'todo', 'applied', 'submitted'];
-  const mine = routed.filter((r) => ORDER.includes(r.execution ?? '')).sort((a, b) => ORDER.indexOf(a.execution!) - ORDER.indexOf(b.execution!));
+    .slice(0, 5);
+
+  const hasMine = mine.length > 0;
+  const budget = plan?.hours_budget ?? 0;
+  const over = hasMine && mineHours > budget;
+  const hero = (hasMine
+    ? t('dash.heroMine', { n: mine.length, usd: '\u0000' })
+    : t('dash.heroSuggest', { h: plan?.hours_used ?? 0, usd: '\u0000' })).split('\u0000');
+  const heroUsd = hasMine ? mineCertain : plan?.certain_usd ?? 0;
 
   const explain = async () => {
     setBusy(true);
     try { setPlan(await api.plan(true)); } finally { setBusy(false); }
   };
 
-  const usd = (n: number) => `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-  const hero = t('dash.hero', { h: plan?.hours_used ?? 0, usd: '\u0000' }).split('\u0000');
-  const hasPlan = !!plan?.items.length;
-
-  const stop = (i: WeeklyPlanItem) => {
-    const r = byId(i.opportunity_id);
+  const stop = (r: Routed | undefined, i: WeeklyPlanItem, picked: boolean) => {
     const o = r?.opportunity;
     const loc = o?.localized?.[lang];
     const fs = o?.findings ?? [];
     const warn = fs.some((f) => f.severity === 'warning');
     const n = daysLeft(o?.deadline);
+    const cert = r?.effective_certainty ?? i.certainty;
     return (
-      <li className="stop" key={i.opportunity_id} style={{ ['--c' as any]: catColor(o?.category) }} onClick={() => open(i.opportunity_id)} title={t('dash.clickHint')}>
+      <li className="stop" key={i.opportunity_id} style={{ ['--c' as any]: catColor(o?.category) }} onClick={() => r && setSelected(r)} title={t('dash.clickHint')}>
         <div className="stop-time">{i.hours}h</div>
         <div className="stop-rail" />
         <div className="stop-body">
           <div className="stop-head">
             <h4>{i.name}</h4>
-            <span className="usd">{usd(i.expected_usd)}</span>
+            <span className="usd" style={cert === 'speculative' ? { color: 'var(--muted)' } : undefined}>{usd(i.expected_usd)}</span>
           </div>
           <div className="chips">
             <span className="cat">{catLabel(o?.category)}</span>
-            <span className={`pill ${i.certainty === 'fixed' ? 'ok' : i.certainty === 'per_task' ? 'warn' : ''}`}>{t(`cert.${i.certainty}` as Key)}</span>
+            <span className={`pill ${cert === 'fixed' ? 'ok' : cert === 'per_task' ? 'warn' : ''}`}>{t(`cert.${cert}` as Key)}</span>
             {n != null && n >= 0 && <span className={`pill ${n <= 7 ? 'bad' : n <= 21 ? 'warn' : ''}`}>{t('col.deadline')} {o!.deadline} / {n === 0 ? t('days.today') : t('days.left', { n })}</span>}
+            {n != null && n < 0 && <span className="pill">{t('days.past')} {o!.deadline}</span>}
             {r?.warnings?.includes('eligibility_unverified') && <span className="pill bad">{t('warn.eligibility_unverified')}</span>}
-            {r?.execution && <span className="pill ok">{t(`st.${r.execution}` as Key)}</span>}
-            <Stars stars={i.stars} />
+            <Stars stars={i.stars ?? r?.stars} />
           </div>
-          {loc?.summary && <p className="stop-sum">{loc.summary}</p>}
+          {picked && r?.note?.idea && <p className="stop-step"><b>{t('note.idea')}</b>{r.note.idea}</p>}
+          {!picked && loc?.summary && <p className="stop-sum">{loc.summary}</p>}
           <p className="stop-step"><b>{t('dash.firstStep')}</b>{loc?.how_to?.[0] ?? i.first_step}</p>
           {fs.length > 0 && (
             <p className={`stop-risk ${warn ? 'bad' : ''}`}>
               {fs.map((f, k) => `${f.severity === 'warning' ? '⚠' : '△'} ${loc?.findings?.[k] ?? f.message}`).join('　')}
             </p>
           )}
+          <div className="stop-act" onClick={(e) => e.stopPropagation()}>
+            {picked ? (
+              <select className="input" value={r?.execution ?? ''} onChange={(e) => setStatus(i.opportunity_id, e.target.value)} aria-label={t('col.status')}>
+                <option value="">{t('st.' as Key)}</option>
+                {STATUSES.map((s) => <option key={s} value={s}>{t(`st.${s}` as Key)}</option>)}
+              </select>
+            ) : (
+              <button className="ghost" onClick={() => setStatus(i.opportunity_id, 'todo')}>{t('opp.pick')}</button>
+            )}
+          </div>
         </div>
       </li>
     );
   };
 
+  const terminus = (hours: number, total: number) => (
+    <li className="stop terminus">
+      <div className="stop-time">{hours}h</div>
+      <div className="stop-rail" />
+      <div className="stop-body">
+        <div className="stop-head">
+          <h4>{t('dash.total')} <span className="muted" style={{ fontWeight: 400 }}>{t('dash.totalSub')}</span></h4>
+          <span className="usd">{usd(total)}</span>
+        </div>
+      </div>
+    </li>
+  );
+
   return (
     <div className="grid">
       <section className="hero">
-        <h2>
-          {hasPlan ? <>{hero[0]}<span className="usd">{usd(plan!.certain_usd)}</span>{hero[1]}</> : t('dash.heroEmpty')}
-        </h2>
+        <h2>{hero[0]}<span className="usd">{usd(heroUsd)}</span>{hero[1]}</h2>
         <div className="hero-meta">
+          <span>{t('dash.mine')} <b>{mine.length}</b></span>
+          <span>{t('dash.specShort')} <b>{usd(hasMine ? mineSpec : plan?.speculative_usd ?? 0)}</b></span>
           <span>{t('dash.eligible')} <b>{eligible.length}</b> {t('dash.ofOpps', { n: routed.length })}</span>
-          <span>{t('dash.specShort')} <b>{usd(plan?.speculative_usd ?? 0)}</b></span>
           <span>{t('dash.paypalVerified')} <b>${observed.toFixed(2)}</b></span>
-          <span><b>{plan?.hours_used ?? 0}</b> / {plan?.hours_budget ?? 0}h</span>
         </div>
         {plan?.summary && <p className="hero-note">{plan.summary}</p>}
       </section>
@@ -111,12 +165,37 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
       <div className="dash">
         <section className="card">
           <div className="sec-head">
-            <h3>{t('dash.route')}</h3>
-            <p className="muted">{t('dash.routeSub')}</p>
+            <h3>{hasMine ? t('dash.mine') : t('dash.suggestRoute')}</h3>
+            <p className="muted">{hasMine ? t('dash.mineSub') : t('dash.suggestSub')}</p>
             <span className="spacer" />
-            <button className="ghost" onClick={explain} disabled={busy || !hasPlan}>{busy ? t('dash.thinking') : t('dash.explain')}</button>
+            {!hasMine && <button className="ghost" onClick={explain} disabled={busy || !plan?.items.length}>{busy ? t('dash.thinking') : t('dash.explain')}</button>}
           </div>
-          {!hasPlan && (
+
+          {hasMine && (
+            <div className="budget" title={`${mineHours}h / ${budget}h`}>
+              <div className="budget-top">
+                <span>{t('dash.budget')}</span>
+                <b className="num" style={over ? { color: 'var(--danger)' } : undefined}>{mineHours}h / {budget}h{over ? `　${t('dash.over')}` : ''}</b>
+              </div>
+              <div className="meter"><i style={{ width: `${Math.min(100, budget ? (mineHours / budget) * 100 : 0)}%`, background: over ? 'var(--danger)' : 'var(--route)' }} /></div>
+            </div>
+          )}
+
+          {hasMine && (
+            <ol className="route">
+              {mineItems.map(({ r, i }) => stop(r, i, true))}
+              {terminus(mineHours, mineCertain)}
+            </ol>
+          )}
+
+          {!hasMine && !!plan?.items.length && (
+            <ol className="route">
+              {plan.items.map((i) => stop(byId(i.opportunity_id), i, false))}
+              {terminus(plan.hours_used, plan.certain_usd)}
+            </ol>
+          )}
+
+          {!hasMine && !plan?.items.length && (
             <div>
               {onSetup ? (
                 <div style={{ padding: '4px 0 12px' }}>
@@ -138,43 +217,48 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
               )}
             </div>
           )}
-          {hasPlan && (
-            <ol className="route">
-              {plan!.items.map(stop)}
-              <li className="stop terminus">
-                <div className="stop-time">{plan!.hours_used}h</div>
-                <div className="stop-rail" />
-                <div className="stop-body">
-                  <div className="stop-head">
-                    <h4>{t('dash.total')} <span className="muted" style={{ fontWeight: 400 }}>{t('dash.totalSub')}</span></h4>
-                    <span className="usd">{usd(plan!.certain_usd)}</span>
-                  </div>
-                </div>
-              </li>
-            </ol>
-          )}
         </section>
 
         <div className="side">
-          <section className="card">
-            <div className="sec-head"><h3>{t('dash.mine')}</h3><p className="muted">{t('dash.mineSub')}</p></div>
-            {!mine.length && <p className="muted" style={{ margin: 0 }}>{t('dash.mineEmpty')}</p>}
-            <ul className="mini">
-              {mine.map((r) => {
-                const o = r.opportunity; const sub = r.execution === 'submitted';
-                return (
-                  <li key={o.id} onClick={() => setSelected(r)}>
-                    <Count iso={sub ? o.result_date : o.deadline} unit={sub ? t('result.on') : undefined} />
+          {results.length > 0 && (
+            <section className="card">
+              <div className="sec-head"><h3>{t('dash.results')}</h3></div>
+              <ul className="mini">
+                {results.map((r) => (
+                  <li key={r.opportunity.id} onClick={() => setSelected(r)}>
+                    <Count iso={r.opportunity.result_date} unit={t('result.on')} />
                     <div style={{ minWidth: 0 }}>
-                      <div className="t">{o.name}</div>
-                      <div className="s">{r.note?.idea || (sub ? o.result_note : o.deadline) || catLabel(o.category)}</div>
+                      <div className="t">{r.opportunity.name}</div>
+                      <div className="s">{r.note?.idea || r.opportunity.result_note || r.opportunity.result_date || t('result.wait')}</div>
                     </div>
-                    <span className={`pill ${r.execution === 'active' ? 'ok' : r.execution === 'submitted' ? 'warn' : ''}`}>{t(`st.${r.execution}` as Key)}</span>
+                    <span className="usd" style={{ color: 'var(--muted)' }}>{usd(r.opportunity.reward_estimate_usd)}</span>
                   </li>
-                );
-              })}
-            </ul>
-          </section>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {hasMine && suggestions.length > 0 && (
+            <section className="card">
+              <div className="sec-head"><h3>{t('dash.suggest')}</h3></div>
+              <ul className="mini">
+                {suggestions.slice(0, 8).map((i) => {
+                  const r = byId(i.opportunity_id); const o = r?.opportunity;
+                  return (
+                    <li key={i.opportunity_id} onClick={() => r && setSelected(r)} style={{ gridTemplateColumns: 'minmax(0, 1fr) auto auto' }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div className="t">{i.name}</div>
+                        <div className="s"><span className="cat" style={{ ['--c' as any]: catColor(o?.category) }}>{catLabel(o?.category)}</span>　{i.hours}h　{t(`cert.${r?.effective_certainty ?? i.certainty}` as Key)}</div>
+                      </div>
+                      <span className="usd">{usd(i.expected_usd)}</span>
+                      <button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={(e) => { e.stopPropagation(); setStatus(i.opportunity_id, 'todo'); }}>{t('opp.pick')}</button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
+
           <section className="card">
             <div className="sec-head"><h3>{t('dash.deadlines')}</h3></div>
             {!closing.length && <p className="muted" style={{ margin: 0 }}>{t('dash.noDeadlines')}</p>}
@@ -184,27 +268,28 @@ export default function Dashboard({ tick, onChange, onSetup }: { tick: number; o
                   <Count iso={r.opportunity.deadline} />
                   <div style={{ minWidth: 0 }}>
                     <div className="t">{r.opportunity.name}</div>
-                    <div className="s">{r.opportunity.deadline}{r.note?.idea ? ` / ${r.note.idea}` : ''}</div>
+                    <div className="s">{r.opportunity.deadline}　{t('panel.reward')} {usd(r.opportunity.reward_estimate_usd)}</div>
                   </div>
-                  <span className="usd">{usd(r.opportunity.reward_estimate_usd)}</span>
+                  <button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={(e) => { e.stopPropagation(); setStatus(r.opportunity.id, 'todo'); }}>{t('opp.pick')}</button>
                 </li>
               ))}
             </ul>
           </section>
 
-          {!!plan?.backlog?.length && (
+          {!hasMine && !!plan?.backlog?.length && (
             <section className="card">
               <div className="sec-head"><h3>{t('dash.backlog')}</h3></div>
               <ul className="mini">
                 {plan.backlog.slice(0, 8).map((i) => {
-                  const o = byId(i.opportunity_id)?.opportunity;
+                  const r = byId(i.opportunity_id); const o = r?.opportunity;
                   return (
-                    <li key={i.opportunity_id} onClick={() => open(i.opportunity_id)} style={{ gridTemplateColumns: 'minmax(0, 1fr) auto' }}>
+                    <li key={i.opportunity_id} onClick={() => r && setSelected(r)} style={{ gridTemplateColumns: 'minmax(0, 1fr) auto auto' }}>
                       <div style={{ minWidth: 0 }}>
                         <div className="t">{i.name}</div>
                         <div className="s"><span className="cat" style={{ ['--c' as any]: catColor(o?.category) }}>{catLabel(o?.category)}</span>　{i.hours}h</div>
                       </div>
                       <span className="usd">{usd(i.expected_usd)}</span>
+                      <button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={(e) => { e.stopPropagation(); setStatus(i.opportunity_id, 'todo'); }}>{t('opp.pick')}</button>
                     </li>
                   );
                 })}

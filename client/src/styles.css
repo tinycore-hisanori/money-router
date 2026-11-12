@@ -239,3 +239,10 @@ table { border-collapse: collapse; }
   .stop { grid-template-columns: 40px 22px minmax(0, 1fr); column-gap: 8px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* picks-first dashboard */
+.budget { margin: 0 0 14px; }
+.budget-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; color: var(--muted); }
+.budget-top b { color: var(--text); font-size: 15px; }
+.stop-act { margin-top: 2px; }
+.stop-act .input, .stop-act button { padding: 5px 10px; font-size: 13px; }
