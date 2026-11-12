@@ -149,3 +149,8 @@ export async function createPayout(items: { email: string; amount: number; curre
   };
   return api<any>('POST', '/v1/payments/payouts', body, {}, 'seed');
 }
+
+/** Payouts v1: status of a payout batch sent from the seed account (B). */
+export async function getPayoutBatch(batchId: string) {
+  return api<any>('GET', `/v1/payments/payouts/${encodeURIComponent(batchId)}`, undefined, {}, 'seed');
+}

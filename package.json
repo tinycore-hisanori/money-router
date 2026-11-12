@@ -22,7 +22,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit && npm --prefix client run typecheck",
     "postinstall": "npm --prefix client install",
     "stamp": "node scripts/stamp-version.mjs",
-    "release": "node scripts/stamp-version.mjs --bump"
+    "release": "node scripts/stamp-version.mjs --bump",
+    "payout:status": "tsx scripts/payout-status.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",
