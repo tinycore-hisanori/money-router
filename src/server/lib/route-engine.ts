@@ -80,7 +80,10 @@ export function routeOne(
   const findings = o.findings ?? [];
   for (const f of findings) if (f.severity === 'warning') warnings.push(`finding:${f.code}`);
   // Any warning-level payment-risk finding: treat the money as speculative, whatever the offer claims.
-  const effective_certainty: Opportunity['certainty'] = findings.some((f) => f.severity === 'warning') ? 'speculative' : o.certainty;
+  // A contest prize is only paid if you win: never money you can count on, whatever the extractor labelled it.
+  // (Exception: PayPal has already shown a payout for it.)
+  const prizeOnly = o.category === 'contest' && !(o.observed?.payments_count > 0);
+  const effective_certainty: Opportunity['certainty'] = prizeOnly || findings.some((f) => f.severity === 'warning') ? 'speculative' : o.certainty;
 
   if (o.status !== 'active') exclusions.push({ code: 'status', detail: `status is ${o.status}` });
 
