@@ -1,5 +1,7 @@
 # Money Router — demo video (2:40)
 
+> Japanese version: [VIDEO_SCRIPT.ja.md](VIDEO_SCRIPT.ja.md)
+
 Recorded automatically with `scripts/demo/record.mjs` (Playwright + DevTools screencast) against the live crawl data of 2026-11-12. Narration is synthesized (Kokoro TTS, voice `am_michael`) from the same lines as the on-screen captions, and each caption waits until its line has been spoken.
 
 The PayPal scene replays the four real sandbox payouts ($142.30, $48.00, $27.00, $19.50 — batch `VDW23CN4GHX8Y`) through `PAYPAL_FIXTURE`, so the recording does not depend on Transaction Search latency. The recording machine had no Claude API key, so payment matching in the video uses the keyword fallback; the live site matches with Claude.

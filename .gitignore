@@ -8,3 +8,4 @@ data/runtime/
 *.log
 .DS_Store
 *.tsbuildinfo
+scripts/demo/tts/

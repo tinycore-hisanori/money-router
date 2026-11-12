@@ -1,63 +1,65 @@
-# Money Router v1.0 仕様書
+# Money Router v1.0 Specification
 ## Money Router — an AI radar for PayPal-payable work, worldwide
 
-- 作成日: 2026-10-03
-- 応募先: PayPal AI Hackathon (Devpost) — 締切 2026-11-12 12:00 PST（JST 11/13 05:00）
-- 前版: v0.6.0（日本の銀行キャンペーン監視、PHP/XServer）→ 全面作り直し。思想（取りこぼし防止・資金効率・今日やること）のみ継承
-- 狙う賞: 総合 / Best Use of PayPal + AI / Best Use of Agentic Commerce / Best Use of AG Grid / Best Use of Render
+> Japanese version: [SPEC_v1.0.ja.md](SPEC_v1.0.ja.md)
+
+- Created: 2026-10-03
+- Target: PayPal AI Hackathon (Devpost) — deadline 2026-11-12 12:00 PST (JST 11/13 05:00)
+- Previous version: v0.6.0 (monitoring Japanese bank campaigns, PHP/XServer) → rebuilt from scratch. Only the ideas carry over: don't miss opportunities, use money efficiently, show what to do today.
+- Prizes aimed at: Overall / Best Use of PayPal + AI / Best Use of Agentic Commerce / Best Use of AG Grid / Best Use of Render
 
 ---
 
-## 1. プロダクト定義
+## 1. Product definition
 
-### 1.1 一文で
-世界中の「PayPalで報酬を受け取れる稼ぎ口」をAIが収集・審査し、ユーザーの国・スキル・時間に合わせて実行計画に変換し、PayPalの実入金で収益性を検証し続けるツール。
+### 1.1 In one sentence
+A tool where AI collects and vets earning opportunities worldwide that pay out to PayPal, turns them into an action plan that fits the user's country, skills and hours, and keeps verifying their real value against actual PayPal payments.
 
-### 1.2 解く問題
+### 1.2 The problem
 
-**実例（2026-10-05）**：MapleStory Worlds Global Creator Challenge（Nexon、募集 6/4〜10/7、賞金総額 $65,000）を締切2日前まで知らなかった。告知が韓国中心でDevpostにも載らず、日本語情報も無かった。「情報は存在するのに、言語と場所の壁で届かない」—— Money Router の Discover が解くべき問題の典型。
+**Real example (2026-10-05):** the author did not hear about the MapleStory Worlds Global Creator Challenge (Nexon, entries 6/4–10/7, $65,000 in prizes) until two days before the deadline. It was announced mainly in Korea, was not on Devpost, and had no Japanese coverage. "The information exists, but language and location keep it from reaching you" — the typical problem Money Router's Discover has to solve.
 
-- PayPal払いの副収入案件（ゲームポータル開発者収益、バグバウンティ、ユーザーテスト、アンケート、マイクロタスク、ストック素材、フリーランス、アフィリエイト、紹介特典）は無数にあるが、散在していて見つけにくい
-- 詐欺・払われない・最低出金額に届かない案件が大量に混ざっている
-- 「自分の国で使えるか」「自分のスキルで稼げるか」「いつ入金されるか」を案件ごとに調べるコストが高い
-- 実際にいくら稼げたかを案件単位で把握している人はほぼいない
+- Side-income opportunities that pay via PayPal (game-portal developer revenue, bug bounties, user testing, surveys, microtasks, stock assets, freelancing, affiliate programs, referral bonuses) are countless but scattered and hard to find.
+- Many of them are scams, never pay, or have minimum payouts you will never reach.
+- Checking each one for "can I use this from my country", "can I earn with my skills" and "when will I be paid" is expensive.
+- Almost nobody knows how much each opportunity actually earned them.
 
-### 1.3 ターゲット
-個人クリエイター・開発者・フリーランス・学生など、複数の小さな収入源をPayPalでまとめて受け取る人。開発者本人（インディーゲーム開発者、CrazyGames/GamePix等からPayPalで受取）が一次ユーザー。
+### 1.3 Target users
+Individual creators, developers, freelancers and students who collect several small income streams through PayPal. The primary user is the developer himself (an indie game developer paid by CrazyGames, GamePix and others via PayPal).
 
-### 1.4 3本柱
-| 柱 | 役割 | AIの使い所 | PayPalの使い所 |
+### 1.4 Three pillars
+| Pillar | Role | Where AI is used | Where PayPal is used |
 |---|---|---|---|
-| Discover | 案件の収集・構造化・審査。**コンテスト・懸賞金・ハッカソン**を含む | ページからの構造化抽出、正当性スコア、重複統合、締切の抽出 | — |
-| Route | ユーザー条件→実行計画 | 自然言語プロフィール解釈、優先度付け、週次プランの説明文生成 | — |
-| Track | 実入金で閉じる | 入金と案件のマッチング、実測収益性でランキング更新 | Transaction Search API、Invoicing API、Payouts API（デモ用） |
+| Discover | Collect, structure and vet opportunities, **including contests, prizes and hackathons** | Structured extraction from pages, legitimacy score, de-duplication, deadline extraction | — |
+| Route | User conditions → action plan | Interpreting a natural-language profile, prioritisation, writing the weekly plan explanation | — |
+| Track | Close the loop with real payments | Matching payments to opportunities, re-ranking by observed earnings | Transaction Search API, Invoicing API, Payouts API (for the demo) |
 
 ---
 
-## 2. スコープ
+## 2. Scope
 
-### 2.1 v1.0（提出版）に含む
-- 登録制ソース（source registry）20〜30件のAIクローラー（Render Cron、1日1回）
-- 案件データモデル（§4）とAI正当性スコア
-- ユーザープロフィール（国、スキル、週の可処分時間、既に持っているアカウント、自然言語の自由記述）
-- 対象外判定（国制限、スキル不足、最低出金額が現実的でない等）＋除外理由表示
-- スコアリングと「今週やること」プラン生成
-- PayPal Transaction Search による入金取得と、AIによる案件マッチング
-- 実測収益（案件ごとの実入金合計、推奨→入金までの日数）に基づくランキング補正
-- PayPal Invoicing による請求書ドラフト生成（フリーランス型案件向け、ユーザー確認後に送信）
-- AG Grid による案件テーブル（フィルタ、ソート、グルーピング、実測列）
-- Render へのデプロイ（Web Service + Cron Job）
-- 3分デモ動画、README、英語提出文
+### 2.1 In v1.0 (submission)
+- AI crawler over 20–30 registered sources (source registry), once a day (Render Cron)
+- Opportunity data model (§4) and AI legitimacy score
+- User profile (country, skills, hours per week, existing accounts, free-text self-description)
+- Exclusion checks (country restrictions, missing skills, unrealistic minimum payout, etc.) with the reason shown
+- Scoring and a "this week" plan
+- Incoming payments via PayPal Transaction Search, matched to opportunities by AI
+- Ranking correction from observed earnings (total received per opportunity, days from recommendation to payment)
+- Invoice drafts with PayPal Invoicing (for freelance-type work; sent after user confirmation)
+- Opportunity table with AG Grid (filter, sort, grouping, observed columns)
+- Deployment to Render (Web Service + Cron Job)
+- 3-minute demo video, README, English submission text
 
-### 2.2 含まない
-- 案件への自動応募・自動アカウント作成
-- 野良検索による新規ソース自動発見（v1.1以降）
-- マルチユーザー・認証（単一ユーザーのローカルプロフィール。デモはサンドボックス固定）
-- 通知（メール/Push）
+### 2.2 Out of scope
+- Applying or creating accounts automatically
+- Discovering new sources by open web search (v1.1+)
+- Multi-user and authentication (single local profile; the demo is locked to sandbox)
+- Notifications (e-mail / push)
 
 ---
 
-## 3. システム構成
+## 3. System architecture
 
 ```
 [Browser SPA (React + AG Grid)]
@@ -66,338 +68,340 @@
 [API: Node.js / TypeScript (Hono or Express)]  ---- Render Web Service
    ├─ /api/opportunities     ← opportunities.json (or SQLite)
    ├─ /api/profile           ← user profile (server-side JSON, single user)
-   ├─ /api/plan              ← Route engine + Claude で説明文生成
+   ├─ /api/plan              ← Route engine + explanation written by Claude
    ├─ /api/paypal/sync       ← PayPal Transaction Search → AI matching
    ├─ /api/paypal/invoice    ← PayPal Invoicing (draft → user confirm → send)
    └─ /api/status            ← crawl status
         |
         v
-[Crawler: Render Cron Job, 1日1回]
-   ├─ source_registry.json を巡回
-   ├─ HTML → テキスト化 → Claude で構造化抽出 (JSON schema)
-   ├─ 正当性スコアリング・重複統合
-   └─ opportunities.json 更新（tmp + rename）
+[Crawler: Render Cron Job, once a day]
+   ├─ walk source_registry.json
+   ├─ HTML → text → structured extraction with Claude (JSON schema)
+   ├─ legitimacy scoring and de-duplication
+   └─ update opportunities.json (tmp + rename)
 
 [PayPal Sandbox]
-   ├─ Transaction Search API  (入金取得)
-   ├─ Invoicing API           (請求書)
-   └─ Payouts API             (デモ用: 模擬入金生成スクリプト)
+   ├─ Transaction Search API  (incoming payments)
+   ├─ Invoicing API           (invoices)
+   └─ Payouts API             (demo: script that generates simulated payments)
 ```
 
-- ストレージ: v1.0はJSONファイル（Render Diskにマウント）。SQLiteへの切替は任意
-- LLM: Claude API（構造化抽出は tool use / JSON schema で強制）
-- PayPal: REST API直叩き（`@paypal/paypal-server-sdk`）。Agent Toolkit / MCP Server はエージェント実行部で利用し、README で明記
+- Storage: JSON files in v1.0 (mounted on a Render Disk). Switching to SQLite is optional.
+- LLM: Claude API (structured extraction enforced with tool use / JSON schema).
+- PayPal: REST API called directly (`@paypal/paypal-server-sdk`). Agent Toolkit / MCP Server is used for the agent part and stated in the README.
+
+> As built: hosted on a VPS behind Nginx + Cloudflare with PM2; the crawler runs in-process on a schedule. Per-user data lives under `data/runtime/users/<user>/` (see README).
 
 ---
 
-## 4. データモデル
+## 4. Data model
 
-### 4.1 Opportunity（案件）
-| フィールド | 型 | 意味 |
+### 4.1 Opportunity
+| Field | Type | Meaning |
 |---|---|---|
-| id | string | 一意ID |
-| source_id | string | source_registry のID |
-| name | string | 案件名（例: CrazyGames Developer Revenue Share） |
-| provider | string | 提供元 |
+| id | string | Unique id |
+| source_id | string | id in source_registry |
+| name | string | Opportunity name (e.g. CrazyGames Developer Revenue Share) |
+| provider | string | Provider |
 | category | enum | game_portal / bug_bounty / user_testing / survey / microtask / stock_assets / freelance / affiliate / referral / **contest** / **licensing** / **localization** / **data_collection** / other |
-| url | string | 公式URL |
-| payout_methods | string[] | 支払い方法。PayPal を含む案件のみ採用 |
-| payout_currency | string | USD 等 |
-| min_payout | number | 最低出金額 |
-| payout_cycle | string | NET30 / weekly / on_request 等 |
-| payout_days_estimate | integer | 作業〜入金までの目安日数 |
+| url | string | Official URL |
+| payout_methods | string[] | Payout methods. Only opportunities that include PayPal are kept |
+| payout_currency | string | USD etc. |
+| min_payout | number | Minimum payout |
+| payout_cycle | string | NET30 / weekly / on_request etc. |
+| payout_days_estimate | integer | Typical days from work to payment |
 | reward_model | enum | per_task / rev_share / bounty / hourly / one_time |
-| certainty | enum | fixed（条件を満たせば定額）/ per_task（1件やれば1件分、ただし受注が前提）/ speculative（売れるか分からない） |
-| reward_estimate_usd | number | 1単位あたり or 月あたりの目安 |
-| effort_hours_estimate | number | 1単位あたりの作業時間目安 |
-| skills_required | string[] | 必要スキル（html5_game_dev, security, writing, design, ...） |
-| countries_allowed | string[] | ISO2。空=全世界 |
+| certainty | enum | fixed (a set amount once conditions are met) / per_task (paid per task, but you need to get the task) / speculative (may or may not sell) |
+| reward_estimate_usd | number | Typical amount per unit or per month |
+| effort_hours_estimate | number | Typical hours per unit |
+| skills_required | string[] | Required skills (html5_game_dev, security, writing, design, ...) |
+| countries_allowed | string[] | ISO2. Empty = worldwide |
 | countries_blocked | string[] | ISO2 |
-| requirements | string[] | 条件の箇条書き（年齢、ポートフォリオ等） |
-| deadline | date \| null | 応募・提出締切（コンテスト、ハッカソン、期間限定プロモ）。開放型は null。**v0.6.0 の「申込期限」の継承** |
-| eligibility_verified | bool | 参加資格（国・居住・年齢）を公式規約から確認できたか |
-| eligibility_note | string | 資格条項の引用、または未確認の理由 |
-| findings | Finding[] | **支払いリスク所見**。`code`（first_edition / individual_host / prize_not_locked / eligibility_missing / no_payout_history / payout_complaints / other）、`severity`（info / caution / warning）、`message`（英語。各言語訳は localized[lang].findings）、`evidence`（引用 or URL）。legitimacy_score（詐欺か否か）とは別に「詐欺ではないが払われないかもしれない」理由を根拠付きで残す |
-| legitimacy_score | number 0-100 | AI審査スコア |
-| legitimacy_notes | string | 根拠 |
-| confidence | number 0-1 | 抽出信頼度 |
+| requirements | string[] | Conditions as bullet points (age, portfolio, etc.) |
+| deadline | date \| null | Application / submission deadline (contests, hackathons, limited-time promotions). null for open-ended ones. **Carried over from v0.6.0's "application deadline"** |
+| eligibility_verified | bool | Whether eligibility (country, residence, age) could be confirmed from the official rules |
+| eligibility_note | string | Quote of the eligibility clause, or why it is unverified |
+| findings | Finding[] | **Payment-risk findings.** `code` (first_edition / individual_host / prize_not_locked / eligibility_missing / no_payout_history / payout_complaints / other), `severity` (info / caution / warning), `message` (English; translations in localized[lang].findings), `evidence` (quote or URL). Separate from legitimacy_score (scam or not): records, with evidence, why something that is not a scam might still not pay |
+| legitimacy_score | number 0-100 | AI audit score |
+| legitimacy_notes | string | Reasoning |
+| confidence | number 0-1 | Extraction confidence |
 | status | enum | active / paused / closed / suspect |
-| last_checked | datetime | 最終確認 |
-| observed | object | 実測: total_received_usd, payments_count, avg_days_to_payout, last_payment_at |
+| last_checked | datetime | Last checked |
+| observed | object | Observed: total_received_usd, payments_count, avg_days_to_payout, last_payment_at |
 
-### 4.2 Source（収集元）
-| フィールド | 説明 |
+### 4.2 Source
+| Field | Description |
 |---|---|
-| id, name, url | 収集元 |
-| category | 上記カテゴリ |
-| parse_hint | AIへの抽出ヒント（例: "developer payout terms are in the FAQ"） |
-| trust_baseline | 0-100。運営者が付ける初期信頼度 |
+| id, name, url | The source |
+| category | One of the categories above |
+| parse_hint | Extraction hint for the AI (e.g. "developer payout terms are in the FAQ") |
+| trust_baseline | 0-100. Initial trust set by the operator |
 | enabled | bool |
 
 ### 4.3 UserProfile
-| フィールド | 説明 |
+| Field | Description |
 |---|---|
 | country | ISO2 |
 | skills | string[] |
 | hours_per_week | number |
-| existing_accounts | source_id[]（既存＝紹介/新規特典の対象外判定に使用） |
-| free_text | 自然言語（例: "HTML5ゲームが作れる。英語は読める。週10時間"）→ AIが skills/hours を補完 |
-| paypal_email | サンドボックス受取アカウント |
+| existing_accounts | source_id[] (existing accounts → excluded from referral / new-user bonuses) |
+| free_text | Natural language (e.g. "I can make HTML5 games. I can read English. 10 hours a week") → AI fills in skills / hours |
+| paypal_email | Sandbox receiving account |
 
-### 4.4 Payment（PayPal入金）
-| フィールド | 説明 |
+### 4.4 Payment (PayPal)
+| Field | Description |
 |---|---|
 | transaction_id | PayPal transaction_id |
-| amount, currency, date | 取引情報 |
-| payer_name, payer_email, note, subject | マッチング材料 |
-| matched_opportunity_id | AIマッチ結果（null可） |
+| amount, currency, date | Transaction details |
+| payer_name, payer_email, note, subject | Matching input |
+| matched_opportunity_id | AI match result (nullable) |
 | match_confidence | 0-1 |
-| match_status | auto / confirmed / rejected（ユーザー承認可能） |
+| match_status | auto / confirmed / rejected (the user can approve) |
 
-### 4.5 ExecutionStatus（案件ごとのユーザー状態）
-todo / applied / active / paid / skipped — v0.6.0の実行状況管理を継承。
+### 4.5 ExecutionStatus (the user's state per opportunity)
+todo / applied / active / paid / skipped — carried over from v0.6.0's progress tracking (extended in §6.1.2).
 
 ---
 
-## 5. Discover（AIクローラー）
+## 5. Discover (AI crawler)
 
-1. source_registry を巡回し、HTMLをテキスト化（Readability + 本文抽出）
-2. Claude に JSON schema で構造化抽出を強制（§4.1の全フィールド）。PayPal が payout_methods に含まれない案件は破棄
-3. 正当性スコアリング（別プロンプト）: ドメイン年齢・運営実体の明示・支払い条件の具体性・「登録料」等の危険シグナル・既知の詐欺パターン → 0-100
-4. 既存案件との重複統合（同一URL or 名前類似）。変更点は diff として status に反映
-5. tmp + rename で opportunities.json を更新、crawl_status.json に結果を記録
+1. Walk source_registry and convert HTML to text (Readability + main-content extraction).
+2. Force structured extraction with Claude and a JSON schema (all fields of §4.1). Opportunities without PayPal in payout_methods are dropped.
+3. Legitimacy scoring (separate prompt): domain age, visible operating entity, concreteness of payout terms, danger signals such as "registration fee", known scam patterns → 0-100.
+4. Merge duplicates with existing opportunities (same URL or similar name). Changes are reflected in status as a diff.
+5. Update opportunities.json with tmp + rename and record the result in crawl_status.json.
 
-### 5.1 差分スキップ
-取得したページ本文のハッシュを保存し、前回と同一ならLLMを呼ばない（規約ページの変更は月1〜2回程度）。これにより通常日のLLMコストは最小化される。
+### 5.1 Skipping unchanged pages
+Store a hash of each fetched page body; if it matches the previous run, do not call the LLM (terms pages change once or twice a month). This keeps LLM cost minimal on ordinary days.
 
-### 5.2 モデル構成（.envで工程別・曜日別に指定）
-モデルIDは環境変数の文字列。新モデル登場時は1行差し替えで対応する。
+### 5.2 Model configuration (per stage and per weekday in .env)
+Model ids are environment-variable strings, so a new model is a one-line change.
 
 ```env
-# 工程ごとの既定モデル
-MODEL_EXTRACT=claude-sonnet-5-5      # ページ→JSON（差分がある日だけ）
-MODEL_AUDIT=claude-sonnet-5-5        # 正当性スコア（差分がある日だけ）
-MODEL_MATCH=claude-opus-5-5          # PayPal入金マッチング
-MODEL_EXPLAIN=claude-opus-5-5        # 今週やることの英文
+# Default model per stage
+MODEL_EXTRACT=claude-sonnet-5-5      # page -> JSON (only on days with a diff)
+MODEL_AUDIT=claude-sonnet-5-5        # legitimacy score (only on days with a diff)
+MODEL_MATCH=claude-opus-5-5          # PayPal payment matching
+MODEL_EXPLAIN=claude-opus-5-5        # "this week" explanations
 
-# 曜日ごとの審査スケジュール（未指定の曜日は MODEL_AUDIT で差分のみ）
-# 書式: <dow>:<model>:<mode>  mode は full（active全件を再審査）| diff
+# Audit schedule per weekday (other days: MODEL_AUDIT, diff only)
+# Format: <dow>:<model>:<mode>  mode is full (re-audit all active items) | diff
 AUDIT_SCHEDULE=mon:claude-fable-5-1:full,thu:claude-opus-5-5:full
 ```
 
-- 曜日ローテは「何を投げるか」ではなく「その日の審査の深さ」の指定。full の日は差分の有無に関係なく active 全件を再審査し、詐欺化・条件改悪のドリフトを検知する
-- 各スコアには `scored_by`（モデルID）と `scored_at` を記録。UIでは直近の full 審査スコアを正とし、diff 日に付いた暫定スコアは provisional 表示にする（モデル間でスコアの出方が異なるため平均しない）
-- コスト目安: 月曜 Fable 全件（30件 × 約10k入力 + 1.5k出力 ≈ $5）× 4 ＋ 木曜 Opus 全件（≈ $2）× 4 ＋ 日々の Sonnet 差分 ≈ 月 $30 前後。全工程 Sonnet 差分のみなら月 $3〜5
+- The weekday rotation sets how deep that day's audit goes, not what is sent. On full days every active opportunity is re-audited regardless of page changes, to catch drift toward scams or worse terms.
+- Each score records `scored_by` (model id) and `scored_at`. The UI treats the latest full-audit score as authoritative and shows provisional scores from diff days as provisional (scores are not averaged across models, because models score differently).
+- Cost estimate: Monday Fable, all items (30 × ~10k input + 1.5k output ≈ $5) × 4 + Thursday Opus, all items (≈ $2) × 4 + daily Sonnet diffs ≈ about $30/month. With Sonnet diffs only: $3–5/month.
 
-初期ソース候補（30件程度、実装時に精査）:
-- game_portal: CrazyGames, GamePix, Poki（要確認）, Yandex Games, itch.io
+Initial source candidates (about 30, refined during implementation):
+- game_portal: CrazyGames, GamePix, Poki (to check), Yandex Games, itch.io
 - bug_bounty: HackerOne, Bugcrowd, Intigriti, YesWeHack
-- user_testing: UserTesting, Userlytics, TryMyUI(Trymata), PlaytestCloud
-- survey/microtask: Prolific, Amazon MTurk（PayPal非対応なら除外）, Clickworker, Appen, Remotasks
+- user_testing: UserTesting, Userlytics, TryMyUI (Trymata), PlaytestCloud
+- survey/microtask: Prolific, Amazon MTurk (dropped if no PayPal), Clickworker, Appen, Remotasks
 - stock_assets: Shutterstock, Adobe Stock, Pond5, AudioJungle/Envato
 - freelance: Upwork, Fiverr, Freelancer.com, PeoplePerHour
-- affiliate/referral: Amazon Associates（PayPal非対応なら除外）, ShareASale, Impact, PayPal Referral
+- affiliate/referral: Amazon Associates (dropped if no PayPal), ShareASale, Impact, PayPal Referral
 - other: Gumroad, Ko-fi, Buy Me a Coffee, Teespring/Spring
 
-→ 「PayPal受取可」が確認できないものは AI が自動で落とす。これ自体がデモの見せ場。
+→ Anything where "PayPal payout" cannot be confirmed is dropped automatically by the AI. This is itself a highlight of the demo.
 
-### 5.3 コンテスト・懸賞金・ハッカソン（category: contest）
-「期限と確定額がある情報」の代表であり、本プロダクトの原点（v0.6.0 の銀行キャンペーン）に最も近いカテゴリ。
-- 収集元：Devpost（賞金は Devpost 経由で PayPal 支払い可）、itch.io ジャム（賞金ありのみ）、日本の公募サイト（登竜門／公募ガイド）、ゲーム会社の開発者コンテスト（Nexon 等）、各社ハッカソン告知
-- **多言語ソースを前提にする**：韓国・中国・欧州の公募サイトも Discovery の検索対象に含め、要約はユーザー言語で出す（MapleStory の教訓）
-- 抽出：`deadline` と賞金額を必ず取る。締切超過は `deadline_passed` として除外し、自動で `closed` 化
-- **参加資格の検証を必須にする**（MapleStory の教訓その2：日本から参加できない可能性が規約に埋まっていた）：contest / referral は「Official Rules / 応募資格」ページを追加検索して本文に連結し、`eligibility_verified`（規約で明示的に確認できたか）と `eligibility_note`（引用）を抽出する。確認できない場合は `countries_allowed` を推測で埋めず、UI・要約に「参加資格 未確認（規約を確認）」の警告を出し、締切ブーストも付けない
-- ルーティング：締切が近いほど優先（7日以内 ×1.5、30日以内 ×1.25）。certainty は `fixed`（賞金額が明示）
-- **Event Radar（野良イベント探索）**：プラットフォーム登録制とは別に、「最近告知された単発イベント」をイベント名ではなく語彙（prize / deadline / 賞金 / 募集 / 공모전 / 상금 / 奖金 …）で英・日・韓・中の多言語検索（Brave freshness=1ヶ月）し、規約ページを添えて抽出 → 締切・賞金・参加資格付きで案件に直接登録（source_id = radar）。承認ゲートなし（ユーザーが支払う行為がないため、正当性スコアと資格警告で足りる）。締切超過で自動 closed。週1自動（RADAR_DOW）＋手動。MapleStory 型を拾うための本命機能
+### 5.3 Contests, prizes and hackathons (category: contest)
+The typical "information with a deadline and a fixed amount", and the category closest to the product's origin (v0.6.0's bank campaigns).
+- Sources: Devpost (prizes can be paid via PayPal through Devpost), itch.io jams (only those with prizes), Japanese contest sites (Tōryūmon / Kōbo Guide), game-company developer contests (Nexon etc.), hackathon announcements.
+- **Assume multilingual sources**: Korean, Chinese and European contest sites are included in Discovery searches, and summaries are written in the user's language (the MapleStory lesson).
+- Extraction: always get `deadline` and the prize amount. Past-deadline items are excluded as `deadline_passed` and automatically become `closed`.
+- **Eligibility checks are mandatory** (MapleStory lesson #2: the rules hid that people in Japan might not be able to enter). For contest / referral items, search for the "Official Rules / eligibility" page, append it to the text, and extract `eligibility_verified` (explicitly confirmed by the rules) and `eligibility_note` (quote). If it cannot be confirmed, do not guess `countries_allowed`; show an "Eligibility unverified (check the rules)" warning in the UI and summary, and give no deadline boost.
+- Routing: the nearer the deadline, the higher the priority (within 7 days ×1.5, within 30 days ×1.25). certainty is `fixed` (prize amount stated).
+- **Event Radar (one-off event search)**: separately from registered platforms, search for "recently announced one-off events" by vocabulary rather than event names (prize / deadline / 賞金 / 募集 / 공모전 / 상금 / 奖金 …) in English, Japanese, Korean and Chinese (Brave freshness = 1 month), extract with the rules page attached, and register the result directly as an opportunity with deadline, prize and eligibility (source_id = radar). No approval gate (the user pays nothing, so the legitimacy score and eligibility warning are enough). Auto-closed after the deadline. Runs weekly (RADAR_DOW) and on demand. The key feature for catching MapleStory-type events.
 
-### 5.4 支払いリスク所見（findings）— contest / referral
-**実例（2026-10-07）**：Overpowered Studios Game Jam #1（itch.io、賞金 $415 を PayPal 現金払い）。詐欺ではないが、賞金額が「目標額」で未確定、主催が個人で第1回、参加資格の記載なし。legitimacy_score 1本ではこのグレーが見えない。
+### 5.4 Payment-risk findings — contest / referral
+**Real example (2026-10-07):** Overpowered Studios Game Jam #1 (itch.io, $415 prize paid in cash via PayPal). Not a scam, but the prize amount is a "target" and not locked, the host is an individual running a first edition, and there are no eligibility rules. A single legitimacy_score cannot show this grey zone.
 
-| シグナル | 検出方法 | severity |
+| Signal | How it is detected | severity |
 |---|---|---|
-| 第1回目 | 名称に #1 / 1st / first、または過去開催の記述なし | caution |
-| 個人主催 | 主催が企業・団体でなく個人アカウント | caution |
-| 賞金未確定 | target / goal / TBD / will lock / depends on sponsors 等 | warning |
-| 資格記載なし | eligibility_verified = false | warning |
-| 支払い実績なし | 過去受賞者の受取報告が見つからない | caution |
-| 不払い苦情 | 主催名 × never paid / not received / 未払い の検索（COMPLAINT SEARCH 節として抽出器に渡す）に信頼できる報告 | warning |
+| First edition | #1 / 1st / first in the name, or no mention of past editions | caution |
+| Individual host | The host is a personal account, not a company or organisation | caution |
+| Prize not locked | target / goal / TBD / will lock / depends on sponsors etc. | warning |
+| No eligibility rules | eligibility_verified = false | warning |
+| No payout history | No reports of past winners receiving prizes | caution |
+| Payout complaints | Credible reports from a search for host name × never paid / not received / 未払い (passed to the extractor as a COMPLAINT SEARCH section) | warning |
 
-反映：
-- warning が1件以上 → `effective_certainty = speculative`（重み 0.4）。**certain_usd には入れず speculative_usd に計上**
-- 一覧に「リスク」列（⚠ warning 数 / △ caution 数、ツールチップに所見一覧）。Brief パネルと週次プランのカードに所見をユーザー言語で表示
-- Track で入金が確認されたら、その案件の `no_payout_history` を解消（将来：同一主催者の次回開催に信頼を引き継ぐ）
-- テストケースとして `overpowered-jam` をレジストリに登録（Event Radar が拾うべき典型例：PayPal 賞金・Devpost 非掲載・Discord 告知）
+Effects:
+- One or more warnings → `effective_certainty = speculative` (weight 0.4). **Counted in speculative_usd, not certain_usd.**
+- A "Risk" column in the list (⚠ number of warnings / △ number of cautions, tooltip with the findings). Findings are shown in the user's language in the brief panel and on weekly-plan cards.
+- When Track confirms a payment, that opportunity's `no_payout_history` is cleared (future: carry trust over to the same host's next edition).
+- `overpowered-jam` is registered in the registry as a test case (the typical item Event Radar should catch: PayPal prize, not on Devpost, announced on Discord).
 
-- 注意：コンテストは「応募すれば必ず入る」ではないため、週次プランの期待値は `reward × 採択率の保守的推定` を用いる（v1.1 で調整）
+- Note: entering a contest does not guarantee a prize, so the weekly plan's expected value uses `reward × a conservative acceptance-rate estimate` (to be tuned in v1.1).
 
 ---
 
-## 6. Route（実行計画）
+## 6. Route (action plan)
 
-### 6.1 対象外判定
-- countries_allowed/blocked とユーザー国
-- skills_required ⊄ ユーザー skills（AIが同義語を吸収）
-- min_payout が reward_estimate × 想定実行回数を上回る（出金に届かない）
-- legitimacy_score < 閾値（既定 60）
-- existing_accounts に含まれ、かつ新規限定特典
+### 6.1 Exclusion checks
+- countries_allowed/blocked vs. the user's country
+- skills_required ⊄ user skills (AI absorbs synonyms)
+- min_payout higher than reward_estimate × expected number of runs (you would never reach the payout)
+- legitimacy_score < threshold (default 60)
+- in existing_accounts and the bonus is new-users-only
 
-除外理由は必ず表示（v0.6.0継承）。
+The exclusion reason is always shown (carried over from v0.6.0).
 
-### 6.2 スコア
+### 6.2 Score
 ```
 expected_hourly = reward_estimate_usd / effort_hours_estimate
 score = expected_hourly
-        × certainty_weight (fixed 1.0 / per_task 0.9 / speculative 0.4)   // 「作れば売れるかも」は強く割引
-        × deadline_urgency (7日以内 1.5 / 30日以内 1.25 / それ以外 1.0)  // 締切が近いものを先に
+        × certainty_weight (fixed 1.0 / per_task 0.9 / speculative 0.4)   // "might sell if you build it" is heavily discounted
+        × deadline_urgency (within 7 days 1.5 / within 30 days 1.25 / otherwise 1.0)  // nearer deadlines first
         × legitimacy_score/100
-        × time_discount(payout_days_estimate)      // 入金が遠いほど減点
-        × observed_boost                           // 実入金実績があれば加点、推奨後N日入金なしなら減点
+        × time_discount(payout_days_estimate)      // the later the payment, the lower
+        × observed_boost                           // boosted by real payments, lowered if nothing arrived N days after recommendation
 ```
-時間予算（hours_per_week）内で貪欲法により選択 → 「今週やること」。締切のある案件は工数を締切までの週数で割って週あたりに配分し、1件が週枠の半分を超えないよう制限する（1件勝負にしない）。枠に入らなかった資格ありの案件は「次の候補」として並べる。プランは **certain_usd（fixed + per_task：当てにできる額）** と **speculative_usd（売れたら）** を分けて提示する。設計思想：夢を売らず、今週確実に入る額を先に出す。
+Opportunities are chosen greedily within the time budget (hours_per_week) → "this week". For items with a deadline, the effort is divided by the number of weeks until the deadline, and no single item may take more than half of the weekly budget (no all-in bets). Eligible items that did not fit are listed as "next in line". The plan shows **certain_usd (fixed + per_task: money you can count on)** and **speculative_usd (if it sells / wins)** separately. Design principle: don't sell dreams; show what will reliably come in this week first.
 
-#### 6.1.0 賞金は「見込み」に入れない
-コンテスト・ハッカソン・ジャムの賞金は入賞しないと入らないため、抽出結果にかかわらず **effective_certainty = speculative（結果次第）** とし、週の見込み額（certain_usd）には含めない（PayPal で入金実績が確認できた案件を除く）。画面の文言も「当てにできます」ではなく「ほど入る見込みです」とし、賞金は「結果次第（入賞・売れたら）」に分けて表示する。
+#### 6.1.0 Prizes are not counted as expected income
+Contest, hackathon and jam prizes only arrive if you win, so regardless of extraction they get **effective_certainty = speculative (depends on the result)** and are not included in the weekly expected amount (certain_usd), except for items with a payment confirmed in PayPal. The wording is "about $X is expected" rather than "you can count on", and prizes are shown separately as "if it works out (prizes, sales)".
 
-#### 6.1.1 コンテスト項目（賞金ハンター帳との整合）
-賞金ハンター帳（Artifact）で実際に使っている項目を案件に取り込む：**開始日 starts／締切 deadline／期間表記 period／結果発表日 result_date／結果発表メモ result_note**。一覧の期間表記（"Sep 24 - Nov 18, 2026"）は取得時に機械的に ISO 化して AI に渡す（AI は書き写すだけ）。画面では締切に「あと N 日」（≤7日=赤、≤21日=橙）、結果発表は「N 日後に結果／結果出たかも」。
+#### 6.1.1 Contest fields (aligned with the prize-hunter board)
+Fields actually used in the author's prize-hunter board (Artifact) are added to opportunities: **start date starts / deadline / period text period / result date result_date / result note result_note**. Period text in listings ("Sep 24 - Nov 18, 2026") is converted to ISO deterministically before being passed to the AI (the AI only copies it). The UI shows "N days left" for deadlines (≤7 days red, ≤21 days orange) and "results in N days / results may be out" for results.
 
-#### 6.1.2 状態と メモ
-状態（execution）：未対応 todo／申込済 applied／対応中 active／**提出済・結果待ち submitted**／入金済 paid／**入賞 won**／**落選 lost**／見送り skipped。submitted・won・lost・paid・skipped は週次プランから外れ、submitted と applied はダッシュボードの「提出済・結果待ち」に結果発表日つきで並ぶ。
-メモ（notes.json、管理者のみ書込）：**出すもの idea**（何で出すか）と **メモ note**。詳細モーダルで編集。v1.0 は単一ユーザー、ユーザー別メモは後続版。
+#### 6.1.2 Status and notes
+Status (execution): to do todo / applied / in progress active / **submitted, waiting for results submitted** / paid / **won** / **lost** / skipped. submitted, won, lost, paid and skipped drop out of the weekly plan; submitted and applied are listed in the dashboard's "Submitted — waiting for results" with their result date.
+Notes (notes.json): **what to submit (idea)** and a **note**, edited in the detail modal.
 
-#### 6.1.3 画面の主従：「自分の案件」が主、「おすすめ」が従
-ダッシュボードの主役は **自分の案件**（「＋ やる」で選んだ 未対応／申込済／対応中 の案件）。締切が近い順に並べ、今週の時間（選んだ案件の時間合計 / 週の作業時間、超過は赤）、案件ごとの締切・出すもの・最初の一歩・状態変更、見込み額の合計（賞金は別枠）を管理する。
-**おすすめ**（まだ選んでいない案件を残り時間に当てはめた提案）は横の欄に置き、「＋ やる」で自分の案件に移す。何も選んでいない間だけ、おすすめのルートを主欄に表示する。案件一覧には「マイ案件」タブ（状態ごとにグループ表示）を置く。週次プランは選んだ案件を先頭に並べる。
+#### 6.1.3 Main and secondary: "My picks" first, "Suggestions" second
+The dashboard centres on **My picks** (to do / applied / in progress items chosen with "+ Pick"). They are sorted by nearest deadline and show this week's hours (picked hours / weekly hours, red when over), each item's deadline, what to submit, first step and status, and the expected total (prizes counted separately).
+**Suggestions** (not-yet-picked items fitted into the remaining hours) sit in a side column and move to My picks with "+ Pick". Only while nothing is picked does the suggested route take the main column. The opportunity list has a "My picks" tab (grouped by status). The weekly plan puts picked items first.
 
-#### 6.1.4 賞金ハンター帳から引き継いだ管理機能
-- **集計の帯**：進行中 N 件／参加完了 M 件（入賞・結果待ち・落選）／次の締切（何日後・案件名）／次の結果発表。
-- **いまの作戦メモ**：全体で1つのメモ（notes.json の `_board`、欄を離れると保存）。
-- **出すもの**：自分の案件の各行でその場で書ける（Enter か欄を離れると保存）。
-- **✓ 提出した**：1クリックで「提出済・結果待ち」に移し、結果待ちの欄に結果発表日つきで並ぶ。
-- 未実装（後続）：クローラーが拾っていない案件の手動追加、ユーザー別メモ。
+#### 6.1.4 Management features from the prize-hunter board
+- **Summary strip**: N in progress / M joined (won, waiting, lost) / next deadline (days left, name) / next result date.
+- **Current game plan**: one board-wide note (`_board` in notes.json, saved on blur).
+- **What to submit**: editable inline on each pick (saved on Enter or blur).
+- **✓ Submitted**: one click moves the item to "submitted — waiting for results", listed with its result date.
+- Not yet built: manually adding opportunities the crawler did not find.
 
-#### 6.1.5 公開デモは「見るだけ」
-公開デモは全員が同じデータを見るため、キーなし（public）は閲覧専用とする。プロフィール保存・「＋ やる」/状態変更・メモ・今すぐ巡回・イベント探索・PayPal同期/突合/請求書は 審査員キーか管理者キーが必要（403 `key_required` → 画面上部に案内）。キーなしでできるのは閲覧、要約生成（1日50件）、AIに探させる（1日3回、結果は承認待ち）。`?key=<キー>` 付きのURLで開くとキーを保存してURLから消す（審査員は1クリック）。キー未設定のローカル環境は全開放。
+#### 6.1.5 The public demo is view-only
+Everyone sees the same public demo, so visitors without a key (public) are read-only and see a demo user. Saving the profile, "+ Pick" / status changes, notes, crawl now, event search, and PayPal sync / match / invoice need a judge key or the admin key (403 `key_required` → a notice at the top of the screen). Without a key you can browse, generate briefs (50/day) and run AI Discovery (3/day, results wait for approval). Opening a URL with `?key=<key>` stores the key and removes it from the URL (one click for judges). Each judge key is its own user with separate server-side data. A local install with no keys configured is fully open.
 
-#### 6.1.6 案件のライフサイクル（ユーザー操作）
+#### 6.1.6 Opportunity lifecycle (user actions)
 ```
-探す ─「＋ やる」→ 未対応 ─(選択)→ 対応中 ─┬─ コンテスト：「✓ 提出した」→ 提出済 ─┬─「🏆 入賞した」→ 入賞・入金待ち ─(PayPal照合 or「入金済にする」)→ 入金済
-                                          │                                       └─「落選」→ 落選
-                                          └─ その他：「✓ 作業完了」→ 完了・入金待ち ─(PayPal照合 or「入金済にする」)→ 入金済 ─「もう一度やる」→ 対応中
-どこからでも：「やめる」→ 見送り ／「対応中に戻す」／ 直前の変更は上部バーの「元に戻す」
-見送り・落選 ─「やっぱりやる」→ 未対応
+Browse ─"+ Pick"→ To do ─(select)→ In progress ─┬─ Contest: "✓ Submitted"→ Submitted ─┬─"🏆 Won"→ Won, waiting for payout ─(PayPal match or "Mark as paid")→ Paid
+                                                │                                     └─"Lost"→ Lost
+                                                └─ Other: "✓ Work done"→ Done, waiting for payout ─(PayPal match or "Mark as paid")→ Paid ─"Do it again"→ In progress
+From anywhere: "Give up"→ Skipped / "Back to in progress" / the last change can be undone from the bar at the top
+Skipped, Lost ─"Pick again"→ To do
 ```
-- PayPal で入金が照合されると、入賞／提出済の案件は自動で「入金済」になる（照合時は待ち状態の案件を優先候補として AI に渡す）。
-- 状態・メモ・入金照合は案件IDに紐づく。再巡回で AI が案件名を言い換えても失われないよう、①個別URLがある案件はURLから安定IDを作る、②IDが変わった場合は同じURL／同ソース唯一の案件／名前の近さで後継を探して状態を移す、③後継がなく状態がある案件（締切後に一覧から消えたハッカソン等）は「募集終了」として残す。
+- When a PayPal payment is matched, a won or submitted item automatically becomes Paid (items waiting for payment are passed to the AI as preferred candidates during matching).
+- Status, notes and payment matches are keyed by opportunity id. So that they survive the AI renaming an item on re-crawl: (1) items with their own URL get a stable id derived from the URL; (2) when an id still changes, a successor is found by same URL / only item from the same source / similar name, and the state is moved; (3) items with state and no successor (e.g. hackathons that left the listing after their deadline) are kept as "closed".
 
-#### 6.2.1 ★おすすめ度（人間向けの2軸、各1〜5）
-スコアは機械用。人が一瞥で選べるよう、各案件に **楽（ease）** と **お得（payoff）** の★を付ける（LLM不使用・決定的）。
+#### 6.2.1 ★ ratings (two human-facing axes, 1–5 each)
+The score is for machines. So that people can choose at a glance, each item gets **Easy** and **Payoff** stars (no LLM, deterministic).
 ```
-楽   = (工数の小ささ 0.4 + 条件・スキルの少なさ 0.2 + 入金の早さ 0.2 + 最低出金の低さ 0.2)
-       × 締切あり 0.6 × 警告あり 0.7
-お得 = (時給 log正規化(0〜$100/h) 0.6 + 報酬額 log正規化(0〜$1000) 0.4)
-       × certainty_weight × legitimacy/100 × √time_discount
-→ 0〜1 を 1〜5 ★ に丸める
+Easy   = (small effort 0.4 + few conditions/skills 0.2 + fast payout 0.2 + low minimum payout 0.2)
+         × has deadline 0.6 × has warnings 0.7
+Payoff = (hourly rate, log-normalised 0–$100/h, 0.6 + reward, log-normalised 0–$1000, 0.4)
+         × certainty_weight × legitimacy/100 × √time_discount
+→ round 0–1 to 1–5 ★
 ```
-例：PayPal紹介ボーナス 楽5/お得4、Devpostハッカソン 楽2/お得4、詐欺サンプル お得1、Overpowered（警告あり）楽2/お得2。
+Examples: PayPal referral bonus Easy 5 / Payoff 4, Devpost hackathon Easy 2 / Payoff 4, scam sample Payoff 1, Overpowered (with warnings) Easy 2 / Payoff 2.
 
-### 6.3 AIの役割
-- free_text からのプロフィール補完
-- 各推奨に対する「なぜあなたに向くか／最初の一歩」を1〜2文で生成（英語/日本語）
-- 週次プラン全体の要約
-
----
-
-## 7. Track（PayPal統合）
-
-### 7.1 入金同期
-- `GET /v1/reporting/transactions`（Transaction Search API, sandbox）で直近N日の受取取引を取得
-- 各取引の payer_name / email / note / subject / amount と、active な案件・ユーザーの実行状況を Claude に渡し、最尤の案件へマッチング（confidence 付き）
-- confidence < 0.7 は「要確認」としてユーザーに提示、確認で確定
-- 確定した入金は opportunity.observed に集計 → §6.2 observed_boost に反映
-
-### 7.2 請求書（Invoicing API）
-- freelance / hourly 型の案件で、ユーザーが「請求する」を押すと、AIが作業内容から請求書ドラフトを生成
-- `POST /v2/invoicing/invoices` でドラフト作成 → プレビュー → ユーザー確認 → `send`
-- エージェントが取引を生成する部分として Agentic Commerce 賞に訴求
-
-### 7.3 デモ用模擬入金
-- Payouts API（sandbox）で、別のサンドボックスアカウントからユーザー受取アカウントへ「CrazyGames Revenue Share August」等の note 付きで送金するスクリプト `scripts/seed-payments.ts`
-- 動画では Discover → Route → seed → sync → マッチング → ランキング変動 を一気通貫で見せる
-
-### 7.4 エージェント実行（任意・時間があれば）
-- PayPal Agent Toolkit / MCP Server を使い、「先週の入金を同期して、未請求の案件があれば請求書ドラフトを作って」を自然言語で実行できるチャット窓を追加
+### 6.3 What the AI does
+- Fills in the profile from free_text
+- Writes one or two sentences per recommendation: "why it suits you / first step" (English / Japanese)
+- Summarises the whole weekly plan
 
 ---
 
-## 8. 画面
+## 7. Track (PayPal integration)
 
-1. **Dashboard**: 今週やること（カード）、今週の期待収益、実測収益、巡回ステータス
-2. **Opportunities**（AG Grid Community）: 全案件 / あなた向け 切替、列: 案件・カテゴリ・期待時給・最低出金・入金目安日数・正当性（scored_by付き）・実測受取額・状態。除外理由はツールチップ。行グルーピングはEnterprise機能のため使わず、カテゴリ切替タブ＋フィルタで代替
-3. **Profile**: 国、スキル、時間、既存アカウント、自由記述
-4. **Payments**: PayPal同期ボタン、入金一覧（AG Grid）、AIマッチ結果と確認UI
-5. **Invoices**: ドラフト一覧、プレビュー、送信
+### 7.1 Payment sync
+- Fetch received transactions for the last N days with `GET /v1/reporting/transactions` (Transaction Search API, sandbox).
+- Pass each transaction's payer_name / email / note / subject / amount, plus active opportunities and the user's execution state, to Claude and match to the most likely opportunity (with confidence).
+- confidence < 0.7 is shown to the user as "needs review" and becomes final when confirmed.
+- Confirmed payments are aggregated into opportunity.observed → reflected in §6.2 observed_boost.
 
-言語: UIは英語（審査員向け）。日本語切替は任意。
+### 7.2 Invoices (Invoicing API)
+- For freelance / hourly opportunities, pressing "Invoice" lets the AI draft an invoice from the work description.
+- Create a draft with `POST /v2/invoicing/invoices` → preview → user confirmation → `send`.
+- This is where the agent creates a transaction, aimed at the Agentic Commerce prize.
 
----
+### 7.3 Simulated payments for the demo
+- `scripts/seed-payments.ts` uses the Payouts API (sandbox) to send money from another sandbox account to the user's receiving account with notes such as "CrazyGames Revenue Share August".
+- The video shows Discover → Route → seed → sync → matching → ranking change end to end.
 
-## 9. セキュリティ・プライバシー
-- PayPal資格情報はRender環境変数のみ。リポジトリに含めない（.env.example を置く）
-- サンドボックス専用。本番資格情報を受け付けない（環境変数で `PAYPAL_ENV=sandbox` 固定）
-- 氏名・住所・口座番号は保存しない。入金の payer 情報はマッチング後にハッシュ化可
-- 案件URLは常に公式URLを保持し、ユーザーが一次情報を確認できるようにする
-- 免責: 収益見積りは参考値。最終判断は公式条件を確認
-
----
-
-## 10. デプロイ・リポジトリ
-- GitHub 公開リポジトリ `money-router`、MIT License（About欄に表示）
-- Render: Web Service（API+静的SPA）、Cron Job（crawler, 毎日）、Disk（JSON永続化）
-- README: 概要、アーキテクチャ図、セットアップ（PayPal sandbox app作成→env→`npm run dev`）、`scripts/seed-payments.ts` の使い方、使用ツール一覧（PayPal APIs, Claude, AG Grid, Render）
-- コミット履歴でハッカソン期間中の進捗を示す（既存プロジェクトの「意味のある進捗」要件）
+### 7.4 Agent execution (optional, if time allows)
+- Using PayPal Agent Toolkit / MCP Server, add a chat box that can run "sync last week's payments and draft invoices for anything not yet billed" in natural language.
 
 ---
 
-## 11. 提出物チェックリスト
-- [ ] 動作するホスト済みデモURL（Render）
-- [ ] 公開GitHubリポジトリ＋ライセンス表示
-- [ ] 3分未満のYouTube動画（商標ロゴ・著作権音楽なし。PayPalロゴの扱いは規約確認）
-- [ ] 英語の説明文（問題・対象・PayPalとAIの使い方・使用ツール）
-- [ ] 使用ツールの明記（PayPal Transaction Search / Invoicing / Payouts、Claude API、AG Grid、Render）
+## 8. Screens
+
+1. **Dashboard**: this week's tasks (cards), expected earnings this week, observed earnings, crawl status
+2. **Opportunities** (AG Grid Community): toggle All / For you; columns: opportunity, category, expected hourly rate, minimum payout, days to payout, legitimacy (with scored_by), observed amount received, status. Exclusion reasons as tooltips. Row grouping is an Enterprise feature, so category tabs and filters are used instead.
+3. **Profile**: country, skills, hours, existing accounts, free text
+4. **Payments**: PayPal sync button, payment list (AG Grid), AI match results and confirmation UI
+5. **Invoices**: draft list, preview, send
+
+Language: the UI is in English (for judges), with a Japanese switch.
 
 ---
 
-## 12. 受入基準
-1. Crawler 実行後、opportunities.json に PayPal対応案件のみが構造化されて保存される
-2. PayPal非対応ソースが自動で除外され、除外理由が status に記録される
-3. 正当性スコアが全案件に付与され、閾値未満は「あなた向け」から除外される
-4. プロフィール変更で対象外判定・スコア・今週やることが更新される
-5. seed-payments 実行後、PayPal同期で入金が取得され、案件にマッチングされる
-6. 入金確定後、該当案件の実測列とランキングが変化する
-7. 請求書ドラフトがPayPalサンドボックスに作成され、送信できる
-8. Render上でAPI・SPA・Cronが動作し、README手順で第三者が再現できる
+## 9. Security and privacy
+- PayPal credentials only in environment variables, never in the repository (an .env.example is provided).
+- Sandbox only. Production credentials are refused (`PAYPAL_ENV=sandbox` is fixed by environment variable).
+- Names, addresses and account numbers are not stored. Payer details can be hashed after matching.
+- Opportunity URLs always point to the official page so the user can check the primary source.
+- Disclaimer: earnings estimates are for reference only. Always check the official terms before deciding.
 
 ---
 
-## 13. スケジュール（締切 11/12 PST）
-| 週 | 内容 |
+## 10. Deployment and repository
+- Public GitHub repository `money-router`, MIT License (shown in the About box).
+- Render: Web Service (API + static SPA), Cron Job (crawler, daily), Disk (JSON persistence). *As built: VPS + Nginx + Cloudflare + PM2.*
+- README: overview, architecture diagram, setup (create a PayPal sandbox app → env → `npm run dev`), how to use `scripts/seed-payments.ts`, tools used (PayPal APIs, Claude, AG Grid, hosting).
+- The commit history shows progress during the hackathon (the "meaningful progress" requirement for existing projects).
+
+---
+
+## 11. Submission checklist
+- [ ] Working hosted demo URL
+- [ ] Public GitHub repository with a license
+- [ ] YouTube video under 3 minutes (no trademarked logos or copyrighted music; check the rules on PayPal logos)
+- [ ] English description (problem, audience, how PayPal and AI are used, tools used)
+- [ ] Tools used stated (PayPal Transaction Search / Invoicing / Payouts, Claude API, AG Grid, hosting)
+
+---
+
+## 12. Acceptance criteria
+1. After a crawl, opportunities.json contains only PayPal-payable opportunities, structured.
+2. Sources without PayPal are excluded automatically and the reason is recorded in status.
+3. Every opportunity has a legitimacy score; those below the threshold are excluded from "For you".
+4. Changing the profile updates exclusions, scores and "this week".
+5. After seed-payments, PayPal sync fetches the payments and matches them to opportunities.
+6. After a payment is confirmed, the observed columns and ranking of that opportunity change.
+7. An invoice draft is created in the PayPal sandbox and can be sent.
+8. API, SPA and scheduled crawl run on the host, and a third party can reproduce the setup from the README.
+
+---
+
+## 13. Schedule (deadline 11/12 PST)
+| Week | Work |
 |---|---|
-| 10/3–10/6 | リポジトリ作成、PayPal sandbox app、骨格（API/SPA/Render）、データモデル |
-| 10/7–10/13 | Discover: クローラー＋AI抽出＋正当性スコア、初期30ソース投入 |
-| 10/14–10/20 | Route: 対象外判定・スコア・今週やること、AG Grid画面 |
-| 10/21–10/27 | Track: Transaction Search同期＋AIマッチング、seed script、Invoicing |
-| 10/28–11/3 | 仕上げ: Agent Toolkitチャット（任意）、README、英語提出文 |
-| 11/4–11/9 | 動画撮影・編集、第三者再現テスト、提出 |
-| 11/10–11/12 | 予備 |
+| 10/3–10/6 | Repository, PayPal sandbox app, skeleton (API/SPA/hosting), data model |
+| 10/7–10/13 | Discover: crawler + AI extraction + legitimacy score, first 30 sources |
+| 10/14–10/20 | Route: exclusions, score, "this week", AG Grid screens |
+| 10/21–10/27 | Track: Transaction Search sync + AI matching, seed script, Invoicing |
+| 10/28–11/3 | Finishing: Agent Toolkit chat (optional), README, English submission text |
+| 11/4–11/9 | Video recording and editing, third-party reproduction test, submission |
+| 11/10–11/12 | Buffer |
 
-※ Nebius（10/30締切）と並行するため、10/21–10/30 は薄くなる前提。
+Note: this ran in parallel with another hackathon (deadline 10/30), so 10/21–10/30 was expected to be light.
 
 ---
 
-## 14. v1.1以降
-- 野良検索による新規ソース発見（検索API＋AI審査）
-- マルチユーザー＋PayPal Log In（Connect with PayPal）
-- 通知（期限・新規高額案件・支払い遅延）
-- 日本の銀行キャンペーン（v0.6.0の領域）を Discover の1カテゴリとして復活（AI抽出で）
-- コンテストの期待値補正（採択率）、締切リマインド通知、多言語公募サイトの定期巡回（韓国・中国・欧州）
+## 14. v1.1 and later
+- Discovering new sources by open search (search API + AI audit)
+- Multi-user accounts with Log In with PayPal (Connect with PayPal)
+- Notifications (deadlines, new high-value opportunities, late payments)
+- Bring back Japanese bank campaigns (v0.6.0's domain) as a Discover category (with AI extraction)
+- Contest expected-value correction (acceptance rate), deadline reminders, regular crawling of multilingual contest sites (Korea, China, Europe)

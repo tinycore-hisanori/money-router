@@ -1,6 +1,6 @@
 # Money Router — Devpost submission (PayPal AI Hackathon)
 
-Paste each section into the matching Devpost field. Japanese notes for the author are at the end.
+Paste each section into the matching Devpost field. Japanese version with author notes: [SUBMISSION.ja.md](SUBMISSION.ja.md)
 
 ---
 
@@ -81,10 +81,3 @@ Suggested path (5 minutes):
 6. **Sources** lists every crawled source with what was kept and why others were rejected.
 
 PayPal runs in sandbox mode. No real money moves.
-
----
-
-## 日本語メモ（作者用）
-- 各見出しを Devpost の同名欄に貼る。「Testing instructions」は非公開欄。`<JUDGE_TOKENS #n>` を VPS の `.env` の `JUDGE_TOKENS=` の値（カンマ区切りの4つ）に置き換える。
-- 「It caught a real payment-risk case」はライブデータで Overpowered の所見が出ていることを前提にしている。出ていなければその行を消す。
-- 「What's next」の PayPal ログインと課金枠は、今日決めた方針（無料=閲覧と追跡、課金=同期とAI探索）をそのまま書いた。
