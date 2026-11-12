@@ -115,7 +115,7 @@ export default function App() {
       </main>
       <footer className="foot">
         <span>Money Router — {t('hdr.tagline')}</span>
-        {status?.version && <span title={`built ${status.version.built_at}`}>v{status.version.version} ({status.version.commit})</span>}
+        {status?.version && <span title={`built ${status.version.built_at}`}>v{status.version.version} #{status.version.build} ({new Date(status.version.released_at).toLocaleString(undefined, { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })})</span>}
       </footer>
     </>
   );

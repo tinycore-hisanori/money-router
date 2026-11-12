@@ -21,7 +21,8 @@
     "seed:payments": "tsx scripts/seed-payments.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit && npm --prefix client run typecheck",
     "postinstall": "npm --prefix client install",
-    "stamp": "node scripts/stamp-version.mjs"
+    "stamp": "node scripts/stamp-version.mjs",
+    "release": "node scripts/stamp-version.mjs --bump"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",

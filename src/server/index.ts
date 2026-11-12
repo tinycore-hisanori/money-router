@@ -9,7 +9,7 @@ import { api } from './routes/api.js';
 const app = new Hono();
 app.use(logger());
 
-app.get('/api/health', (c) => c.json({ ok: true, service: 'money-router', env: config.paypal.env, version: VERSION.version, commit: VERSION.commit, built_at: VERSION.built_at }));
+app.get('/api/health', (c) => c.json({ ok: true, service: 'money-router', env: config.paypal.env, version: VERSION.version, build: VERSION.build, released_at: VERSION.released_at, built_at: VERSION.built_at }));
 app.route('/api', api);
 
 // SPA (client/dist) — built by `npm run build`
